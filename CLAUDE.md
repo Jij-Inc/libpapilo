@@ -13,32 +13,16 @@ libpapilo is a fork of scipopt/papilo that aims to provide PaPILO (Parallel Pres
 
 The original PaPILO is a C++14-based presolve package for (mixed integer) linear programming problems with support for parallel execution and multiple precision arithmetic, licensed under LGPLv3.
 
-## Development Roadmap
+## Development Strategy
 
-### Phase 1: Environment Setup
-- [ ] Remove solver integration dependencies from build system
-- [ ] Configure CMake for shared library generation (.so/.dylib/.dll)
-- [ ] Set up testing framework for C API validation
-
-### Phase 2: Core C API Design
-- [ ] Extend existing `papilolib.h` with presolve-only functions
-- [ ] Implement problem construction API (building on existing foundation)
-- [ ] Add presolve execution API (individual presolvers + full pipeline)
-- [ ] Add presolved problem data extraction API
-- [ ] Add manual postsolve API
-
-### Phase 3: Implementation & Testing
-- [ ] Implement C++ wrapper layer for double-precision instantiations
-- [ ] Create comprehensive test suite matching `test/papilo/presolve/` patterns
-- [ ] Add memory management and error handling
-- [ ] Performance testing and optimization
+This fork will create new `libpapilo.cpp/.h` files (separate from existing `papilolib.cpp/.h`) to avoid merge conflicts. The new API will focus exclusively on presolving functionality and will be built as a shared library.
 
 ### Target C API Interface
 
 The goal is to support the three-stage workflow demonstrated in PaPILO tests:
 
-1. **Construction**: `papilo_problem_create()` → set dimensions → add variables/constraints → add matrix entries
-2. **Execution**: `papilo_solver_presolve_only()` → query status and reductions
+1. **Construction**: `libpapilo_problem_create()` → set dimensions → add variables/constraints → add matrix entries
+2. **Execution**: `libpapilo_presolve()` → query status and reductions  
 3. **Validation**: Extract presolved problem → manual postsolve when needed
 
 ## Build Commands
@@ -73,13 +57,12 @@ make test
 ### Template Design
 Original PaPILO uses `REAL` template parameter for numerical precision. This fork simplifies by using `double` exclusively, avoiding template complexity in the C API.
 
-### Existing C API Foundation
-`src/papilolib.h/cpp` provides excellent groundwork:
-- ✅ Problem construction functions
-- ✅ Parameter management system  
-- ❌ Only integrated solving (presolve+solve+postsolve)
-- ❌ No presolve-only execution
-- ❌ No presolved problem data access
+### Existing vs New C API
+- **Existing** (`src/papilolib.h/cpp`): Integrated solver interface with presolve+solve+postsolve
+- **New** (`src/libpapilo.h/cpp`): Presolve-only interface for this fork
+  - Avoids merge conflicts with upstream
+  - Focus exclusively on presolving workflow
+  - Shared library build target
 
 ## Detailed Implementation Notes
 
@@ -135,9 +118,11 @@ The C API should mirror these patterns while providing C-compatible data structu
 - **Resource management**: Provide explicit create/destroy functions for all objects
 - **Thread safety**: Document threading requirements (likely requires external synchronization)
 
-## Next Steps
+## Implementation Plan
 
-1. Examine `papilolib.cpp` implementation details
-2. Design presolve-only extensions to existing API
-3. Create proof-of-concept for problem construction → presolve → data extraction workflow
-4. Implement comprehensive test coverage matching existing unit tests
+1. **Create new API files**: Design `src/libpapilo.h/cpp` independent of existing `papilolib`
+2. **CMake integration**: Add shared library build target for the new API
+3. **Core functionality**: Implement problem construction, presolve execution, and result extraction
+4. **Testing**: Create C API tests that mirror the patterns in `test/papilo/presolve/`
+
+The new API will provide a clean, presolve-focused interface while preserving the existing codebase for future upstream compatibility.

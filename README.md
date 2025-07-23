@@ -1,9 +1,14 @@
-# libpapilo: Distribute PaPILO as binary package
+# libpapilo: PaPILO as a Presolve-Only Shared Library with C API
 
-This is a fork of [scipopt/papilo](https://github.com/scipopt/papilo) for binary packaging with LGPLv3.
+This is a fork of [scipopt/papilo](https://github.com/scipopt/papilo) that aims to provide PaPILO's presolving functionality as a shared library with a C API under LGPLv3.
 
-- [ ] DEB file for Ubuntu
-- [ ] RPM file for RHEL and others
+## Goals of This Fork
+
+- **Presolve-only functionality**: Focus exclusively on presolving without solver integrations (SCIP, Gurobi, etc.)
+- **C API**: Provide a stable C interface to make PaPILO accessible from other programming languages
+- **Shared library**: Build as `.so`/`.dylib`/`.dll` for easy integration
+- **Double precision only**: Simplify the API by supporting only double precision (no quadruple/rational arithmetic)
+- **Distribution**: Package the built shared library as ZIP files or other format for easy distribution
 
 ↓ Original README ↓
 
