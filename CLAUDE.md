@@ -65,6 +65,16 @@ The presets automatically:
 - **Intel TBB**: >= 2020 (for parallelization)
 - **Boost**: >= 1.65 (headers only for this fork)
 
+## Testing Framework
+
+PaPILO uses **Catch2** as its testing framework. The framework is bundled in `src/papilo/external/catch/` as an amalgamated version (single header + single source file). All tests use the `TEST_CASE` macro from Catch2.
+
+For the libpapilo C API development:
+- Tests will continue to use Catch2 framework
+- Test files will be written in C++ (`.cpp` extension)
+- Tests will only use the C API functions, not C++ classes directly
+- This allows testing the C API while leveraging existing test infrastructure
+
 ## Architecture Overview
 
 ### Core Components (C++ Implementation)
