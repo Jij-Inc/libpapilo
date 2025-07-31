@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libtbb-dev libboost-dev
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/build
+
+      - name: Test
+        working-directory: ${{ github.workspace }}/build
+        run: ctest --output-on-failure
