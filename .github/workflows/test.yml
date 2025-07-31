@@ -24,8 +24,8 @@ jobs:
           cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build
+        run: cmake --build ${{ github.workspace }}/build
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{ github.workspace }}/build
         run: ctest --output-on-failure
