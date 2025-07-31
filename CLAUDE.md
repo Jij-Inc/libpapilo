@@ -67,7 +67,7 @@ The presets automatically:
 
 ## Testing Framework
 
-PaPILO uses **Catch2** as its testing framework. The framework is bundled in `src/papilo/external/catch/` as an amalgamated version (single header + single source file). All tests use the `TEST_CASE` macro from Catch2.
+PaPILO uses **Catch2** as its testing framework. The framework is bundled in `src/papilo/external/catch/` as an amalgamated version (single header + single source file) to simplify dependency management and ensure compatibility with the project's build system. All tests use the `TEST_CASE` macro from Catch2.
 
 For the libpapilo C API development:
 - Tests will continue to use Catch2 framework
