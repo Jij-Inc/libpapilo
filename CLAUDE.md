@@ -139,9 +139,56 @@ The C API should mirror these patterns while providing C-compatible data structu
 
 ## Implementation Plan
 
-1. **Create new API files**: Design `src/libpapilo.h/cpp` independent of existing `papilolib`
-2. **CMake integration**: Add shared library build target for the new API
-3. **Core functionality**: Implement problem construction, presolve execution, and result extraction
-4. **Testing**: Create C API tests that mirror the patterns in `test/papilo/presolve/`
+The goal is to rewrite all tests in `test/papilo/presolve/` using the new libpapilo C API.
+
+### Phase 1: Foundation and Problem Construction API
+- [ ] Extract problem construction code from `src/papilolib.cpp` to create initial `src/libpapilo.cpp`
+  - [ ] Identify reusable functions like `problem_create()` and related utilities
+  - [ ] Create `src/libpapilo.h` with C-compatible function declarations
+  - [ ] Create `src/libpapilo.cpp` with implementations wrapping C++ classes
+- [ ] Implement core problem construction API
+  - [ ] `libpapilo_problem_create()` - create problem instance
+  - [ ] `libpapilo_problem_set_dimensions()` - set rows, cols, non-zeros
+  - [ ] `libpapilo_problem_set_obj()` - set objective coefficients
+  - [ ] `libpapilo_problem_set_col_bounds()` - set variable bounds
+  - [ ] `libpapilo_problem_set_row_bounds()` - set constraint bounds
+  - [ ] `libpapilo_problem_add_entry()` - add matrix entries
+  - [ ] `libpapilo_problem_destroy()` - cleanup
+- [ ] Set up CMake target for building libpapilo as a shared library
+  - [ ] Add `add_library(libpapilo SHARED ...)` to CMakeLists.txt
+  - [ ] Configure proper export symbols for C API
+- [ ] Create test infrastructure
+  - [ ] Create `test/libpapilo/` directory structure
+  - [ ] Set up CMake configuration for C API tests
+  - [ ] Create `test_problem_construction.cpp` using Catch2 to verify problem building works correctly
+
+### Phase 2: Presolve API and Test Migration
+- [ ] Design and implement core presolve API framework
+  - Study existing C++ presolve API patterns in detail
+  - Design C-compatible API based on test requirements
+  - Implement minimal framework needed for first presolver
+
+- [ ] Implement each presolver as a separate PR
+  - Each PR will add C API wrapper for the presolver and port the corresponding test from `test/papilo/presolve/`
+  - Tests will be written in C++ using Catch2 framework, but will only use the C API (not the C++ classes directly)
+  - PR is considered complete when the ported test passes with the same results as the original C++ test
+  - [ ] `SingletonRow`
+  - [ ] `SingletonCols`
+  - [ ] `DualFix`
+  - [ ] `ImpliedBounds`
+  - [ ] `CoefficientStrengthening`
+  - [ ] `ConstraintPropagation`
+  - [ ] `DominatedCols`
+  - [ ] `DualInfer`
+  - [ ] `FixContinuous`
+  - [ ] `FreeVarSubstitution`
+  - [ ] `ImpliedIntegers`
+  - [ ] `ParallelCols`
+  - [ ] `ParallelRows`
+  - [ ] `Probing`
+  - [ ] `SimpleProbing`
+  - [ ] `SimpleSubstitution`
+  - [ ] `SimplifyInequalities`
+  - [ ] `Sparsify`
 
 The new API will provide a clean, presolve-focused interface while preserving the existing codebase for future upstream compatibility.
