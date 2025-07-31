@@ -1,4 +1,4 @@
-find_package(Boost REQUIRED OPTIONAL_COMPONENTS serialization program_options iostreams)
+find_package(Boost CONFIG REQUIRED OPTIONAL_COMPONENTS serialization program_options iostreams)
 
 if (TARGET papilolib)
     set(PAPILOLIB_TESTS
