@@ -95,13 +95,51 @@ Original PaPILO uses `REAL` template parameter for numerical precision. This for
 
 ### Presolve Driver Routine
 
-The `Presolve` class in `src/papilo/core/Presolve.hpp` acts as the main driver for the entire presolving process. It orchestrates the execution of individual presolving methods.
+The `Presolve` class in `src/papilo/core/Presolve.hpp` acts as the main driver for the entire presolving process. Its main entry point is the `Presolve::apply()` method.
 
--   **Automated Presolver Combination**: The `Presolve::addDefaultPresolvers()` method registers a default set of 17 presolvers, categorized into `fast`, `medium`, and `exhaustive` timings. This provides a well-tested, general-purpose presolving pipeline out-of-the-box.
--   **Execution Flow**: The `Presolve::apply()` method manages the main presolve loop. It iteratively runs rounds of presolvers, starting with `fast` methods and progressing to more `exhaustive` ones based on the reduction achieved in each round. This continues until the problem is no longer being reduced or a limit is reached.
+-   **Automated Presolver Combination**: The `Presolve::addDefaultPresolvers()` method registers a default set of 17 presolvers. Inside `Presolve::apply()`, these are sorted by their `PresolverTiming` (`kFast`, `kMedium`, `kExhaustive`) to create distinct groups for the execution loop.
+
+-   **Execution Flow**: The `Presolve::apply()` method contains the main `do-while` loop that manages the presolving rounds.
+    -   The loop's state is controlled by the `round_to_evaluate` enum (`Delegator`), which determines which group of presolvers to run (`kFast`, `kMedium`, or `kExhaustive`).
+    -   The private method `run_presolvers()` is called to execute all presolvers within the currently selected group, potentially in parallel using TBB.
+    -   After each group execution, `evaluate_and_apply()` is called. This method checks the results from all presolvers and applies the successful reductions to the problem.
+    -   Based on the progress made, `determine_next_round()` decides whether to move to the next difficulty level (e.g., from `kFast` to `kMedium`), restart from `kFast` if significant changes were made, or abort if no further progress is detected or limits are reached.
+
 -   **Customization**: While `addDefaultPresolvers()` offers a standard configuration, advanced users can manually add specific presolvers using `Presolve::addPresolveMethod()` to create a custom presolving sequence.
 
 This design allows general users to benefit from a powerful, automated presolving engine by simply calling `apply()`, while still offering fine-grained control to expert users.
+
+### Postsolve Mechanism and Data Access
+
+For every presolving modification, PaPILO records a corresponding "undo" operation. The process of applying these undo operations to transform a presolved solution back into the original problem's solution space is called **Postsolve**.
+
+-   **Core Components**:
+    -   `PostsolveStorage` (`src/papilo/core/postsolve/PostsolveStorage.hpp`): This class **records** all reductions performed during presolve. It acts as a stack, storing each modification (e.g., variable fixings, row deletions) so it can be undone in the reverse order.
+    -   `Postsolve` (`src/papilo/core/postsolve/Postsolve.hpp`): This class contains the logic to **execute** the postsolve process. Its `undo()` method uses the data in `PostsolveStorage` to reconstruct the original solution.
+
+-   **Data Access in C++**:
+    The `PostsolveStorage` class exposes its internal data structures as `public` members. This provides direct access to the complete history of reductions, including:
+    -   `types`: A `Vec` of `ReductionType` enums indicating the kind of modification.
+    -   `indices`, `values`, `start`: `Vec`s that store the detailed data for each reduction, such as variable indices and coefficient values.
+    -   `origcol_mapping`, `origrow_mapping`: `Vec`s that map the indices of the reduced problem's variables and constraints back to their original indices.
+    -   `getOriginalProblem()`: A method to get a copy of the problem before any presolving was applied.
+
+-   **Data-Driven (Not Object-Oriented) Design**: It is crucial to understand that this mechanism is data-driven. Individual `PresolveMethod`s do not register their own specific "undo" logic. The process is:
+    1.  **A `PresolveMethod` reports a proposed change.** For example, in `SingletonCols::execute` (in `src/papilo/presolvers/SingletonCols.hpp`), a call like `reductions.fixCol(...)` is made. This only adds a "fix column" request to a temporary `Reductions` object and does not know how to undo itself.
+    2.  **A central manager applies the change and records a generic log entry.** The main `Presolve` loop calls `Presolve::applyReductions`, which in turn calls `ProblemUpdate::applyTransaction`. This manager applies the change to the problem data. Crucially, inside methods like `ProblemUpdate::fixCol` (in `src/papilo/core/ProblemUpdate.hpp`), a call is made to `postsolve.storeFixedCol(...)`. This records a generic log entry (`type: kFixedCol`, data: `{col, val, ...}`) in `PostsolveStorage`. The log is agnostic to which presolver caused the change.
+    3.  **The `Postsolve::undo()` method interprets the log.** The main `undo` method in `src/papilo/core/postsolve/Postsolve.hpp` iterates through the `PostsolveStorage` logs in reverse order. A large `switch` statement on the `ReductionType` determines the correct inverse action, calling helper functions like `apply_fix_var_in_original_solution` to reconstruct the original solution values.
+
+    This approach decouples presolvers from postsolve logic, simplifying the addition of new presolving techniques.
+
+-   **C API Design Strategy**:
+    The C API will provide functions to both execute the postsolve and, for advanced users, query the underlying postsolve data.
+    1.  **Execution**: A `papilo_postsolve()` function will take a presolved solution and a `papilo_postsolve_t` handle (an opaque pointer to the `PostsolveStorage` object), and return the reconstructed original solution.
+    2.  **Data Query**: A set of getter functions will be provided to inspect the `PostsolveStorage` data from C. For example:
+        -   `papilo_postsolve_get_num_reductions()`: Returns the total number of reductions.
+        -   `papilo_postsolve_get_reduction_info()`: Retrieves the details of a specific reduction by its index.
+        -   `papilo_postsolve_get_col_mapping()`: Returns the mapping from reduced column indices to original column indices.
+
+This approach ensures that while the primary C API workflow is simple (presolve -> solve -> postsolve), advanced users have the tools to introspect the transformation process for debugging or custom analysis.
 
 ## Detailed Implementation Notes
 
