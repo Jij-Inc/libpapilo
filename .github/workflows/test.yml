@@ -20,12 +20,10 @@ jobs:
           sudo apt-get install -y cmake ninja-build libtbb-dev libboost-dev
 
       - name: Configure CMake
-        run: |
-          cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+        run: cmake --preset debug
 
       - name: Build
-        run: cmake --build ${{ github.workspace }}/build
+        run: cmake --build --preset debug
 
       - name: Test
-        working-directory: ${{ github.workspace }}/build
-        run: ctest --output-on-failure
+        run: ctest --preset debug
