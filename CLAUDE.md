@@ -27,17 +27,36 @@ The goal is to support the three-stage workflow demonstrated in PaPILO tests:
 
 ## Build Commands
 
+The project uses CMake presets for consistent build configuration:
+
 ```bash
-# Standard build
-mkdir build && cd build
-cmake .. && make -j
+# Configure for release build (default)
+cmake --preset default
+
+# Configure for debug build
+cmake --preset debug
+
+# Build with the configured preset
+cmake --build --preset default  # for release
+cmake --build --preset debug    # for debug
 
 # Run tests
-make test
+ctest --preset default  # for release
+ctest --preset debug    # for debug
 
 # Run specific test
+cd build/debug  # or build/release
 ./test/unit_test "dual-fix-happy-path"
 ```
+
+Build directories:
+- Release build: `build/release/`
+- Debug build: `build/debug/`
+
+The presets automatically:
+- Use Ninja as the build system
+- Disable GMP and QUADMATH support (as per this fork's design)
+- Set appropriate optimization flags for each build type
 
 ## Key Dependencies
 
