@@ -93,6 +93,16 @@ Original PaPILO uses `REAL` template parameter for numerical precision. This for
   - Focus exclusively on presolving workflow
   - Shared library build target
 
+### Presolve Driver Routine
+
+The `Presolve` class in `src/papilo/core/Presolve.hpp` acts as the main driver for the entire presolving process. It orchestrates the execution of individual presolving methods.
+
+-   **Automated Presolver Combination**: The `Presolve::addDefaultPresolvers()` method registers a default set of 17 presolvers, categorized into `fast`, `medium`, and `exhaustive` timings. This provides a well-tested, general-purpose presolving pipeline out-of-the-box.
+-   **Execution Flow**: The `Presolve::apply()` method manages the main presolve loop. It iteratively runs rounds of presolvers, starting with `fast` methods and progressing to more `exhaustive` ones based on the reduction achieved in each round. This continues until the problem is no longer being reduced or a limit is reached.
+-   **Customization**: While `addDefaultPresolvers()` offers a standard configuration, advanced users can manually add specific presolvers using `Presolve::addPresolveMethod()` to create a custom presolving sequence.
+
+This design allows general users to benefit from a powerful, automated presolving engine by simply calling `apply()`, while still offering fine-grained control to expert users.
+
 ## Detailed Implementation Notes
 
 ### Source Structure
@@ -149,56 +159,40 @@ The C API should mirror these patterns while providing C-compatible data structu
 
 ## Implementation Plan
 
-The goal is to rewrite all tests in `test/papilo/presolve/` using the new libpapilo C API.
+The development will be phased to deliver a functional C API quickly, prioritizing the automated, general-purpose use case first.
 
-### Phase 1: Foundation and Problem Construction API
-- [ ] Extract problem construction code from `src/papilolib.cpp` to create initial `src/libpapilo.cpp`
-  - [ ] Identify reusable functions like `problem_create()` and related utilities
-  - [ ] Create `src/libpapilo.h` with C-compatible function declarations
-  - [ ] Create `src/libpapilo.cpp` with implementations wrapping C++ classes
-- [ ] Implement core problem construction API
-  - [ ] `libpapilo_problem_create()` - create problem instance
-  - [ ] `libpapilo_problem_set_dimensions()` - set rows, cols, non-zeros
-  - [ ] `libpapilo_problem_set_obj()` - set objective coefficients
-  - [ ] `libpapilo_problem_set_col_bounds()` - set variable bounds
-  - [ ] `libpapilo_problem_set_row_bounds()` - set constraint bounds
-  - [ ] `libpapilo_problem_add_entry()` - add matrix entries
-  - [ ] `libpapilo_problem_destroy()` - cleanup
-- [ ] Set up CMake target for building libpapilo as a shared library
-  - [ ] Add `add_library(libpapilo SHARED ...)` to CMakeLists.txt
-  - [ ] Configure proper export symbols for C API
-- [ ] Create test infrastructure
-  - [ ] Create `test/libpapilo/` directory structure
-  - [ ] Set up CMake configuration for C API tests
-  - [ ] Create `test_problem_construction.cpp` using Catch2 to verify problem building works correctly
+### Phase 1: Foundation and Automated Presolve API
+This phase focuses on creating a fully functional, high-level C API that leverages PaPILO's automated presolving capabilities.
 
-### Phase 2: Presolve API and Test Migration
-- [ ] Design and implement core presolve API framework
-  - Study existing C++ presolve API patterns in detail
-  - Design C-compatible API based on test requirements
-  - Implement minimal framework needed for first presolver
+-   [ ] **C API Scaffolding**:
+    -   [ ] Create `src/libpapilo.h` and `src/libpapilo.cpp` for the new C API.
+    -   Set up a `libpapilo` shared library target in CMake.
+    -   Create the `test/libpapilo/` directory and configure its CMake target.
+-   [ ] **Problem Construction API**:
+    -   Implement C functions to build a problem instance from scratch, wrapping the C++ `ProblemBuilder` class.
+    -   Functions: `papilo_create()`, `papilo_free()`, `papilo_set_problem_data()`, etc.
+    -   Create `test/libpapilo/test_problem_construction.cpp` to verify this API.
+-   [ ] **Automated Presolve API**:
+    -   Implement a high-level `papilo_presolve()` C function.
+    -   This function will internally:
+        1.  Create a `papilo::Presolve<double>` object.
+        2.  Call `addDefaultPresolvers()` to load the standard presolving pipeline.
+        3.  Execute the presolve by calling the `apply()` method.
+    -   Implement C functions to query the results (status, statistics, presolved problem).
+-   [ ] **End-to-End Test**:
+    -   Create a test case in `test/libpapilo/` that mimics a test from `test/papilo/presolve/`.
+    -   The test will construct a problem, call `papilo_presolve()`, and verify that the outcome matches the original C++ test, ensuring the high-level API works as expected.
 
-- [ ] Implement each presolver as a separate PR
-  - Each PR will add C API wrapper for the presolver and port the corresponding test from `test/papilo/presolve/`
-  - Tests will be written in C++ using Catch2 framework, but will only use the C API (not the C++ classes directly)
-  - PR is considered complete when the ported test passes with the same results as the original C++ test
-  - [ ] `SingletonRow`
-  - [ ] `SingletonCols`
-  - [ ] `DualFix`
-  - [ ] `ImpliedBounds`
-  - [ ] `CoefficientStrengthening`
-  - [ ] `ConstraintPropagation`
-  - [ ] `DominatedCols`
-  - [ ] `DualInfer`
-  - [ ] `FixContinuous`
-  - [ ] `FreeVarSubstitution`
-  - [ ] `ImpliedIntegers`
-  - [ ] `ParallelCols`
-  - [ ] `ParallelRows`
-  - [ ] `Probing`
-  - [ ] `SimpleProbing`
-  - [ ] `SimpleSubstitution`
-  - [ ] `SimplifyInequalities`
-  - [ ] `Sparsify`
+### Phase 2: Advanced Control and Customization API
+Once the core automated functionality is available and tested, this phase will introduce APIs for expert users who require fine-grained control.
 
-The new API will provide a clean, presolve-focused interface while preserving the existing codebase for future upstream compatibility.
+-   [ ] **Presolve Customization API**:
+    -   Design and implement C functions that allow users to configure the presolving process.
+    -   Implement `papilo_add_presolver(papilo_t* p, const char* name)` to allow adding individual presolvers by name. This will replace the call to `addDefaultPresolvers()`.
+    -   Expose key options from `PresolveOptions` through the C API (e.g., `papilo_set_int_param()`, `papilo_set_real_param()`).
+-   [ ] **Test Migration**:
+    -   Begin migrating tests from `test/papilo/presolve/` one by one.
+    -   Each migrated test will use the new C API, first by using the customization API to add only the specific presolver being tested.
+    -   This ensures that each presolver is correctly wrapped and behaves as expected when called individually through the C API.
+
+This revised plan ensures that a useful, automated presolving library is available after Phase 1, while paving a clear path for more advanced, customizable features in Phase 2.
