@@ -13,6 +13,24 @@ A key architectural design choice in PaPILO is that the presolve process modifie
 
 This in-place design is fundamental to understanding how data flows through the presolving pipeline.
 
+### Variable and Constraint Handling
+
+PaPILO employs a hybrid approach to identify and manage variables and constraints, balancing performance with the need to track entities from the original problem.
+
+-   **Active Representation (Index-based)**: During the presolve process, all active variables and constraints are stored in dense arrays (`papilo::Vec<T>`). They are identified solely by their **index** within these arrays. This allows for extremely fast, cache-friendly access to data (e.g., bounds, objective coefficients, row data), which is critical for the performance of the presolvers.
+
+-   **Dynamic Indices and Delayed Compression**: As presolvers fix variables or remove redundant constraints, these entities are marked as inactive using flags (`ColFlag::kInactive`, `RowFlag::kRedundant`). The actual removal from the data arrays is a potentially expensive operation, so it is not performed immediately. Instead, PaPILO uses a delayed execution strategy for this `compress` operation.
+
+    -   **Triggering Condition**: The `compress` operation is triggered only when the number of active entities (rows or columns) drops below a certain threshold relative to the size at the last compression. This is controlled by the `compressfac` parameter (default: 0.8), meaning compression happens when at least 20% of the entities have been marked for deletion. The logic can be found in `ProblemUpdate::check_and_compress()`.
+    -   **Execution Point**: This check is performed at the end of each presolve round, inside the `Presolve::finishRound()` method.
+    -   **Index Changes**: When `compress` is executed, inactive entities are physically removed, and the remaining ones are packed together. This action **changes the indices** of the still-active variables and constraints. For example, if the variable at index 5 is removed, the variable that was at index 6 now moves to index 5.
+
+-   **Original Identity (Mapping-based)**: To maintain a link back to the user's original problem, PaPILO uses mapping arrays stored in the `PostsolveStorage` object. The `origcol_mapping` and `origrow_mapping` arrays serve as the persistent "identity" layer.
+    -   `origcol_mapping[i]` holds the original index of the variable currently at index `i` in the active problem.
+    -   These maps are initialized to be an identity mapping (e.g., `origcol_mapping[i] = i`) and are carefully updated during every `compress` operation.
+
+This dual system allows PaPILO to benefit from the raw speed of index-based access during computation while guaranteeing that every reduction can be correctly traced back to the original problem structure for the final postsolve step.
+
 ## Presolve Driver Routine
 
 The `Presolve` class in `src/papilo/core/Presolve.hpp` acts as the main driver for the entire presolving process. Its main entry point is the `Presolve::apply()` method.
