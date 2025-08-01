@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cache APT packages
-        uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: cmake ninja-build libtbb-dev libboost-dev
           version: 1.0
