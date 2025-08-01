@@ -66,6 +66,25 @@ LIBPAPILO_EXPORT int papilo_add_entries(papilo_t* papilo, int count, const int* 
 /* Build the problem (finalize construction) */
 LIBPAPILO_EXPORT int papilo_build_problem(papilo_t* papilo);
 
+/* Get problem dimensions */
+LIBPAPILO_EXPORT int papilo_get_nrows(const papilo_t* papilo);
+LIBPAPILO_EXPORT int papilo_get_ncols(const papilo_t* papilo);
+LIBPAPILO_EXPORT int papilo_get_nnz(const papilo_t* papilo);
+
+/* Get objective function */
+LIBPAPILO_EXPORT int papilo_get_objective(const papilo_t* papilo, double* coefficients, double* offset);
+
+/* Get variable bounds */
+LIBPAPILO_EXPORT int papilo_get_col_bounds(const papilo_t* papilo, int col, double* lb, double* ub);
+LIBPAPILO_EXPORT int papilo_get_col_bounds_all(const papilo_t* papilo, double* lb, double* ub);
+
+/* Get constraint bounds */
+LIBPAPILO_EXPORT int papilo_get_row_bounds(const papilo_t* papilo, int row, double* lhs, double* rhs);
+LIBPAPILO_EXPORT int papilo_get_row_bounds_all(const papilo_t* papilo, double* lhs, double* rhs);
+
+/* Get matrix entries */
+LIBPAPILO_EXPORT int papilo_get_matrix(const papilo_t* papilo, int* rows, int* cols, double* values);
+
 /* Automated presolve API */
 LIBPAPILO_EXPORT papilo_result_t* papilo_presolve(papilo_t* papilo);
 LIBPAPILO_EXPORT void papilo_result_free(papilo_result_t* result);

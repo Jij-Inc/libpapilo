@@ -271,6 +271,143 @@ int papilo_build_problem(papilo_t* papilo) {
     }
 }
 
+int papilo_get_nrows(const papilo_t* papilo) {
+    if (!papilo || !papilo->problem || !papilo->problem_built) {
+        return -1;
+    }
+    return papilo->problem->getNRows();
+}
+
+int papilo_get_ncols(const papilo_t* papilo) {
+    if (!papilo || !papilo->problem || !papilo->problem_built) {
+        return -1;
+    }
+    return papilo->problem->getNCols();
+}
+
+int papilo_get_nnz(const papilo_t* papilo) {
+    if (!papilo || !papilo->problem || !papilo->problem_built) {
+        return -1;
+    }
+    return papilo->problem->getConstraintMatrix().getNnz();
+}
+
+int papilo_get_objective(const papilo_t* papilo, double* coefficients, double* offset) {
+    if (!papilo || !papilo->problem || !papilo->problem_built) {
+        return PAPILO_ERROR_INVALID_PARAMETER;
+    }
+    
+    const auto& obj = papilo->problem->getObjective();
+    if (coefficients) {
+        const auto& coeffs = obj.coefficients;
+        std::copy(coeffs.begin(), coeffs.end(), coefficients);
+    }
+    
+    if (offset) {
+        *offset = obj.offset;
+    }
+    
+    return PAPILO_OK;
+}
+
+int papilo_get_col_bounds(const papilo_t* papilo, int col, double* lb, double* ub) {
+    if (!papilo || !papilo->problem || !papilo->problem_built || col < 0 || col >= papilo->problem->getNCols()) {
+        return PAPILO_ERROR_INVALID_PARAMETER;
+    }
+    
+    const auto& lower = papilo->problem->getLowerBounds();
+    const auto& upper = papilo->problem->getUpperBounds();
+    
+    if (lb) {
+        *lb = lower[col];
+    }
+    
+    if (ub) {
+        *ub = upper[col];
+    }
+    
+    return PAPILO_OK;
+}
+
+int papilo_get_col_bounds_all(const papilo_t* papilo, double* lb, double* ub) {
+    if (!papilo || !papilo->problem || !papilo->problem_built || (!lb && !ub)) {
+        return PAPILO_ERROR_INVALID_PARAMETER;
+    }
+    
+    const auto& lower = papilo->problem->getLowerBounds();
+    const auto& upper = papilo->problem->getUpperBounds();
+    
+    if (lb) {
+        std::copy(lower.begin(), lower.end(), lb);
+    }
+    
+    if (ub) {
+        std::copy(upper.begin(), upper.end(), ub);
+    }
+    
+    return PAPILO_OK;
+}
+
+int papilo_get_row_bounds(const papilo_t* papilo, int row, double* lhs, double* rhs) {
+    if (!papilo || !papilo->problem || !papilo->problem_built || row < 0 || row >= papilo->problem->getNRows()) {
+        return PAPILO_ERROR_INVALID_PARAMETER;
+    }
+    
+    const auto& lhs_vec = papilo->problem->getConstraintMatrix().getLeftHandSides();
+    const auto& rhs_vec = papilo->problem->getConstraintMatrix().getRightHandSides();
+    
+    if (lhs) {
+        *lhs = lhs_vec[row];
+    }
+    
+    if (rhs) {
+        *rhs = rhs_vec[row];
+    }
+    
+    return PAPILO_OK;
+}
+
+int papilo_get_row_bounds_all(const papilo_t* papilo, double* lhs, double* rhs) {
+    if (!papilo || !papilo->problem || !papilo->problem_built || (!lhs && !rhs)) {
+        return PAPILO_ERROR_INVALID_PARAMETER;
+    }
+    
+    const auto& lhs_vec = papilo->problem->getConstraintMatrix().getLeftHandSides();
+    const auto& rhs_vec = papilo->problem->getConstraintMatrix().getRightHandSides();
+    
+    if (lhs) {
+        std::copy(lhs_vec.begin(), lhs_vec.end(), lhs);
+    }
+    
+    if (rhs) {
+        std::copy(rhs_vec.begin(), rhs_vec.end(), rhs);
+    }
+    
+    return PAPILO_OK;
+}
+
+int papilo_get_matrix(const papilo_t* papilo, int* rows, int* cols, double* values) {
+    if (!papilo || !papilo->problem || !papilo->problem_built || (!rows && !cols && !values)) {
+        return PAPILO_ERROR_INVALID_PARAMETER;
+    }
+    
+    const auto& matrix = papilo->problem->getConstraintMatrix();
+    
+    // Iterate through the sparse matrix structure
+    int idx = 0;
+    for (int col = 0; col < matrix.getNCols(); ++col) {
+        auto col_range = matrix.getColumnCoefficients(col);
+        for (int i = 0; i < col_range.getLength(); ++i) {
+            if (rows) rows[idx] = col_range.getIndices()[i];
+            if (cols) cols[idx] = col;
+            if (values) values[idx] = col_range.getValues()[i];
+            ++idx;
+        }
+    }
+    
+    return PAPILO_OK;
+}
+
 papilo_result_t* papilo_presolve(papilo_t* papilo) {
     if (!papilo || !papilo->problem || !papilo->problem_built) {
         return nullptr;
