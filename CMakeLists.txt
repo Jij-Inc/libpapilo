@@ -308,6 +308,25 @@ else()
    set(PAPILO_USE_STANDARD_HASHMAP 1)
 endif()
 
+# Create target `libpapilo` which is the shared library with C API.
+# Note: CMake target name is `libpapilo`, but the actual library file will be `libpapilo.dylib/so`
+# thanks to OUTPUT_NAME setting below. This is separate from the existing `papilo` INTERFACE target.
+add_library(libpapilo SHARED
+   src/libpapilo.cpp
+)
+target_link_libraries(libpapilo papilo-core)
+set_target_properties(libpapilo PROPERTIES
+   OUTPUT_NAME papilo  # Avoid "liblibpapilo" by setting explicit output name to "papilo"
+   PUBLIC_HEADER src/libpapilo.h
+   VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}
+   SOVERSION ${PAPILO_API_VERSION}
+)
+install(TARGETS libpapilo
+   EXPORT papilo-targets
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
 # Create target `papilo-core` which is the static library.
 add_library(papilo-core STATIC
    src/papilo/core/VariableDomains.cpp
@@ -575,7 +594,7 @@ if(INSTALL_TBB AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 # Export targets for the build-tree.
-export(TARGETS papilo papilo-core ${CLUSOL_TARGET} FILE "${CMAKE_BINARY_DIR}/papilo-targets.cmake")
+export(TARGETS papilo papilo-core libpapilo ${CLUSOL_TARGET} FILE "${CMAKE_BINARY_DIR}/papilo-targets.cmake")
 
 # Install the dependencies.
 if(EXISTS ${CMAKE_BINARY_DIR}/_deps)
