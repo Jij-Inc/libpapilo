@@ -409,6 +409,8 @@ if(BUILD_POSTSOLVE_TESTS)
         )
 endif()
 
+# Add libpapilo tests
+add_subdirectory(libpapilo)
 
 # solution quality is poor: current has on MIPLIB-Solutions 0744b8aedcc9d96c05b80f4c04119fb9b250e1f2
 #check/IP/miplib2017-benchmark/glass4.mps.gz\,solutions/glass4/1/glass4.sol
