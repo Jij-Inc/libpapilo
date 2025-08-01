@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 
-TEST_CASE("libpapilo problem construction API", "[construction]") {
+TEST_CASE("problem-creation", "[libpapilo]") {
     
     SECTION("basic problem construction") {
         // Create a simple LP problem:

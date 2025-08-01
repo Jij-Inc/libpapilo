@@ -1,18 +1,28 @@
 # Tests for libpapilo C API
 
+set(LIBPAPILO_TESTS
+    ProblemCreationTest.cpp
+    # Add more test files as needed
+)
+
+# Convert file name to kebab-case for test names
+# e.g. ProblemCreationTest.cpp -> problem-creation
+function(convert_to_test_name PASCAL_STRING OUTPUT_VAR)
+    get_filename_component(BASENAME ${PASCAL_STRING} NAME_WE)
+    string(REPLACE "Test" "" NO_SUFFIX ${BASENAME})
+    string(REGEX REPLACE "([a-z])([A-Z])" "\\1-\\2" KEBAB_INTERMEDIATE ${NO_SUFFIX})
+    string(TOLOWER ${KEBAB_INTERMEDIATE} KEBAB_RESULT)
+    set(${OUTPUT_VAR} ${KEBAB_RESULT} PARENT_SCOPE)
+endfunction()
+
 # Include Catch2 headers
 include_directories(${CMAKE_SOURCE_DIR}/src/papilo/external/catch)
-
-# Test executable for problem construction
-add_executable(test_problem_construction TestMain.cpp test_problem_construction.cpp)
-target_link_libraries(test_problem_construction libpapilo papilo)
+add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/papilo/external/catch/catch_amalgamated.cpp)
+target_link_libraries(libpapilo_unit_test libpapilo papilo)
 
 # Register tests with CTest
-add_test(NAME test_problem_construction COMMAND test_problem_construction)
-
-# Test executable for end-to-end test
-add_executable(test_libpapilo_e2e TestMain.cpp test_libpapilo_e2e.cpp)
-target_link_libraries(test_libpapilo_e2e libpapilo papilo)
-
-# Register tests with CTest
-add_test(NAME test_libpapilo_e2e COMMAND test_libpapilo_e2e)
+foreach(TEST_FILE ${LIBPAPILO_TESTS})
+    convert_to_test_name(${TEST_FILE} KEBAB_TEST_NAME)
+    add_test(NAME libpapilo-${KEBAB_TEST_NAME} COMMAND libpapilo_unit_test "${KEBAB_TEST_NAME}")
+    set_tests_properties(libpapilo-${KEBAB_TEST_NAME} PROPERTIES LABELS "libpapilo")
+endforeach()    
