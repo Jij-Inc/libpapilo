@@ -28,8 +28,45 @@ struct papilo_t
    }
 };
 
+/** Magic number to check the pointer passed from user is ours */
+const uint64_t LIBPAPILO_MAGIC_NUMBER = 0x506150494C4F; // 'PaPILO'
+
+struct libpapilo_problem_builder_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   ProblemBuilder<double> builder;
+};
+
+struct libpapilo_problem_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Problem<double> problem;
+};
+
 extern "C"
 {
+
+   libpapilo_problem_builder_t*
+   libpapilo_problem_builder_create()
+   {
+      try
+      {
+         return new libpapilo_problem_builder_t();
+      }
+      catch( ... )
+      {
+         return nullptr;
+      }
+   }
+
+   void
+   libpapilo_problem_builder_free( libpapilo_problem_builder_t* builder )
+   {
+      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
+      {
+         delete builder;
+      }
+   }
 
    papilo_t*
    papilo_create( void )

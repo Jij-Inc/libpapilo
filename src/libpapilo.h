@@ -40,7 +40,26 @@ extern "C"
 
    /* Opaque handle types */
    typedef struct papilo_t papilo_t;
-   typedef struct papilo_problem_t papilo_problem_t;
+   /** Opaque pointer for papilo::Problem<double> */
+   typedef struct libpapilo_problem_t libpapilo_problem_t;
+   /** Opaque pointer for papilo::ProblemBuilder<double> */
+   typedef struct libpapilo_problem_builder_t libpapilo_problem_builder_t;
+
+   LIBPAPILO_EXPORT
+   libpapilo_problem_builder_t*
+   libpapilo_problem_builder_create();
+
+   LIBPAPILO_EXPORT
+   void
+   libpapilo_problem_builder_free( libpapilo_problem_builder_t* builder );
+
+   void
+   libpapilo_problem_builder_reserve( libpapilo_problem_builder_t* builder,
+                                      int nrows, int ncols, int nnz );
+
+   LIBPAPILO_EXPORT
+   libpapilo_problem_t*
+   libpapilo_problem_builder_build( libpapilo_problem_builder_t* builder );
 
    /* Problem construction API */
    LIBPAPILO_EXPORT papilo_t*
