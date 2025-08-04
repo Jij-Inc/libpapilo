@@ -2,6 +2,7 @@
 
 set(LIBPAPILO_TESTS
     ProblemCreationTest.cpp
+    ProblemBuilderTest.cpp
     # Add more test files as needed
 )
 
