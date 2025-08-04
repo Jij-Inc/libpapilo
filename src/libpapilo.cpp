@@ -48,12 +48,16 @@ check_problem_builder_ptr( const libpapilo_problem_builder_t* builder )
 {
    if( builder == nullptr )
    {
-      std::cerr << "libpapilo error: libpapilo_problem_builder_t pointer is null" << std::endl;
+      std::cerr
+          << "libpapilo error: libpapilo_problem_builder_t pointer is null"
+          << std::endl;
       std::terminate();
    }
    if( builder->magic_number != LIBPAPILO_MAGIC_NUMBER )
    {
-      std::cerr << "libpapilo error: Invalid libpapilo_problem_builder_t pointer (magic number mismatch)" << std::endl;
+      std::cerr << "libpapilo error: Invalid libpapilo_problem_builder_t "
+                   "pointer (magic number mismatch)"
+                << std::endl;
       std::terminate();
    }
 }
@@ -63,12 +67,15 @@ check_problem_ptr( const libpapilo_problem_t* problem )
 {
    if( problem == nullptr )
    {
-      std::cerr << "libpapilo error: libpapilo_problem_t pointer is null" << std::endl;
+      std::cerr << "libpapilo error: libpapilo_problem_t pointer is null"
+                << std::endl;
       std::terminate();
    }
    if( problem->magic_number != LIBPAPILO_MAGIC_NUMBER )
    {
-      std::cerr << "libpapilo error: Invalid libpapilo_problem_t pointer (magic number mismatch)" << std::endl;
+      std::cerr << "libpapilo error: Invalid libpapilo_problem_t pointer "
+                   "(magic number mismatch)"
+                << std::endl;
       std::terminate();
    }
 }
@@ -85,12 +92,15 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Failed to create problem builder: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Failed to create problem builder: "
+                   << e.what() << std::endl;
          return nullptr;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Failed to create problem builder: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Failed to create problem builder: "
+                      "Unknown exception"
+                   << std::endl;
          return nullptr;
       }
    }
@@ -434,12 +444,15 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Failed to build problem: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Failed to build problem: " << e.what()
+                   << std::endl;
          return nullptr;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Failed to build problem: Unknown exception" << std::endl;
+         std::cerr
+             << "libpapilo error: Failed to build problem: Unknown exception"
+             << std::endl;
          return nullptr;
       }
    }
@@ -481,12 +494,15 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Failed to create papilo object: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Failed to create papilo object: "
+                   << e.what() << std::endl;
          return nullptr;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Failed to create papilo object: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Failed to create papilo object: "
+                      "Unknown exception"
+                   << std::endl;
          return nullptr;
       }
    }
@@ -549,12 +565,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -590,12 +608,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -626,12 +646,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -661,12 +683,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -697,12 +721,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -732,12 +758,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -768,12 +796,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -811,12 +841,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
@@ -853,12 +885,14 @@ extern "C"
       }
       catch( const std::exception& e )
       {
-         std::cerr << "libpapilo error: Operation failed: " << e.what() << std::endl;
+         std::cerr << "libpapilo error: Operation failed: " << e.what()
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
       catch( ... )
       {
-         std::cerr << "libpapilo error: Operation failed: Unknown exception" << std::endl;
+         std::cerr << "libpapilo error: Operation failed: Unknown exception"
+                   << std::endl;
          return PAPILO_ERROR_OUT_OF_MEMORY;
       }
    }
