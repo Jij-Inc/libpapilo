@@ -144,7 +144,7 @@ extern "C"
    int
    papilo_set_col_bounds( papilo_t* papilo, int col, double lb, double ub )
    {
-      if( !papilo || !papilo->builder || col < 0 || col >= papilo->ncols )
+      if( !papilo )
       {
          return PAPILO_ERROR_INVALID_PARAMETER;
       }
@@ -152,6 +152,11 @@ extern "C"
       if( papilo->problem_built )
       {
          return PAPILO_ERROR_INVALID_STATE;
+      }
+
+      if( !papilo->builder || col < 0 || col >= papilo->ncols )
+      {
+         return PAPILO_ERROR_INVALID_PARAMETER;
       }
 
       try
@@ -198,7 +203,7 @@ extern "C"
    int
    papilo_set_row_bounds( papilo_t* papilo, int row, double lhs, double rhs )
    {
-      if( !papilo || !papilo->builder || row < 0 || row >= papilo->nrows )
+      if( !papilo )
       {
          return PAPILO_ERROR_INVALID_PARAMETER;
       }
@@ -206,6 +211,11 @@ extern "C"
       if( papilo->problem_built )
       {
          return PAPILO_ERROR_INVALID_STATE;
+      }
+
+      if( !papilo->builder || row < 0 || row >= papilo->nrows )
+      {
+         return PAPILO_ERROR_INVALID_PARAMETER;
       }
 
       try
