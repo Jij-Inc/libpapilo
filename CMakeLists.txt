@@ -10,6 +10,8 @@ project(papilo VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_
 set(BOOST_MIN_VERSION 1.65)
 set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
+# Generate compile_commands.json for clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Each directory used during linking is appended to the rpath of installed libraries.
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
