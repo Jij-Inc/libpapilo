@@ -43,6 +43,36 @@ struct libpapilo_problem_t
    Problem<double> problem;
 };
 
+void
+check_problem_builder_ptr( const libpapilo_problem_builder_t* builder )
+{
+   if( builder == nullptr )
+   {
+      std::cerr << "libpapilo error: libpapilo_problem_builder_t pointer is null" << std::endl;
+      std::terminate();
+   }
+   if( builder->magic_number != LIBPAPILO_MAGIC_NUMBER )
+   {
+      std::cerr << "libpapilo error: Invalid libpapilo_problem_builder_t pointer (magic number mismatch)" << std::endl;
+      std::terminate();
+   }
+}
+
+void
+check_problem_ptr( const libpapilo_problem_t* problem )
+{
+   if( problem == nullptr )
+   {
+      std::cerr << "libpapilo error: libpapilo_problem_t pointer is null" << std::endl;
+      std::terminate();
+   }
+   if( problem->magic_number != LIBPAPILO_MAGIC_NUMBER )
+   {
+      std::cerr << "libpapilo error: Invalid libpapilo_problem_t pointer (magic number mismatch)" << std::endl;
+      std::terminate();
+   }
+}
+
 extern "C"
 {
 
@@ -62,77 +92,64 @@ extern "C"
    void
    libpapilo_problem_builder_free( libpapilo_problem_builder_t* builder )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         delete builder;
-      }
+      check_problem_builder_ptr( builder );
+      delete builder;
    }
 
    void
    libpapilo_problem_builder_reserve( libpapilo_problem_builder_t* builder,
                                       int nnz, int nrows, int ncols )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.reserve( nnz, nrows, ncols );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.reserve( nnz, nrows, ncols );
    }
 
    void
    libpapilo_problem_builder_set_num_cols( libpapilo_problem_builder_t* builder,
                                            int ncols )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setNumCols( ncols );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setNumCols( ncols );
    }
 
    void
    libpapilo_problem_builder_set_num_rows( libpapilo_problem_builder_t* builder,
                                            int nrows )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setNumRows( nrows );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setNumRows( nrows );
    }
 
    int
-   libpapilo_problem_builder_get_num_cols( const libpapilo_problem_builder_t* builder )
+   libpapilo_problem_builder_get_num_cols(
+       const libpapilo_problem_builder_t* builder )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         return builder->builder.getNumCols();
-      }
-      return -1;
+      check_problem_builder_ptr( builder );
+      return builder->builder.getNumCols();
    }
 
    int
-   libpapilo_problem_builder_get_num_rows( const libpapilo_problem_builder_t* builder )
+   libpapilo_problem_builder_get_num_rows(
+       const libpapilo_problem_builder_t* builder )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         return builder->builder.getNumRows();
-      }
-      return -1;
+      check_problem_builder_ptr( builder );
+      return builder->builder.getNumRows();
    }
 
    void
    libpapilo_problem_builder_set_obj( libpapilo_problem_builder_t* builder,
                                       int col, double val )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setObj( col, val );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setObj( col, val );
    }
 
    void
    libpapilo_problem_builder_set_obj_all( libpapilo_problem_builder_t* builder,
                                           const double* values )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && values )
+      check_problem_builder_ptr( builder );
+      if( values )
       {
          int ncols = builder->builder.getNumCols();
          Vec<double> vals( values, values + ncols );
@@ -141,39 +158,36 @@ extern "C"
    }
 
    void
-   libpapilo_problem_builder_set_obj_offset( libpapilo_problem_builder_t* builder,
-                                             double val )
+   libpapilo_problem_builder_set_obj_offset(
+       libpapilo_problem_builder_t* builder, double val )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setObjOffset( val );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setObjOffset( val );
    }
 
    void
    libpapilo_problem_builder_set_col_lb( libpapilo_problem_builder_t* builder,
                                          int col, double lb )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setColLb( col, lb );
-         if( std::isinf( lb ) && lb < 0 )
-            builder->builder.setColLbInf( col, true );
-         else
-            builder->builder.setColLbInf( col, false );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setColLb( col, lb );
+      if( std::isinf( lb ) && lb < 0 )
+         builder->builder.setColLbInf( col, true );
+      else
+         builder->builder.setColLbInf( col, false );
    }
 
    void
-   libpapilo_problem_builder_set_col_lb_all( libpapilo_problem_builder_t* builder,
-                                             const double* lbs )
+   libpapilo_problem_builder_set_col_lb_all(
+       libpapilo_problem_builder_t* builder, const double* lbs )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && lbs )
+      check_problem_builder_ptr( builder );
+      if( lbs )
       {
          int ncols = builder->builder.getNumCols();
          Vec<double> vals( lbs, lbs + ncols );
          builder->builder.setColLbAll( std::move( vals ) );
-         
+
          // Set infinity flags
          for( int i = 0; i < ncols; ++i )
          {
@@ -200,15 +214,16 @@ extern "C"
    }
 
    void
-   libpapilo_problem_builder_set_col_ub_all( libpapilo_problem_builder_t* builder,
-                                             const double* ubs )
+   libpapilo_problem_builder_set_col_ub_all(
+       libpapilo_problem_builder_t* builder, const double* ubs )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && ubs )
+      check_problem_builder_ptr( builder );
+      if( ubs )
       {
          int ncols = builder->builder.getNumCols();
          Vec<double> vals( ubs, ubs + ncols );
          builder->builder.setColUbAll( std::move( vals ) );
-         
+
          // Set infinity flags
          for( int i = 0; i < ncols; ++i )
          {
@@ -221,20 +236,19 @@ extern "C"
    }
 
    void
-   libpapilo_problem_builder_set_col_integral( libpapilo_problem_builder_t* builder,
-                                               int col, int is_integral )
+   libpapilo_problem_builder_set_col_integral(
+       libpapilo_problem_builder_t* builder, int col, int is_integral )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setColIntegral( col, is_integral != 0 );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setColIntegral( col, is_integral != 0 );
    }
 
    void
-   libpapilo_problem_builder_set_col_integral_all( libpapilo_problem_builder_t* builder,
-                                                   const uint8_t* is_integral )
+   libpapilo_problem_builder_set_col_integral_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_integral )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && is_integral )
+      check_problem_builder_ptr( builder );
+      if( is_integral )
       {
          int ncols = builder->builder.getNumCols();
          Vec<uint8_t> vals( is_integral, is_integral + ncols );
@@ -257,15 +271,16 @@ extern "C"
    }
 
    void
-   libpapilo_problem_builder_set_row_lhs_all( libpapilo_problem_builder_t* builder,
-                                              const double* lhs_vals )
+   libpapilo_problem_builder_set_row_lhs_all(
+       libpapilo_problem_builder_t* builder, const double* lhs_vals )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && lhs_vals )
+      check_problem_builder_ptr( builder );
+      if( lhs_vals )
       {
          int nrows = builder->builder.getNumRows();
          Vec<double> vals( lhs_vals, lhs_vals + nrows );
          builder->builder.setRowLhsAll( std::move( vals ) );
-         
+
          // Set infinity flags
          for( int i = 0; i < nrows; ++i )
          {
@@ -292,15 +307,16 @@ extern "C"
    }
 
    void
-   libpapilo_problem_builder_set_row_rhs_all( libpapilo_problem_builder_t* builder,
-                                              const double* rhs_vals )
+   libpapilo_problem_builder_set_row_rhs_all(
+       libpapilo_problem_builder_t* builder, const double* rhs_vals )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && rhs_vals )
+      check_problem_builder_ptr( builder );
+      if( rhs_vals )
       {
          int nrows = builder->builder.getNumRows();
          Vec<double> vals( rhs_vals, rhs_vals + nrows );
          builder->builder.setRowRhsAll( std::move( vals ) );
-         
+
          // Set infinity flags
          for( int i = 0; i < nrows; ++i )
          {
@@ -316,19 +332,20 @@ extern "C"
    libpapilo_problem_builder_add_entry( libpapilo_problem_builder_t* builder,
                                         int row, int col, double val )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && val != 0.0 )
+      check_problem_builder_ptr( builder );
+      if( val != 0.0 )
       {
          builder->builder.addEntry( row, col, val );
       }
    }
 
    void
-   libpapilo_problem_builder_add_entry_all( libpapilo_problem_builder_t* builder,
-                                            int count, const int* rows,
-                                            const int* cols, const double* vals )
+   libpapilo_problem_builder_add_entry_all(
+       libpapilo_problem_builder_t* builder, int count, const int* rows,
+       const int* cols, const double* vals )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER &&
-          rows && cols && vals && count > 0 )
+      check_problem_builder_ptr( builder );
+      if( rows && cols && vals && count > 0 )
       {
          Vec<std::tuple<int, int, double>> entries;
          entries.reserve( count );
@@ -342,34 +359,35 @@ extern "C"
    }
 
    void
-   libpapilo_problem_builder_add_row_entries( libpapilo_problem_builder_t* builder,
-                                              int row, int len, const int* cols,
-                                              const double* vals )
+   libpapilo_problem_builder_add_row_entries(
+       libpapilo_problem_builder_t* builder, int row, int len, const int* cols,
+       const double* vals )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER &&
-          cols && vals && len > 0 )
+      check_problem_builder_ptr( builder );
+      if( cols && vals && len > 0 )
       {
          builder->builder.addRowEntries( row, len, cols, vals );
       }
    }
 
    void
-   libpapilo_problem_builder_add_col_entries( libpapilo_problem_builder_t* builder,
-                                              int col, int len, const int* rows,
-                                              const double* vals )
+   libpapilo_problem_builder_add_col_entries(
+       libpapilo_problem_builder_t* builder, int col, int len, const int* rows,
+       const double* vals )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER &&
-          rows && vals && len > 0 )
+      check_problem_builder_ptr( builder );
+      if( rows && vals && len > 0 )
       {
          builder->builder.addColEntries( col, len, rows, vals );
       }
    }
 
    void
-   libpapilo_problem_builder_set_problem_name( libpapilo_problem_builder_t* builder,
-                                               const char* name )
+   libpapilo_problem_builder_set_problem_name(
+       libpapilo_problem_builder_t* builder, const char* name )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && name )
+      check_problem_builder_ptr( builder );
+      if( name )
       {
          builder->builder.setProblemName( name );
       }
@@ -379,7 +397,8 @@ extern "C"
    libpapilo_problem_builder_set_col_name( libpapilo_problem_builder_t* builder,
                                            int col, const char* name )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && name )
+      check_problem_builder_ptr( builder );
+      if( name )
       {
          builder->builder.setColName( col, name );
       }
@@ -389,7 +408,8 @@ extern "C"
    libpapilo_problem_builder_set_row_name( libpapilo_problem_builder_t* builder,
                                            int row, const char* name )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER && name )
+      check_problem_builder_ptr( builder );
+      if( name )
       {
          builder->builder.setRowName( row, name );
       }
@@ -398,8 +418,7 @@ extern "C"
    libpapilo_problem_t*
    libpapilo_problem_builder_build( libpapilo_problem_builder_t* builder )
    {
-      if( !builder || builder->magic_number != LIBPAPILO_MAGIC_NUMBER )
-         return nullptr;
+      check_problem_builder_ptr( builder );
 
       try
       {
@@ -416,40 +435,29 @@ extern "C"
    void
    libpapilo_problem_free( libpapilo_problem_t* problem )
    {
-      if( problem && problem->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         delete problem;
-      }
+      check_problem_ptr( problem );
+      delete problem;
    }
 
    int
    libpapilo_problem_get_nrows( const libpapilo_problem_t* problem )
    {
-      if( problem && problem->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         return problem->problem.getNRows();
-      }
-      return -1;
+      check_problem_ptr( problem );
+      return problem->problem.getNRows();
    }
 
    int
    libpapilo_problem_get_ncols( const libpapilo_problem_t* problem )
    {
-      if( problem && problem->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         return problem->problem.getNCols();
-      }
-      return -1;
+      check_problem_ptr( problem );
+      return problem->problem.getNCols();
    }
 
    int
    libpapilo_problem_get_nnz( const libpapilo_problem_t* problem )
    {
-      if( problem && problem->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         return problem->problem.getConstraintMatrix().getNnz();
-      }
-      return -1;
+      check_problem_ptr( problem );
+      return problem->problem.getConstraintMatrix().getNnz();
    }
 
    papilo_t*
