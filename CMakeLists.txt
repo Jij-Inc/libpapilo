@@ -131,6 +131,15 @@ if(GLOP)
    find_package(GLOP REQUIRED)
 endif()
 
+# Use sccache if available.
+find_program(SCCACHE sccache)
+if(SCCACHE)
+   message(STATUS "Using sccache: ${SCCACHE}")
+   set(CMAKE_CXX_COMPILER_LAUNCHER ${SCCACHE})
+else()
+   message(STATUS "sccache not found, not using sccache")
+endif()
+
 # Search for git.
 find_program(GIT git)
 if((GIT) AND (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git))
