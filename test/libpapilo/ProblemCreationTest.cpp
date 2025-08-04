@@ -179,41 +179,43 @@ TEST_CASE("problem-creation", "[libpapilo]") {
         double retrieved_offset;
         result = papilo_get_objective(papilo, retrieved_coeffs, &retrieved_offset);
         REQUIRE(result == PAPILO_OK);
-        REQUIRE(retrieved_coeffs[0] == Approx(2.0));
-        REQUIRE(retrieved_coeffs[1] == Approx(3.0));
-        REQUIRE(retrieved_offset == Approx(1.5));
+        REQUIRE(retrieved_coeffs[0] == Catch::Approx(2.0));
+        REQUIRE(retrieved_coeffs[1] == Catch::Approx(3.0));
+        REQUIRE(retrieved_offset == Catch::Approx(1.5));
         
         // Test variable bounds retrieval (all bounds)
         double retrieved_lb[2], retrieved_ub[2];
         result = papilo_get_col_bounds_all(papilo, retrieved_lb, retrieved_ub);
         REQUIRE(result == PAPILO_OK);
-        REQUIRE(retrieved_lb[0] == Approx(-1.0));
-        REQUIRE(retrieved_lb[1] == Approx(0.0));
-        REQUIRE(retrieved_ub[0] == Approx(5.0));
+        REQUIRE(retrieved_lb[0] == Catch::Approx(-1.0));
+        REQUIRE(retrieved_lb[1] == Catch::Approx(0.0));
+        REQUIRE(retrieved_ub[0] == Catch::Approx(5.0));
         REQUIRE(std::isinf(retrieved_ub[1]));
         
         // Test variable bounds retrieval (individual)
         double single_lb, single_ub;
         result = papilo_get_col_bounds(papilo, 0, &single_lb, &single_ub);
         REQUIRE(result == PAPILO_OK);
-        REQUIRE(single_lb == Approx(-1.0));
-        REQUIRE(single_ub == Approx(5.0));
+        REQUIRE(single_lb == Catch::Approx(-1.0));
+        REQUIRE(single_ub == Catch::Approx(5.0));
         
         // Test constraint bounds retrieval (all bounds)  
         double retrieved_lhs[2], retrieved_rhs[2];
         result = papilo_get_row_bounds_all(papilo, retrieved_lhs, retrieved_rhs);
         REQUIRE(result == PAPILO_OK);
-        REQUIRE(retrieved_lhs[0] == Approx(1.0));
-        REQUIRE(std::isinf(retrieved_lhs[1]) && retrieved_lhs[1] < 0);
+        REQUIRE(retrieved_lhs[0] == Catch::Approx(1.0));
+        REQUIRE(std::isinf(retrieved_lhs[1]));
+        REQUIRE(retrieved_lhs[1] < 0);
         REQUIRE(std::isinf(retrieved_rhs[0]));
-        REQUIRE(retrieved_rhs[1] == Approx(3.0));
+        REQUIRE(retrieved_rhs[1] == Catch::Approx(3.0));
         
         // Test constraint bounds retrieval (individual)
         double single_lhs, single_rhs;
         result = papilo_get_row_bounds(papilo, 1, &single_lhs, &single_rhs);
         REQUIRE(result == PAPILO_OK);
-        REQUIRE(std::isinf(single_lhs) && single_lhs < 0);
-        REQUIRE(single_rhs == Approx(3.0));
+        REQUIRE(std::isinf(single_lhs));
+        REQUIRE(single_lhs < 0);
+        REQUIRE(single_rhs == Catch::Approx(3.0));
         
         // Test matrix retrieval
         int retrieved_rows[4], retrieved_cols[4];
@@ -235,7 +237,7 @@ TEST_CASE("problem-creation", "[libpapilo]") {
         for (int i = 0; i < 4; ++i) {
             REQUIRE(std::get<0>(retrieved[i]) == std::get<0>(expected[i]));
             REQUIRE(std::get<1>(retrieved[i]) == std::get<1>(expected[i]));
-            REQUIRE(std::get<2>(retrieved[i]) == Approx(std::get<2>(expected[i])));
+            REQUIRE(std::get<2>(retrieved[i]) == Catch::Approx(std::get<2>(expected[i])));
         }
         
         papilo_free(papilo);
