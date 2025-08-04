@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 
-TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
+TEST_CASE( "problem-builder", "[libpapilo]" )
 {
    SECTION( "basic builder workflow" )
    {
@@ -14,7 +14,7 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
       // Set dimensions
       libpapilo_problem_builder_set_num_cols( builder, 3 );
       libpapilo_problem_builder_set_num_rows( builder, 2 );
-      
+
       // Verify dimensions
       REQUIRE( libpapilo_problem_builder_get_num_cols( builder ) == 3 );
       REQUIRE( libpapilo_problem_builder_get_num_rows( builder ) == 2 );
@@ -29,10 +29,10 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
       // x in [0, 10], y in [-inf, 5], z in [1, inf]
       libpapilo_problem_builder_set_col_lb( builder, 0, 0.0 );
       libpapilo_problem_builder_set_col_ub( builder, 0, 10.0 );
-      
+
       libpapilo_problem_builder_set_col_lb( builder, 1, -INFINITY );
       libpapilo_problem_builder_set_col_ub( builder, 1, 5.0 );
-      
+
       libpapilo_problem_builder_set_col_lb( builder, 2, 1.0 );
       libpapilo_problem_builder_set_col_ub( builder, 2, INFINITY );
 
@@ -41,7 +41,7 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
       // row 1: 2*x + y <= 10   (lhs = -inf, rhs = 10)
       libpapilo_problem_builder_set_row_lhs( builder, 0, 2.0 );
       libpapilo_problem_builder_set_row_rhs( builder, 0, INFINITY );
-      
+
       libpapilo_problem_builder_set_row_lhs( builder, 1, -INFINITY );
       libpapilo_problem_builder_set_row_rhs( builder, 1, 10.0 );
 
@@ -50,7 +50,7 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
       libpapilo_problem_builder_add_entry( builder, 0, 0, 1.0 );
       libpapilo_problem_builder_add_entry( builder, 0, 1, 1.0 );
       libpapilo_problem_builder_add_entry( builder, 0, 2, 1.0 );
-      
+
       // Row 1: 2*x + y
       libpapilo_problem_builder_add_entry( builder, 1, 0, 2.0 );
       libpapilo_problem_builder_add_entry( builder, 1, 1, 1.0 );
@@ -84,7 +84,7 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
 
       // Reserve space
       libpapilo_problem_builder_reserve( builder, 6, 2, 3 );
-      
+
       // Set dimensions
       libpapilo_problem_builder_set_num_cols( builder, 3 );
       libpapilo_problem_builder_set_num_rows( builder, 2 );
@@ -128,9 +128,12 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
       libpapilo_problem_builder_set_num_rows( builder, 1 );
 
       // Set some variables as integer
-      libpapilo_problem_builder_set_col_integral( builder, 0, 1 ); // x is integer
-      libpapilo_problem_builder_set_col_integral( builder, 1, 0 ); // y is continuous
-      libpapilo_problem_builder_set_col_integral( builder, 2, 1 ); // z is integer
+      libpapilo_problem_builder_set_col_integral( builder, 0,
+                                                  1 ); // x is integer
+      libpapilo_problem_builder_set_col_integral( builder, 1,
+                                                  0 ); // y is continuous
+      libpapilo_problem_builder_set_col_integral( builder, 2,
+                                                  1 ); // z is integer
 
       // Alternative: set all at once
       uint8_t integrality[] = { 1, 0, 1 };
@@ -154,12 +157,14 @@ TEST_CASE( "libpapilo-problem-builder", "[libpapilo]" )
       // Add entries for row 0: x + 2*y + 3*z
       int row0_cols[] = { 0, 1, 2 };
       double row0_vals[] = { 1.0, 2.0, 3.0 };
-      libpapilo_problem_builder_add_row_entries( builder, 0, 3, row0_cols, row0_vals );
+      libpapilo_problem_builder_add_row_entries( builder, 0, 3, row0_cols,
+                                                 row0_vals );
 
       // Add entries for column 3: appears in rows 1 and 2
       int col3_rows[] = { 1, 2 };
       double col3_vals[] = { 4.0, 5.0 };
-      libpapilo_problem_builder_add_col_entries( builder, 3, 2, col3_rows, col3_vals );
+      libpapilo_problem_builder_add_col_entries( builder, 3, 2, col3_rows,
+                                                 col3_vals );
 
       libpapilo_problem_t* problem = libpapilo_problem_builder_build( builder );
       REQUIRE( problem != nullptr );

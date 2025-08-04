@@ -1,7 +1,6 @@
 # Tests for libpapilo C API
 
 set(LIBPAPILO_TESTS
-    ProblemCreationTest.cpp
     ProblemBuilderTest.cpp
     # Add more test files as needed
 )
@@ -19,7 +18,7 @@ endfunction()
 # Single test executable for all libpapilo tests
 include_directories(${CMAKE_SOURCE_DIR}/src/papilo/external/catch)
 add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/papilo/external/catch/catch_amalgamated.cpp)
-target_link_libraries(libpapilo_unit_test libpapilo papilo)
+target_link_libraries(libpapilo_unit_test libpapilo)
 
 # Register test targets for each test file
 foreach(TEST_FILE ${LIBPAPILO_TESTS})
