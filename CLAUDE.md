@@ -156,38 +156,53 @@ The C API should mirror these patterns while providing C-compatible data structu
 
 The development will be phased to deliver a functional C API quickly, prioritizing the automated, general-purpose use case first.
 
-### Phase 1: Foundation and Automated Presolve API
-This phase focuses on creating a fully functional, high-level C API that leverages PaPILO's automated presolving capabilities.
+### Phase 1: Foundation and Problem Construction API ✅ **COMPLETED**
+This phase focuses on creating the C API infrastructure and problem construction capabilities.
 
--   [ ] **C API Scaffolding**:
-    -   [ ] Create `src/libpapilo.h` and `src/libpapilo.cpp` for the new C API.
-    -   Set up a `libpapilo` shared library target in CMake.
-    -   Create the `test/libpapilo/` directory and configure its CMake target.
--   [ ] **Problem Construction API**:
-    -   Implement C functions to build a problem instance from scratch, wrapping the C++ `ProblemBuilder` class.
-    -   Functions: `papilo_create()`, `papilo_free()`, `papilo_set_problem_data()`, etc.
-    -   Create `test/libpapilo/test_problem_construction.cpp` to verify this API.
+-   [x] **C API Scaffolding**:
+    -   [x] Create `src/libpapilo.h` and `src/libpapilo.cpp` for the new C API.
+    -   [x] Set up a `libpapilo` shared library target in CMake.
+    -   [x] Create the `test/libpapilo/` directory and configure its CMake target.
+-   [x] **Problem Construction API**:
+    -   [x] Implement C functions to build a problem instance from scratch, wrapping the C++ `ProblemBuilder` class.
+    -   [x] Functions: `papilo_create()`, `papilo_free()`, `papilo_set_problem_dimensions()`, `papilo_set_objective()`, `papilo_set_col_bounds()`, `papilo_add_entry()`, `papilo_build_problem()`, etc.
+    -   [x] Create comprehensive test coverage in `test/libpapilo/ProblemCreationTest.cpp`.
+-   [x] **Data Retrieval API**:
+    -   [x] Complete API for querying problem data after construction (`papilo_get_objective()`, `papilo_get_col_bounds()`, `papilo_get_matrix()`, etc.).
+    -   [x] Full test coverage for data retrieval in problem construction tests.
+
+**Status**: Phase 1 is functionally complete. The C API provides a solid foundation for problem construction and data access.
+
+### Phase 2: Presolving API Implementation 🚧 **FUTURE WORK**
+This phase will implement the core presolving functionality and APIs for automated presolving workflows.
+
 -   [ ] **Automated Presolve API**:
-    -   Implement a high-level `papilo_presolve()` C function.
-    -   This function will internally:
+    -   [ ] Implement a high-level `papilo_presolve()` C function.
+    -   [ ] This function will internally:
         1.  Create a `papilo::Presolve<double>` object.
         2.  Call `addDefaultPresolvers()` to load the standard presolving pipeline.
         3.  Execute the presolve by calling the `apply()` method.
-    -   Implement C functions to query the results (status, statistics, presolved problem).
--   [ ] **End-to-End Test**:
-    -   Create a test case in `test/libpapilo/` that mimics a test from `test/papilo/presolve/`.
-    -   The test will construct a problem, call `papilo_presolve()`, and verify that the outcome matches the original C++ test, ensuring the high-level API works as expected.
+    -   [ ] Implement C functions to query the results (`papilo_result_get_status()`, `papilo_result_get_nrows()`, etc.).
+-   [ ] **Presolve Result Management**:
+    -   [ ] Design and implement result structures for presolve outcomes.
+    -   [ ] Extract detailed presolve timing information.
+    -   [ ] Add APIs for accessing presolve statistics (reductions, fixed variables, etc.).
+    -   [ ] Expose fixed column counts and other detailed metrics from postsolve storage.
+-   [ ] **End-to-End Testing**:
+    -   [ ] Create comprehensive tests that verify the complete presolve workflow.
+    -   [ ] Test cases should construct problems, run presolve, and validate results.
+    -   [ ] Ensure presolve outcomes match expectations from C++ implementation.
 
-### Phase 2: Advanced Control and Customization API
-Once the core automated functionality is available and tested, this phase will introduce APIs for expert users who require fine-grained control.
+### Phase 3: Advanced Control and Customization API 🚧 **FUTURE WORK**
+Once automated presolving is available, this phase will introduce APIs for expert users who require fine-grained control.
 
 -   [ ] **Presolve Customization API**:
-    -   Design and implement C functions that allow users to configure the presolving process.
-    -   Implement `papilo_add_presolver(papilo_t* p, const char* name)` to allow adding individual presolvers by name. This will replace the call to `addDefaultPresolvers()`.
-    -   Expose key options from `PresolveOptions` through the C API (e.g., `papilo_set_int_param()`, `papilo_set_real_param()`).
--   [ ] **Test Migration**:
-    -   Begin migrating tests from `test/papilo/presolve/` one by one.
-    -   Each migrated test will use the new C API, first by using the customization API to add only the specific presolver being tested.
-    -   This ensures that each presolver is correctly wrapped and behaves as expected when called individually through the C API.
+    -   [ ] Design and implement C functions that allow users to configure the presolving process.
+    -   [ ] Implement `papilo_add_presolver(papilo_t* p, const char* name)` to allow adding individual presolvers by name.
+    -   [ ] Expose key options from `PresolveOptions` through the C API (e.g., `papilo_set_int_param()`, `papilo_set_real_param()`).
+-   [ ] **Individual Presolver Testing**:
+    -   [ ] Begin migrating tests from `test/papilo/presolve/` one by one.
+    -   [ ] Each migrated test will use the new C API with customization to test specific presolvers.
+    -   [ ] This ensures each presolver is correctly wrapped and behaves as expected through the C API.
 
-This revised plan ensures that a useful, automated presolving library is available after Phase 1, while paving a clear path for more advanced, customizable features in Phase 2.
+**Status**: Phase 1 provides the foundation for C API development. Phase 2 will deliver the core presolving functionality that makes this library useful for optimization workflows.
