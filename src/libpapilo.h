@@ -2,7 +2,8 @@
 #define LIBPAPILO_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stddef.h>
@@ -10,13 +11,13 @@ extern "C" {
 
 /* Export macros for shared library */
 #ifdef _WIN32
-  #ifdef libpapilo_EXPORTS
-    #define LIBPAPILO_EXPORT __declspec(dllexport)
-  #else
-    #define LIBPAPILO_EXPORT __declspec(dllimport)
-  #endif
+#ifdef libpapilo_EXPORTS
+#define LIBPAPILO_EXPORT __declspec( dllexport )
 #else
-  #define LIBPAPILO_EXPORT __attribute__((visibility("default")))
+#define LIBPAPILO_EXPORT __declspec( dllimport )
+#endif
+#else
+#define LIBPAPILO_EXPORT __attribute__( ( visibility( "default" ) ) )
 #endif
 
 /* Error codes */
@@ -26,85 +27,94 @@ extern "C" {
 #define PAPILO_ERROR_INVALID_STATE -3
 #define PAPILO_ERROR_SOLVER_FAILURE -4
 
-/* Presolve status codes */
-typedef enum {
-    PAPILO_STATUS_UNCHANGED = 0,
-    PAPILO_STATUS_REDUCED = 1,
-    PAPILO_STATUS_INFEASIBLE = 2,
-    PAPILO_STATUS_UNBOUNDED = 3,
-    PAPILO_STATUS_UNBOUNDED_OR_INFEASIBLE = 4,
-    PAPILO_STATUS_ERROR = -1
-} papilo_status_t;
+   /* Presolve status codes */
+   typedef enum
+   {
+      PAPILO_STATUS_UNCHANGED = 0,
+      PAPILO_STATUS_REDUCED = 1,
+      PAPILO_STATUS_INFEASIBLE = 2,
+      PAPILO_STATUS_UNBOUNDED = 3,
+      PAPILO_STATUS_UNBOUNDED_OR_INFEASIBLE = 4,
+      PAPILO_STATUS_ERROR = -1
+   } papilo_status_t;
 
-/* Opaque handle types */
-typedef struct papilo_t papilo_t;
-typedef struct papilo_problem_t papilo_problem_t;
-typedef struct papilo_result_t papilo_result_t;
+   /* Opaque handle types */
+   typedef struct papilo_t papilo_t;
+   typedef struct papilo_problem_t papilo_problem_t;
 
-/* Problem construction API */
-LIBPAPILO_EXPORT papilo_t* papilo_create(void);
-LIBPAPILO_EXPORT void papilo_free(papilo_t* papilo);
+   /* Problem construction API */
+   LIBPAPILO_EXPORT papilo_t*
+   papilo_create( void );
+   LIBPAPILO_EXPORT void
+   papilo_free( papilo_t* papilo );
 
-/* Set problem dimensions */
-LIBPAPILO_EXPORT int papilo_set_problem_dimensions(papilo_t* papilo, int nrows, int ncols, int nnz);
+   /* Set problem dimensions */
+   LIBPAPILO_EXPORT int
+   papilo_set_problem_dimensions( papilo_t* papilo, int nrows, int ncols,
+                                  int nnz );
 
-/* Set objective function */
-LIBPAPILO_EXPORT int papilo_set_objective(papilo_t* papilo, const double* coefficients, double offset);
+   /* Set objective function */
+   LIBPAPILO_EXPORT int
+   papilo_set_objective( papilo_t* papilo, const double* coefficients,
+                         double offset );
 
-/* Set variable bounds */
-LIBPAPILO_EXPORT int papilo_set_col_bounds(papilo_t* papilo, int col, double lb, double ub);
-LIBPAPILO_EXPORT int papilo_set_col_bounds_all(papilo_t* papilo, const double* lb, const double* ub);
+   /* Set variable bounds */
+   LIBPAPILO_EXPORT int
+   papilo_set_col_bounds( papilo_t* papilo, int col, double lb, double ub );
+   LIBPAPILO_EXPORT int
+   papilo_set_col_bounds_all( papilo_t* papilo, const double* lb,
+                              const double* ub );
 
-/* Set constraint bounds */
-LIBPAPILO_EXPORT int papilo_set_row_bounds(papilo_t* papilo, int row, double lhs, double rhs);
-LIBPAPILO_EXPORT int papilo_set_row_bounds_all(papilo_t* papilo, const double* lhs, const double* rhs);
+   /* Set constraint bounds */
+   LIBPAPILO_EXPORT int
+   papilo_set_row_bounds( papilo_t* papilo, int row, double lhs, double rhs );
+   LIBPAPILO_EXPORT int
+   papilo_set_row_bounds_all( papilo_t* papilo, const double* lhs,
+                              const double* rhs );
 
-/* Add matrix entries */
-LIBPAPILO_EXPORT int papilo_add_entry(papilo_t* papilo, int row, int col, double value);
-LIBPAPILO_EXPORT int papilo_add_entries(papilo_t* papilo, int count, const int* rows, const int* cols, const double* values);
+   /* Add matrix entries */
+   LIBPAPILO_EXPORT int
+   papilo_add_entry( papilo_t* papilo, int row, int col, double value );
+   LIBPAPILO_EXPORT int
+   papilo_add_entries( papilo_t* papilo, int count, const int* rows,
+                       const int* cols, const double* values );
 
-/* Build the problem (finalize construction) */
-LIBPAPILO_EXPORT int papilo_build_problem(papilo_t* papilo);
+   /* Build the problem (finalize construction) */
+   LIBPAPILO_EXPORT int
+   papilo_build_problem( papilo_t* papilo );
 
-/* Get problem dimensions */
-LIBPAPILO_EXPORT int papilo_get_nrows(const papilo_t* papilo);
-LIBPAPILO_EXPORT int papilo_get_ncols(const papilo_t* papilo);
-LIBPAPILO_EXPORT int papilo_get_nnz(const papilo_t* papilo);
+   /* Get problem dimensions */
+   LIBPAPILO_EXPORT int
+   papilo_get_nrows( const papilo_t* papilo );
+   LIBPAPILO_EXPORT int
+   papilo_get_ncols( const papilo_t* papilo );
+   LIBPAPILO_EXPORT int
+   papilo_get_nnz( const papilo_t* papilo );
 
-/* Get objective function */
-LIBPAPILO_EXPORT int papilo_get_objective(const papilo_t* papilo, double* coefficients, double* offset);
+   /* Get objective function */
+   LIBPAPILO_EXPORT int
+   papilo_get_objective( const papilo_t* papilo, double* coefficients,
+                         double* offset );
 
-/* Get variable bounds */
-LIBPAPILO_EXPORT int papilo_get_col_bounds(const papilo_t* papilo, int col, double* lb, double* ub);
-LIBPAPILO_EXPORT int papilo_get_col_bounds_all(const papilo_t* papilo, double* lb, double* ub);
+   /* Get variable bounds */
+   LIBPAPILO_EXPORT int
+   papilo_get_col_bounds( const papilo_t* papilo, int col, double* lb,
+                          double* ub );
+   LIBPAPILO_EXPORT int
+   papilo_get_col_bounds_all( const papilo_t* papilo, double* lb, double* ub );
 
-/* Get constraint bounds */
-LIBPAPILO_EXPORT int papilo_get_row_bounds(const papilo_t* papilo, int row, double* lhs, double* rhs);
-LIBPAPILO_EXPORT int papilo_get_row_bounds_all(const papilo_t* papilo, double* lhs, double* rhs);
+   /* Get constraint bounds */
+   LIBPAPILO_EXPORT int
+   papilo_get_row_bounds( const papilo_t* papilo, int row, double* lhs,
+                          double* rhs );
+   LIBPAPILO_EXPORT int
+   papilo_get_row_bounds_all( const papilo_t* papilo, double* lhs,
+                              double* rhs );
 
-/* Get matrix entries */
-LIBPAPILO_EXPORT int papilo_get_matrix(const papilo_t* papilo, int* rows, int* cols, double* values);
-
-/* Automated presolve API */
-LIBPAPILO_EXPORT papilo_result_t* papilo_presolve(papilo_t* papilo);
-LIBPAPILO_EXPORT void papilo_result_free(papilo_result_t* result);
-
-/* Query presolve results */
-LIBPAPILO_EXPORT papilo_status_t papilo_result_get_status(const papilo_result_t* result);
-LIBPAPILO_EXPORT int papilo_result_get_nrows(const papilo_result_t* result);
-LIBPAPILO_EXPORT int papilo_result_get_ncols(const papilo_result_t* result);
-LIBPAPILO_EXPORT int papilo_result_get_nnz(const papilo_result_t* result);
-
-/* Get presolved problem data */
-LIBPAPILO_EXPORT int papilo_result_get_objective(const papilo_result_t* result, double* coefficients, double* offset);
-LIBPAPILO_EXPORT int papilo_result_get_col_bounds(const papilo_result_t* result, double* lb, double* ub);
-LIBPAPILO_EXPORT int papilo_result_get_row_bounds(const papilo_result_t* result, double* lhs, double* rhs);
-LIBPAPILO_EXPORT int papilo_result_get_matrix(const papilo_result_t* result, int* rows, int* cols, double* values);
-
-/* Get statistics */
-LIBPAPILO_EXPORT int papilo_result_get_num_deletions(const papilo_result_t* result, int* deleted_cols, int* deleted_rows);
-LIBPAPILO_EXPORT int papilo_result_get_num_fixings(const papilo_result_t* result, int* fixed_cols);
-LIBPAPILO_EXPORT double papilo_result_get_presolve_time(const papilo_result_t* result);
+   /* Get matrix entries */
+   LIBPAPILO_EXPORT int
+   papilo_get_matrix( const papilo_t* papilo, int* rows, int* cols,
+                      double* values );
 
 #ifdef __cplusplus
 }
