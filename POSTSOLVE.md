@@ -1,43 +1,36 @@
 # PaPILO Postsolve Specification (Complete & Detailed)
 
-This document provides a complete specification of the Postsolve process in PaPILO. It is intended for developers who may need to re-implement the Postsolve logic outside of the C++ library, for example, in a different programming language using the C API's data access functions.
+This document provides a complete, implementation-level specification of the Postsolve process in PaPILO. It is intended for developers who need to understand or re-implement the Postsolve logic, for example, when using the C API.
 
 **Primary Implementation File**: `src/papilo/core/postsolve/Postsolve.hpp`
 
 ## 1. Core Concept
 
-Postsolve is the process of transforming a solution from the reduced (presolved) problem space back into the original problem space.
+Postsolve is the process of transforming a solution from the reduced (presolved) problem space back into the original problem space. The entire process is **data-driven**, relying on a log of "reductions" generated during the presolve phase. These reductions are stored in a LIFO (Last-In, First-Out) manner in the `PostsolveStorage` object. The Postsolve process simply reads this log in reverse order and applies the inverse of each reduction.
 
-The entire process is **data-driven**. It relies on a log of "reductions" that were generated during the presolve phase. These reductions are stored in a LIFO (Last-In, First-Out) manner. The Postsolve process simply reads this log in reverse order and applies the inverse of each reduction.
-
-**Implementation Reference**: The main entry point is the `Postsolve<REAL>::undo(...)` method in `src/papilo/core/postsolve/Postsolve.hpp`. This method contains the main `for` loop that iterates backwards and a `switch` statement that dispatches to the appropriate logic for each `ReductionType`.
+**Implementation Reference**: The main entry point is the `Postsolve<REAL>::undo(...)` method. This method contains the main `for` loop that iterates backwards through the reductions and a `switch` statement that dispatches to the appropriate logic for each `ReductionType`.
 
 ## 2. Data Structures
 
-An external implementation must access the following data from the `PostsolveStorage` object:
+An external implementation must access the following data from the `PostsolveStorage` object (defined in `src/papilo/core/postsolve/PostsolveStorage.hpp`):
 
--   `types`: An array of `ReductionType` enums.
--   `indices`, `values`, `start`: Arrays storing the detailed data for each reduction.
--   `origcol_mapping`: Map from reduced column indices to original column indices.
-
-These data structures are defined in `src/papilo/core/postsolve/PostsolveStorage.hpp`.
+-   `types`: An array of `ReductionType` enums identifying each change.
+-   `indices`, `values`, `start`: These arrays store the detailed data for each reduction in a compressed format. `start[i]` gives the starting index for the i-th reduction's data within the `indices` and `values` arrays.
+-   `origcol_mapping`, `origrow_mapping`: Maps from the final reduced problem's indices back to the original problem's indices.
 
 ## 3. The Postsolve Algorithm
 
-The algorithm proceeds as follows:
+The algorithm, found in `Postsolve::undo`, proceeds as follows:
 
 1.  **Initialization**:
-    -   Create an `original_solution` array of size `nColsOriginal`, initialized to zero.
-    -   Create `original_reduced_costs` and `original_dual` arrays if dual values are needed.
-    -   **Implementation Reference**: `Postsolve<REAL>::copy_from_reduced_to_original(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
-2.  **Initial Solution Mapping**:
-    -   Copy the solution values from the `reduced_solution` to the `original_solution` using the `origcol_mapping`.
-3.  **Iterate Through Reductions (in Reverse)**:
-    -   Loop `i` from `types.size() - 1` down to `0`.
-    -   For each `i`, get the `ReductionType` as `type = types[i]`.
-    -   Get the data slice for this reduction using `first = start[i]` and `last = start[i+1]`.
-    -   Execute the undo operation corresponding to `type`.
-    -   **Implementation Reference**: The main `for` loop and `switch` statement within `Postsolve<REAL>::undo(...)`.
+    -   An `originalSolution` object is created.
+    -   The solution from the reduced problem is copied into the `originalSolution` using the `origcol_mapping` and `origrow_mapping` to place values in their correct original slots. (See: `Postsolve::copy_from_reduced_to_original`).
+    -   A `BoundStorage` helper object is created. This is critical for dual postsolve, as it tracks the current state of all variable and row bounds as they are progressively restored to their original values.
+
+2.  **Iterate Through Reductions (in Reverse)**:
+    -   The code loops from `i = types.size() - 1` down to `0`.
+    -   For each `i`, it reads the `ReductionType` and its associated data.
+    -   It executes the corresponding undo operation via a `switch` statement.
 
 ## 4. Undo Operations by `ReductionType`
 
@@ -46,153 +39,83 @@ This section details the undo operation for every `ReductionType` defined in `sr
 ---
 
 #### `kFixedCol`
-
--   **Purpose**: A variable was fixed to a constant value during presolve.
--   **Undo Action**:
-    -   **Primal**: Sets the solution value for the fixed variable. `original_solution[col] = val`.
-    -   **Dual**: Calculates the reduced cost of the fixed variable using its original objective coefficient and the dual values of the rows it participated in. `reduced_cost = c_j - sum(a_ij * y_i)`.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kFixedCol:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: `Postsolve<REAL>::apply_fix_var_in_original_solution(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
+-   **Presolve Action**: A variable was fixed to a constant value.
+-   **Undo Logic (`apply_fix_var_in_original_solution`)**:
+    -   **Primal**: Sets the solution value for the fixed variable: `original_solution.primal[col] = val`.
+    -   **Dual**: Calculates the reduced cost of the fixed variable using its original objective coefficient and the dual values of the rows it participated in (which were stored with the reduction): `reduced_cost = c_j - sum(a_ij * y_i)`.
 
 ---
 
 #### `kFixedInfCol`
-
--   **Purpose**: A variable, determined to be unbounded, was fixed.
--   **Undo Action**:
-    -   **Primal**: Calculates the variable's primal value based on the most binding constraint it appears in, given the current (partially postsolved) solution values of other variables.
-    -   **Dual**: Calculates the reduced cost (which should be zero if correctly identified as unbounded).
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kFixedInfCol:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: `Postsolve<REAL>::apply_fix_infinity_variable_in_original_solution(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
+-   **Presolve Action**: A variable with an infinite bound was fixed (e.g., a variable that could be increased indefinitely without violating constraints was fixed to 0 if its objective was 0).
+-   **Undo Logic (`apply_fix_infinity_variable_in_original_solution`)**:
+    -   **Primal**: Calculates the variable's primal value. This is done by checking all the constraints it was involved in (which were saved) and determining which one is most binding, given the current (partially postsolved) solution values of other variables.
+    -   **Dual**: Calculates the reduced cost, which should be zero if the variable was correctly identified as unbounded.
 
 ---
 
 #### `kParallelCol`
-
--   **Purpose**: Two parallel columns (`col1`, `col2`) were merged into a single representative column (`y`).
--   **Undo Action**:
-    -   **Primal**: Disaggregates the solution value of the merged column (`y_sol`) back into `col1_sol` and `col2_sol`, ensuring `y_sol = col2_sol + scale * col1_sol` and that both values respect their original bounds. This is a small feasibility problem.
-    -   **Dual**: Disaggregates the reduced costs based on the same relationship.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kParallelCol:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: `Postsolve<REAL>::apply_parallel_col_to_original_solution(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
+-   **Presolve Action**: Two parallel columns (`col1`, `col2`) were merged into a single representative column (`y`), such that `y = col2 + scale * col1`.
+-   **Undo Logic (`apply_parallel_col_to_original_solution`)**:
+    -   **Primal**: Disaggregates the solution value of the merged column (`y_sol`) back into `col1_sol` and `col2_sol`. This is a small subproblem to find feasible values for `col1` and `col2` that satisfy the aggregation equation and their original bounds. The logic typically sets one variable to its bound and calculates the other.
+    -   **Dual**: Disaggregates the reduced costs based on the same linear relationship.
 
 ---
 
 #### `kSubstitutedColWithDual`
-
--   **Purpose**: A variable was eliminated via substitution, with full information stored to reconstruct dual values.
--   **Undo Action**:
-    -   **Primal**: Reconstructs the variable's value by solving the stored equation (`sum(a_i * x_i) = rhs`) for the substituted variable, using the known values of the other `x_i`.
-    -   **Dual**: A complex operation that reconstructs the dual values associated with the substitution, potentially updating both row duals and variable reduced costs based on the original variable bounds and equation.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kSubstitutedColWithDual:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: `Postsolve<REAL>::apply_substituted_column_to_original_solution(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
+-   **Presolve Action**: A variable was eliminated via substitution using an equality constraint, with full information stored to reconstruct dual values.
+-   **Undo Logic (`apply_substituted_column_to_original_solution`)**:
+    -   **Primal**: Reconstructs the variable's value by solving the stored equation (`sum(a_i * x_i) = rhs`) for the substituted variable, using the known values of the other variables.
+    -   **Dual**: This is a complex operation. Depending on whether the reconstructed primal value is at one of its original bounds, the logic either updates the dual value of the row used for substitution or the reduced cost of the substituted variable itself, ensuring dual feasibility is maintained.
 
 ---
 
 #### `kSubstitutedCol`
-
--   **Purpose**: A variable was eliminated via substitution. This is a simpler, primal-only version.
--   **Undo Action**:
+-   **Presolve Action**: A variable was eliminated via substitution. This is a simpler, primal-only version.
+-   **Undo Logic** (implemented directly in the `switch` statement):
     -   **Primal**: Calculates the variable's value by evaluating the stored linear expression. The logic is identical to the primal part of `kSubstitutedColWithDual`.
     -   **Dual**: None.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kSubstitutedCol:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: Implemented directly within the `case` block in `src/papilo/core/postsolve/Postsolve.hpp`.
 
 ---
 
 #### `kVarBoundChange`
-
--   **Purpose**: The bound of a variable was tightened.
--   **Undo Action**:
+-   **Presolve Action**: The bound of a variable was tightened.
+-   **Undo Logic (`apply_var_bound_change_forced_by_column_in_original_solution`)**:
     -   **Primal**: None. The primal solution value is not changed by this step.
-    -   **Dual**: Restores the original, looser bound in a temporary `BoundStorage` object (defined in `src/papilo/core/postsolve/BoundStorage.hpp`). This is critical context for subsequent dual calculations, as the tightness of a bound affects dual values and basis statuses.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kVarBoundChange:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: `Postsolve<REAL>::apply_var_bound_change_forced_by_column_in_original_solution(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
+    -   **Dual**: This is a critical step. The original, looser bound is restored in the `BoundStorage` object. If the solution value of the variable was on the tightened bound, this undo operation may trigger a recalculation of dual values for the row that originally caused the bound change.
 
 ---
 
 #### `kRedundantRow`
-
--   **Purpose**: A constraint was found to be redundant and was removed.
--   **Undo Action**:
+-   **Presolve Action**: A constraint was found to be redundant and was removed.
+-   **Undo Logic**:
     -   **Primal**: None.
-    -   **Dual**: Re-establishes the row's existence in the basis representation, typically by marking its `rowBasisStatus` as `BASIC`. Its dual value is assumed to be zero unless other reductions modify it.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kRedundantRow:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: A few lines of code directly within the `case` block in `src/papilo/core/postsolve/Postsolve.hpp`.
+    -   **Dual**: Re-establishes the row's existence. Its dual value is set to zero, and if basis information is tracked, its `rowBasisStatus` is set to `BASIC`.
 
 ---
 
 #### `kRowBoundChange`
-
--   **Purpose**: The bound (LHS or RHS) of a constraint was changed.
--   **Undo Action**:
+-   **Presolve Action**: The bound (LHS or RHS) of a constraint was changed.
+-   **Undo Logic**:
     -   **Primal**: None.
-    -   **Dual**: Restores the original row bound in the `BoundStorage` (defined in `src/papilo/core/postsolve/BoundStorage.hpp`) and may update the row's basis status (e.g., from `ON_LOWER` to `BASIC`).
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kRowBoundChange:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: Implemented directly within the `case` block in `src/papilo/core/postsolve/Postsolve.hpp`.
+    -   **Dual**: Restores the original row bound in the `BoundStorage`. This can also trigger an update to the row's basis status (e.g., from `ON_LOWER` to `BASIC`).
 
 ---
 
 #### `kRowBoundChangeForcedByRow`
-
--   **Purpose**: A row's bound was changed as a direct consequence of another row's modification.
--   **Undo Action**:
+-   **Presolve Action**: A row's bound was changed as a direct consequence of another row's modification (e.g., in parallel row reductions).
+-   **Undo Logic (`apply_row_bound_change_to_original_solution`)**:
     -   **Primal**: None.
     -   **Dual**: A key dual operation that transfers dual values. If row `R1`'s bound change was forced by row `R2`, the dual value of `R1` is used to calculate the dual value of `R2` using a stored scaling factor.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kRowBoundChangeForcedByRow:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: `Postsolve<REAL>::apply_row_bound_change_to_original_solution(...)` in `src/papilo/core/postsolve/Postsolve.hpp`.
 
 ---
 
-#### `kReasonForRowBoundChangeForcedByRow`
+### Auxiliary Reduction Types
 
--   **Purpose**: **Auxiliary record**. Stores the "reason" (the other row and a scaling factor) for a `kRowBoundChangeForcedByRow` reduction.
--   **Undo Action**: None. This record is data read by the `kRowBoundChangeForcedByRow` undo logic, which immediately precedes it in the reverse loop.
--   **Implementation**: The `case` statement is empty.
+Several `ReductionType`s exist not to be undone directly, but to provide data for other undo operations. They are processed in the loop, but their `case` statements are often empty as their data is consumed by a subsequent (earlier in the log) reduction's undo logic.
 
----
-
-#### `kSaveRow`
-
--   **Purpose**: **Auxiliary record**. Saves the state of a row before modification. The saved row data structure is defined in `src/papilo/core/postsolve/SavedRow.hpp`.
--   **Undo Action**: None. This record is data read by other undo operations.
--   **Implementation**: The `case` statement is empty.
-
----
-
-#### `kReducedBoundsCost`
-
--   **Purpose**: **Auxiliary record**. Stores the final bounds and objective coefficients of the fully reduced problem. It is one of the first records created (and thus last processed in postsolve).
--   **Undo Action**: Populates an internal `BoundStorage` helper object (defined in `src/papilo/core/postsolve/BoundStorage.hpp`) with the final reduced bounds. This provides the necessary starting context for all subsequent dual calculations.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kReducedBoundsCost:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: Implemented directly within the `case` block in `src/papilo/core/postsolve/Postsolve.hpp`.
-
----
-
-#### `kColumnDualValue` / `kRowDualValue`
-
--   **Purpose**: A dual value (reduced cost for a column, or shadow price for a row) was determined directly during presolve.
--   **Undo Action**: Directly sets the corresponding value in the solution's `reducedCosts` or `dual` array.
--   **Implementation**:
-    -   **Dispatch**: `case ReductionType::kColumnDualValue:` and `case ReductionType::kRowDualValue:` in `Postsolve::undo` (src/papilo/core/postsolve/Postsolve.hpp).
-    -   **Logic**: A trivial assignment inside the `case` blocks in `src/papilo/core/postsolve/Postsolve.hpp`.
-
----
-
-#### `kCoefficientChange`
-
--   **Purpose**: A single coefficient in the constraint matrix was changed.
--   **Undo Action**:
-    -   **Primal**: None.
-    -   **Dual**: None directly. This is auxiliary information that could be used by other dual calculations, but in the current implementation, it does not trigger a direct action.
--   **Implementation**: The `case` statement is empty or contains a `continue`.
+-   **`kReasonForRowBoundChangeForcedByRow`**: Stores the "reason" (the other row and a scaling factor) for a `kRowBoundChangeForcedByRow` reduction. It is read by the `kRowBoundChangeForcedByRow` undo logic.
+-   **`kSaveRow`**: Stores the state of a row before modification. This data is used by operations like `kVarBoundChange` to know which row was responsible for a bound change and what its coefficients were.
+-   **`kReducedBoundsCost`**: This is one of the last records processed. It populates the `BoundStorage` helper object with the final bounds and objective coefficients of the fully reduced problem, providing the necessary starting context for all subsequent dual calculations.
+-   **`kColumnDualValue` / `kRowDualValue`**: Directly sets a dual value (reduced cost for a column, or shadow price for a row) that was determined during presolve.
+-   **`kCoefficientChange`**: Records a change to a single matrix coefficient. It has no direct undo action but provides context for other dual calculations.
