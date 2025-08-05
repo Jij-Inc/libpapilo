@@ -50,13 +50,29 @@ struct libpapilo_statistics_t
 struct libpapilo_postsolve_storage_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
-   std::unique_ptr<PostsolveStorage<double>> postsolve;
+   PostsolveStorage<double> postsolve;
+
+   // Constructor to properly initialize postsolve
+   libpapilo_postsolve_storage_t( PostsolveStorage<double>&& ps )
+       : postsolve( std::move( ps ) )
+   {
+   }
 };
 
 struct libpapilo_problem_update_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
-   std::unique_ptr<ProblemUpdate<double>> update;
+   ProblemUpdate<double> update;
+
+   // Constructor to properly initialize ProblemUpdate with references
+   libpapilo_problem_update_t( Problem<double>& problem,
+                               PostsolveStorage<double>& postsolve,
+                               Statistics& stats,
+                               const PresolveOptions& options,
+                               const Num<double>& num, Message& msg )
+       : update( problem, postsolve, stats, options, num, msg )
+   {
+   }
 };
 
 struct libpapilo_reductions_t
@@ -831,11 +847,9 @@ extern "C"
              // Execute presolve
              PresolveResult<double> result = presolve.apply( problem->problem );
 
-             // Create postsolve storage
-             auto* postsolve_storage = new libpapilo_postsolve_storage_t();
-             postsolve_storage->postsolve =
-                 std::make_unique<PostsolveStorage<double>>(
-                     std::move( result.postsolve ) );
+             // Create postsolve storage using constructor
+             auto* postsolve_storage = new libpapilo_postsolve_storage_t(
+                 std::move( result.postsolve ) );
 
              // Create reductions - we need to extract them from the postsolve
              // storage
