@@ -10,6 +10,8 @@ project(papilo VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_
 set(BOOST_MIN_VERSION 1.65)
 set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
+# Generate compile_commands.json for clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Each directory used during linking is appended to the rpath of installed libraries.
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -127,6 +129,15 @@ endif()
 # Search for GLOP.
 if(GLOP)
    find_package(GLOP REQUIRED)
+endif()
+
+# Use sccache if available.
+find_program(SCCACHE sccache)
+if(SCCACHE)
+   message(STATUS "Using sccache: ${SCCACHE}")
+   set(CMAKE_CXX_COMPILER_LAUNCHER ${SCCACHE})
+else()
+   message(STATUS "sccache not found, not using sccache")
 endif()
 
 # Search for git.
@@ -307,6 +318,25 @@ if(PAPILO_BYTELL_HASHMAP_WORKS)
 else()
    set(PAPILO_USE_STANDARD_HASHMAP 1)
 endif()
+
+# Create target `libpapilo` which is the shared library with C API.
+# Note: CMake target name is `libpapilo`, but the actual library file will be `libpapilo.dylib/so`
+# thanks to OUTPUT_NAME setting below. This is separate from the existing `papilo` INTERFACE target.
+add_library(libpapilo SHARED
+   src/libpapilo.cpp
+)
+target_link_libraries(libpapilo papilo-core)
+set_target_properties(libpapilo PROPERTIES
+   OUTPUT_NAME papilo  # Avoid "liblibpapilo" by setting explicit output name to "papilo"
+   PUBLIC_HEADER src/libpapilo.h
+   VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}
+   SOVERSION ${PAPILO_API_VERSION}
+)
+install(TARGETS libpapilo
+   EXPORT papilo-targets
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
 # Create target `papilo-core` which is the static library.
 add_library(papilo-core STATIC
@@ -575,7 +605,7 @@ if(INSTALL_TBB AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
 endif()
 
 # Export targets for the build-tree.
-export(TARGETS papilo papilo-core ${CLUSOL_TARGET} FILE "${CMAKE_BINARY_DIR}/papilo-targets.cmake")
+export(TARGETS papilo papilo-core libpapilo ${CLUSOL_TARGET} FILE "${CMAKE_BINARY_DIR}/papilo-targets.cmake")
 
 # Install the dependencies.
 if(EXISTS ${CMAKE_BINARY_DIR}/_deps)
