@@ -27,41 +27,59 @@ struct libpapilo_problem_t
    Problem<double> problem;
 };
 
+/** Custom assert also working on release build */
 void
-check_problem_builder_ptr( const libpapilo_problem_builder_t* builder )
+custom_assert( bool condition, const char* message )
 {
-   if( builder == nullptr )
+   if( !condition )
    {
-      std::cerr
-          << "libpapilo error: libpapilo_problem_builder_t pointer is null"
-          << std::endl;
-      std::terminate();
-   }
-   if( builder->magic_number != LIBPAPILO_MAGIC_NUMBER )
-   {
-      std::cerr << "libpapilo error: Invalid libpapilo_problem_builder_t "
-                   "pointer (magic number mismatch)"
-                << std::endl;
+      std::cerr << "libpapilo error: " << message << std::endl;
       std::terminate();
    }
 }
 
+/** Check the pointer passed from user code is valid. */
+void
+check_problem_builder_ptr( const libpapilo_problem_builder_t* builder )
+{
+   custom_assert( builder != nullptr,
+                  "libpapilo_problem_builder_t pointer is null" );
+   custom_assert(
+       builder->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_problem_builder_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
 void
 check_problem_ptr( const libpapilo_problem_t* problem )
 {
-   if( problem == nullptr )
+   custom_assert( problem != nullptr, "libpapilo_problem_t pointer is null" );
+   custom_assert(
+       problem->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_problem_t pointer (magic number mismatch)" );
+}
+
+template <typename Func>
+auto
+check_run( Func func, const char* message )
+{
+   try
    {
-      std::cerr << "libpapilo error: libpapilo_problem_t pointer is null"
-                << std::endl;
-      std::terminate();
+      return func();
    }
-   if( problem->magic_number != LIBPAPILO_MAGIC_NUMBER )
+   catch( const std::exception& e )
    {
-      std::cerr << "libpapilo error: Invalid libpapilo_problem_t pointer "
-                   "(magic number mismatch)"
+      std::cerr << "libpapilo error: " << message << ": " << e.what()
                 << std::endl;
-      std::terminate();
    }
+   catch( ... )
+   {
+      std::cerr << "libpapilo error: " << message << ": Unknown exception"
+                << std::endl;
+   }
+   // For now, we just terminate the process on exception.
+   // This strict strategy would be not ideal, but this keeps the API simple.
+   std::terminate();
 }
 
 extern "C"
@@ -70,23 +88,8 @@ extern "C"
    libpapilo_problem_builder_t*
    libpapilo_problem_builder_create()
    {
-      try
-      {
-         return new libpapilo_problem_builder_t();
-      }
-      catch( const std::exception& e )
-      {
-         std::cerr << "libpapilo error: Failed to create problem builder: "
-                   << e.what() << std::endl;
-         return nullptr;
-      }
-      catch( ... )
-      {
-         std::cerr << "libpapilo error: Failed to create problem builder: "
-                      "Unknown exception"
-                   << std::endl;
-         return nullptr;
-      }
+      return check_run( []() { return new libpapilo_problem_builder_t(); },
+                        "Failed to create problem builder" );
    }
 
    void
@@ -149,12 +152,12 @@ extern "C"
                                           const double* values )
    {
       check_problem_builder_ptr( builder );
-      if( values )
-      {
-         int ncols = builder->builder.getNumCols();
-         Vec<double> vals( values, values + ncols );
-         builder->builder.setObjAll( std::move( vals ) );
-      }
+      custom_assert(
+          values != nullptr,
+          "libpapilo_problem_builder_set_obj_all: values pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<double> vals( values, values + ncols );
+      builder->builder.setObjAll( std::move( vals ) );
    }
 
    void
@@ -182,20 +185,19 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* lbs )
    {
       check_problem_builder_ptr( builder );
-      if( lbs )
-      {
-         int ncols = builder->builder.getNumCols();
-         Vec<double> vals( lbs, lbs + ncols );
-         builder->builder.setColLbAll( std::move( vals ) );
+      custom_assert( lbs != nullptr,
+                     "libpapilo_problem_builder_set_col_lb_all: lbs pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<double> vals( lbs, lbs + ncols );
+      builder->builder.setColLbAll( std::move( vals ) );
 
-         // Set infinity flags
-         for( int i = 0; i < ncols; ++i )
-         {
-            if( std::isinf( lbs[i] ) && lbs[i] < 0 )
-               builder->builder.setColLbInf( i, true );
-            else
-               builder->builder.setColLbInf( i, false );
-         }
+      // Set infinity flags
+      for( int i = 0; i < ncols; ++i )
+      {
+         if( std::isinf( lbs[i] ) && lbs[i] < 0 )
+            builder->builder.setColLbInf( i, true );
+         else
+            builder->builder.setColLbInf( i, false );
       }
    }
 
@@ -203,14 +205,12 @@ extern "C"
    libpapilo_problem_builder_set_col_ub( libpapilo_problem_builder_t* builder,
                                          int col, double ub )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setColUb( col, ub );
-         if( std::isinf( ub ) && ub > 0 )
-            builder->builder.setColUbInf( col, true );
-         else
-            builder->builder.setColUbInf( col, false );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setColUb( col, ub );
+      if( std::isinf( ub ) && ub > 0 )
+         builder->builder.setColUbInf( col, true );
+      else
+         builder->builder.setColUbInf( col, false );
    }
 
    void
@@ -218,20 +218,19 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* ubs )
    {
       check_problem_builder_ptr( builder );
-      if( ubs )
-      {
-         int ncols = builder->builder.getNumCols();
-         Vec<double> vals( ubs, ubs + ncols );
-         builder->builder.setColUbAll( std::move( vals ) );
+      custom_assert( ubs != nullptr,
+                     "libpapilo_problem_builder_set_col_ub_all: ubs pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<double> vals( ubs, ubs + ncols );
+      builder->builder.setColUbAll( std::move( vals ) );
 
-         // Set infinity flags
-         for( int i = 0; i < ncols; ++i )
-         {
-            if( std::isinf( ubs[i] ) && ubs[i] > 0 )
-               builder->builder.setColUbInf( i, true );
-            else
-               builder->builder.setColUbInf( i, false );
-         }
+      // Set infinity flags
+      for( int i = 0; i < ncols; ++i )
+      {
+         if( std::isinf( ubs[i] ) && ubs[i] > 0 )
+            builder->builder.setColUbInf( i, true );
+         else
+            builder->builder.setColUbInf( i, false );
       }
    }
 
@@ -248,26 +247,23 @@ extern "C"
        libpapilo_problem_builder_t* builder, const uint8_t* is_integral )
    {
       check_problem_builder_ptr( builder );
-      if( is_integral )
-      {
-         int ncols = builder->builder.getNumCols();
-         Vec<uint8_t> vals( is_integral, is_integral + ncols );
-         builder->builder.setColIntegralAll( std::move( vals ) );
-      }
+      custom_assert( is_integral != nullptr,
+                     "libpapilo_problem_builder_set_col_integral_all: is_integral pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<uint8_t> vals( is_integral, is_integral + ncols );
+      builder->builder.setColIntegralAll( std::move( vals ) );
    }
 
    void
    libpapilo_problem_builder_set_row_lhs( libpapilo_problem_builder_t* builder,
                                           int row, double lhs )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setRowLhs( row, lhs );
-         if( std::isinf( lhs ) && lhs < 0 )
-            builder->builder.setRowLhsInf( row, true );
-         else
-            builder->builder.setRowLhsInf( row, false );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setRowLhs( row, lhs );
+      if( std::isinf( lhs ) && lhs < 0 )
+         builder->builder.setRowLhsInf( row, true );
+      else
+         builder->builder.setRowLhsInf( row, false );
    }
 
    void
@@ -275,20 +271,19 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* lhs_vals )
    {
       check_problem_builder_ptr( builder );
-      if( lhs_vals )
-      {
-         int nrows = builder->builder.getNumRows();
-         Vec<double> vals( lhs_vals, lhs_vals + nrows );
-         builder->builder.setRowLhsAll( std::move( vals ) );
+      custom_assert( lhs_vals != nullptr,
+                     "libpapilo_problem_builder_set_row_lhs_all: lhs_vals pointer is null" );
+      int nrows = builder->builder.getNumRows();
+      Vec<double> vals( lhs_vals, lhs_vals + nrows );
+      builder->builder.setRowLhsAll( std::move( vals ) );
 
-         // Set infinity flags
-         for( int i = 0; i < nrows; ++i )
-         {
-            if( std::isinf( lhs_vals[i] ) && lhs_vals[i] < 0 )
-               builder->builder.setRowLhsInf( i, true );
-            else
-               builder->builder.setRowLhsInf( i, false );
-         }
+      // Set infinity flags
+      for( int i = 0; i < nrows; ++i )
+      {
+         if( std::isinf( lhs_vals[i] ) && lhs_vals[i] < 0 )
+            builder->builder.setRowLhsInf( i, true );
+         else
+            builder->builder.setRowLhsInf( i, false );
       }
    }
 
@@ -296,14 +291,12 @@ extern "C"
    libpapilo_problem_builder_set_row_rhs( libpapilo_problem_builder_t* builder,
                                           int row, double rhs )
    {
-      if( builder && builder->magic_number == LIBPAPILO_MAGIC_NUMBER )
-      {
-         builder->builder.setRowRhs( row, rhs );
-         if( std::isinf( rhs ) && rhs > 0 )
-            builder->builder.setRowRhsInf( row, true );
-         else
-            builder->builder.setRowRhsInf( row, false );
-      }
+      check_problem_builder_ptr( builder );
+      builder->builder.setRowRhs( row, rhs );
+      if( std::isinf( rhs ) && rhs > 0 )
+         builder->builder.setRowRhsInf( row, true );
+      else
+         builder->builder.setRowRhsInf( row, false );
    }
 
    void
@@ -311,20 +304,19 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* rhs_vals )
    {
       check_problem_builder_ptr( builder );
-      if( rhs_vals )
-      {
-         int nrows = builder->builder.getNumRows();
-         Vec<double> vals( rhs_vals, rhs_vals + nrows );
-         builder->builder.setRowRhsAll( std::move( vals ) );
+      custom_assert( rhs_vals != nullptr,
+                     "libpapilo_problem_builder_set_row_rhs_all: rhs_vals pointer is null" );
+      int nrows = builder->builder.getNumRows();
+      Vec<double> vals( rhs_vals, rhs_vals + nrows );
+      builder->builder.setRowRhsAll( std::move( vals ) );
 
-         // Set infinity flags
-         for( int i = 0; i < nrows; ++i )
-         {
-            if( std::isinf( rhs_vals[i] ) && rhs_vals[i] > 0 )
-               builder->builder.setRowRhsInf( i, true );
-            else
-               builder->builder.setRowRhsInf( i, false );
-         }
+      // Set infinity flags
+      for( int i = 0; i < nrows; ++i )
+      {
+         if( std::isinf( rhs_vals[i] ) && rhs_vals[i] > 0 )
+            builder->builder.setRowRhsInf( i, true );
+         else
+            builder->builder.setRowRhsInf( i, false );
       }
    }
 
@@ -345,7 +337,13 @@ extern "C"
        const int* cols, const double* vals )
    {
       check_problem_builder_ptr( builder );
-      if( rows && cols && vals && count > 0 )
+      custom_assert( rows != nullptr,
+                     "libpapilo_problem_builder_add_entry_all: rows pointer is null" );
+      custom_assert( cols != nullptr,
+                     "libpapilo_problem_builder_add_entry_all: cols pointer is null" );
+      custom_assert( vals != nullptr,
+                     "libpapilo_problem_builder_add_entry_all: vals pointer is null" );
+      if( count > 0 )
       {
          Vec<std::tuple<int, int, double>> entries;
          entries.reserve( count );
@@ -364,7 +362,11 @@ extern "C"
        const double* vals )
    {
       check_problem_builder_ptr( builder );
-      if( cols && vals && len > 0 )
+      custom_assert( cols != nullptr,
+                     "libpapilo_problem_builder_add_row_entries: cols pointer is null" );
+      custom_assert( vals != nullptr,
+                     "libpapilo_problem_builder_add_row_entries: vals pointer is null" );
+      if( len > 0 )
       {
          builder->builder.addRowEntries( row, len, cols, vals );
       }
@@ -376,7 +378,11 @@ extern "C"
        const double* vals )
    {
       check_problem_builder_ptr( builder );
-      if( rows && vals && len > 0 )
+      custom_assert( rows != nullptr,
+                     "libpapilo_problem_builder_add_col_entries: rows pointer is null" );
+      custom_assert( vals != nullptr,
+                     "libpapilo_problem_builder_add_col_entries: vals pointer is null" );
+      if( len > 0 )
       {
          builder->builder.addColEntries( col, len, rows, vals );
       }
@@ -387,10 +393,9 @@ extern "C"
        libpapilo_problem_builder_t* builder, const char* name )
    {
       check_problem_builder_ptr( builder );
-      if( name )
-      {
-         builder->builder.setProblemName( name );
-      }
+      custom_assert( name != nullptr,
+                     "libpapilo_problem_builder_set_problem_name: name pointer is null" );
+      builder->builder.setProblemName( name );
    }
 
    void
@@ -398,10 +403,9 @@ extern "C"
                                            int col, const char* name )
    {
       check_problem_builder_ptr( builder );
-      if( name )
-      {
-         builder->builder.setColName( col, name );
-      }
+      custom_assert( name != nullptr,
+                     "libpapilo_problem_builder_set_col_name: name pointer is null" );
+      builder->builder.setColName( col, name );
    }
 
    void
@@ -409,10 +413,9 @@ extern "C"
                                            int row, const char* name )
    {
       check_problem_builder_ptr( builder );
-      if( name )
-      {
-         builder->builder.setRowName( row, name );
-      }
+      custom_assert( name != nullptr,
+                     "libpapilo_problem_builder_set_row_name: name pointer is null" );
+      builder->builder.setRowName( row, name );
    }
 
    libpapilo_problem_t*
@@ -420,25 +423,13 @@ extern "C"
    {
       check_problem_builder_ptr( builder );
 
-      try
-      {
-         auto* problem = new libpapilo_problem_t();
-         problem->problem = builder->builder.build();
-         return problem;
-      }
-      catch( const std::exception& e )
-      {
-         std::cerr << "libpapilo error: Failed to build problem: " << e.what()
-                   << std::endl;
-         return nullptr;
-      }
-      catch( ... )
-      {
-         std::cerr
-             << "libpapilo error: Failed to build problem: Unknown exception"
-             << std::endl;
-         return nullptr;
-      }
+      return check_run( 
+         [builder]() {
+            auto* problem = new libpapilo_problem_t();
+            problem->problem = builder->builder.build();
+            return problem;
+         },
+         "Failed to build problem" );
    }
 
    void
