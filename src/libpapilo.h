@@ -38,10 +38,66 @@ extern "C"
       LIBPAPILO_ROWFLAG_EQUATION = 1 << 3
    } libpapilo_row_flags_t;
 
+   /* Presolve status codes */
+   typedef enum
+   {
+      LIBPAPILO_PRESOLVE_STATUS_UNCHANGED = 0,
+      LIBPAPILO_PRESOLVE_STATUS_REDUCED = 1,
+      LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED = 2,
+      LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE = 3,
+      LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE = 4
+   } libpapilo_presolve_status_t;
+
+   /* Reduction type for columns */
+   typedef enum
+   {
+      LIBPAPILO_COL_REDUCTION_NONE = -1,
+      LIBPAPILO_COL_REDUCTION_REDUNDANT = -2,
+      LIBPAPILO_COL_REDUCTION_REPLACE = -3,
+      LIBPAPILO_COL_REDUCTION_SUBSTITUTE_OBJ = -4,
+      LIBPAPILO_COL_REDUCTION_PARALLEL = -5,
+      LIBPAPILO_COL_REDUCTION_FIXED = -6,
+      LIBPAPILO_COL_REDUCTION_BOUNDS_LOCKED = -7,
+      LIBPAPILO_COL_REDUCTION_NONE_LOCKED = -8
+   } libpapilo_col_reduction_t;
+
+   /* Reduction type for rows */
+   typedef enum
+   {
+      LIBPAPILO_ROW_REDUCTION_NONE = -1,
+      LIBPAPILO_ROW_REDUCTION_REDUNDANT = -2,
+      LIBPAPILO_ROW_REDUCTION_LHS = -3,
+      LIBPAPILO_ROW_REDUCTION_RHS = -4,
+      LIBPAPILO_ROW_REDUCTION_LHS_INF = -5,
+      LIBPAPILO_ROW_REDUCTION_RHS_INF = -6,
+      LIBPAPILO_ROW_REDUCTION_REDUNDANT_LHS = -7,
+      LIBPAPILO_ROW_REDUCTION_REDUNDANT_RHS = -8,
+      LIBPAPILO_ROW_REDUCTION_LOCKED = -9,
+      LIBPAPILO_ROW_REDUCTION_NONE_LOCKED = -10
+   } libpapilo_row_reduction_t;
+
+   /* Reduction info structure */
+   typedef struct
+   {
+      int row;
+      int col;
+      double newval;
+   } libpapilo_reduction_info_t;
+
    /** Opaque pointer for papilo::Problem<double> */
    typedef struct libpapilo_problem_t libpapilo_problem_t;
    /** Opaque pointer for papilo::ProblemBuilder<double> */
    typedef struct libpapilo_problem_builder_t libpapilo_problem_builder_t;
+   /** Opaque pointer for papilo::PresolveOptions */
+   typedef struct libpapilo_presolve_options_t libpapilo_presolve_options_t;
+   /** Opaque pointer for papilo::Statistics */
+   typedef struct libpapilo_statistics_t libpapilo_statistics_t;
+   /** Opaque pointer for papilo::PostsolveStorage<double> */
+   typedef struct libpapilo_postsolve_storage_t libpapilo_postsolve_storage_t;
+   /** Opaque pointer for papilo::ProblemUpdate<double> */
+   typedef struct libpapilo_problem_update_t libpapilo_problem_update_t;
+   /** Opaque pointer for papilo::Reductions<double> */
+   typedef struct libpapilo_reductions_t libpapilo_reductions_t;
 
    LIBPAPILO_EXPORT
    libpapilo_problem_builder_t*
@@ -253,6 +309,42 @@ extern "C"
    LIBPAPILO_EXPORT uint8_t
    libpapilo_problem_get_row_flags( const libpapilo_problem_t* problem,
                                     int row );
+
+   /* Phase 2: Presolve API */
+
+   /* PresolveOptions management */
+   LIBPAPILO_EXPORT libpapilo_presolve_options_t*
+   libpapilo_presolve_options_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_options_free( libpapilo_presolve_options_t* options );
+
+   /* Main presolve function */
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_presolve_apply( libpapilo_problem_t* problem,
+                             libpapilo_presolve_options_t* options,
+                             libpapilo_reductions_t** reductions,
+                             libpapilo_postsolve_storage_t** postsolve,
+                             libpapilo_statistics_t** statistics );
+
+   /* Reductions access API */
+   LIBPAPILO_EXPORT int
+   libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions );
+
+   LIBPAPILO_EXPORT libpapilo_reduction_info_t
+   libpapilo_reductions_get_info( const libpapilo_reductions_t* reductions,
+                                  int index );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_free( libpapilo_reductions_t* reductions );
+
+   /* PostsolveStorage management */
+   LIBPAPILO_EXPORT void
+   libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve );
+
+   /* Statistics access API */
+   LIBPAPILO_EXPORT void
+   libpapilo_statistics_free( libpapilo_statistics_t* statistics );
 
 #ifdef __cplusplus
 }

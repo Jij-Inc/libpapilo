@@ -1,8 +1,16 @@
 #include "libpapilo.h"
 
 #include "papilo/core/Presolve.hpp"
+#include "papilo/core/PresolveOptions.hpp"
 #include "papilo/core/Problem.hpp"
 #include "papilo/core/ProblemBuilder.hpp"
+#include "papilo/core/ProblemUpdate.hpp"
+#include "papilo/core/Reductions.hpp"
+#include "papilo/core/Statistics.hpp"
+#include "papilo/core/postsolve/PostsolveStorage.hpp"
+#include "papilo/io/Message.hpp"
+#include "papilo/misc/Num.hpp"
+#include "papilo/misc/Timer.hpp"
 #include "papilo/misc/Vec.hpp"
 
 #include <cstring>
@@ -25,6 +33,36 @@ struct libpapilo_problem_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    Problem<double> problem;
+};
+
+struct libpapilo_presolve_options_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   PresolveOptions options;
+};
+
+struct libpapilo_statistics_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Statistics statistics;
+};
+
+struct libpapilo_postsolve_storage_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   std::unique_ptr<PostsolveStorage<double>> postsolve;
+};
+
+struct libpapilo_problem_update_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   std::unique_ptr<ProblemUpdate<double>> update;
+};
+
+struct libpapilo_reductions_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Reductions<double> reductions;
 };
 
 /** Custom assert also working on release build */
@@ -57,6 +95,50 @@ check_problem_ptr( const libpapilo_problem_t* problem )
    custom_assert(
        problem->magic_number == LIBPAPILO_MAGIC_NUMBER,
        "Invalid libpapilo_problem_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_presolve_options_ptr( const libpapilo_presolve_options_t* options )
+{
+   custom_assert( options != nullptr,
+                  "libpapilo_presolve_options_t pointer is null" );
+   custom_assert(
+       options->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_presolve_options_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_statistics_ptr( const libpapilo_statistics_t* statistics )
+{
+   custom_assert( statistics != nullptr,
+                  "libpapilo_statistics_t pointer is null" );
+   custom_assert(
+       statistics->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_statistics_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_postsolve_storage_ptr( const libpapilo_postsolve_storage_t* postsolve )
+{
+   custom_assert( postsolve != nullptr,
+                  "libpapilo_postsolve_storage_t pointer is null" );
+   custom_assert( postsolve->magic_number == LIBPAPILO_MAGIC_NUMBER,
+                  "Invalid libpapilo_postsolve_storage_t pointer (magic "
+                  "number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_reductions_ptr( const libpapilo_reductions_t* reductions )
+{
+   custom_assert( reductions != nullptr,
+                  "libpapilo_reductions_t pointer is null" );
+   custom_assert(
+       reductions->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_reductions_t pointer (magic number mismatch)" );
 }
 
 template <typename Func>
@@ -695,6 +777,150 @@ extern "C"
          *vals = colvec.getValues();
 
       return colvec.getLength();
+   }
+
+   /* Phase 2: Presolve API Implementation */
+
+   libpapilo_presolve_options_t*
+   libpapilo_presolve_options_create()
+   {
+      return check_run( []() { return new libpapilo_presolve_options_t(); },
+                        "Failed to create presolve options" );
+   }
+
+   void
+   libpapilo_presolve_options_free( libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      delete options;
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_presolve_apply( libpapilo_problem_t* problem,
+                             libpapilo_presolve_options_t* options,
+                             libpapilo_reductions_t** reductions_out,
+                             libpapilo_postsolve_storage_t** postsolve_out,
+                             libpapilo_statistics_t** statistics_out )
+   {
+      check_problem_ptr( problem );
+      check_presolve_options_ptr( options );
+      custom_assert( reductions_out != nullptr,
+                     "reductions_out pointer is null" );
+      custom_assert( postsolve_out != nullptr,
+                     "postsolve_out pointer is null" );
+      custom_assert( statistics_out != nullptr,
+                     "statistics_out pointer is null" );
+
+      return check_run(
+          [&]()
+          {
+             // Create required objects
+             Num<double> num{};
+             Message msg{};
+             double time = 0.0;
+             Timer timer{ time };
+
+             // Create statistics
+             auto* stats = new libpapilo_statistics_t();
+
+             // Create presolve instance
+             Presolve<double> presolve;
+             presolve.addDefaultPresolvers();
+             presolve.getPresolveOptions() = options->options;
+
+             // Execute presolve
+             PresolveResult<double> result = presolve.apply( problem->problem );
+
+             // Create postsolve storage
+             auto* postsolve_storage = new libpapilo_postsolve_storage_t();
+             postsolve_storage->postsolve =
+                 std::make_unique<PostsolveStorage<double>>(
+                     std::move( result.postsolve ) );
+
+             // Create reductions - we need to extract them from the postsolve
+             // storage
+             auto* reductions = new libpapilo_reductions_t();
+             // Note: Reductions are stored inside PostsolveStorage, not
+             // directly accessible For now, we'll leave it empty - this needs
+             // further investigation
+
+             // Set output parameters
+             *reductions_out = reductions;
+             *postsolve_out = postsolve_storage;
+             *statistics_out = stats;
+
+             // Convert PresolveStatus to C enum
+             switch( result.status )
+             {
+             case PresolveStatus::kUnchanged:
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             case PresolveStatus::kReduced:
+                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+             case PresolveStatus::kUnbounded:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+             case PresolveStatus::kUnbndOrInfeas:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+             case PresolveStatus::kInfeasible:
+                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+             default:
+                custom_assert( false, "Unknown presolve status" );
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             }
+          },
+          "Failed to apply presolve" );
+   }
+
+   int
+   libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions )
+   {
+      check_reductions_ptr( reductions );
+      // Cast away const as size() is not const in the C++ API
+      auto* mutable_reductions =
+          const_cast<libpapilo_reductions_t*>( reductions );
+      return static_cast<int>( mutable_reductions->reductions.size() );
+   }
+
+   libpapilo_reduction_info_t
+   libpapilo_reductions_get_info( const libpapilo_reductions_t* reductions,
+                                  int index )
+   {
+      check_reductions_ptr( reductions );
+      // Cast away const as size() and getReduction() are not const in the C++
+      // API
+      auto* mutable_reductions =
+          const_cast<libpapilo_reductions_t*>( reductions );
+      custom_assert( index >= 0 &&
+                         index < (int)mutable_reductions->reductions.size(),
+                     "Reduction index out of bounds" );
+
+      const auto& reduction =
+          mutable_reductions->reductions.getReduction( index );
+      libpapilo_reduction_info_t info;
+      info.row = reduction.row;
+      info.col = reduction.col;
+      info.newval = reduction.newval;
+      return info;
+   }
+
+   void
+   libpapilo_reductions_free( libpapilo_reductions_t* reductions )
+   {
+      check_reductions_ptr( reductions );
+      delete reductions;
+   }
+
+   void
+   libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve )
+   {
+      check_postsolve_storage_ptr( postsolve );
+      delete postsolve;
+   }
+
+   void
+   libpapilo_statistics_free( libpapilo_statistics_t* statistics )
+   {
+      check_statistics_ptr( statistics );
+      delete statistics;
    }
 
 } // extern "C"
