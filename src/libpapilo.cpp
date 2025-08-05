@@ -1134,6 +1134,13 @@ extern "C"
           "Failed to apply presolve" );
    }
 
+   libpapilo_reductions_t*
+   libpapilo_reductions_create()
+   {
+      return check_run( []() { return new libpapilo_reductions_t(); },
+                        "Failed to create reductions object" );
+   }
+
    int
    libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions )
    {
@@ -1199,6 +1206,13 @@ extern "C"
    {
       check_postsolve_storage_ptr( postsolve );
       delete postsolve;
+   }
+
+   libpapilo_statistics_t*
+   libpapilo_statistics_create()
+   {
+      return check_run( []() { return new libpapilo_statistics_t(); },
+                        "Failed to create statistics object" );
    }
 
    void

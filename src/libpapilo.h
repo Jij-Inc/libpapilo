@@ -392,6 +392,9 @@ extern "C"
                              libpapilo_statistics_t** statistics );
 
    /* Reductions access API */
+   LIBPAPILO_EXPORT libpapilo_reductions_t*
+   libpapilo_reductions_create();
+
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions );
 
@@ -412,6 +415,9 @@ extern "C"
    libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve );
 
    /* Statistics access API */
+   LIBPAPILO_EXPORT libpapilo_statistics_t*
+   libpapilo_statistics_create();
+
    LIBPAPILO_EXPORT void
    libpapilo_statistics_free( libpapilo_statistics_t* statistics );
 
