@@ -72,6 +72,110 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( libpapilo_problem_get_ncols( problem ) == 3 );
       REQUIRE( libpapilo_problem_get_nnz( problem ) == 5 );
 
+      // Test new getter APIs
+      
+      // Test objective coefficients and offset
+      int obj_size;
+      const double* obj_coeffs = libpapilo_problem_get_objective_coefficients( problem, &obj_size );
+      REQUIRE( obj_size == 3 );
+      REQUIRE( obj_coeffs[0] == 2.0 );
+      REQUIRE( obj_coeffs[1] == 3.0 );
+      REQUIRE( obj_coeffs[2] == 4.0 );
+      REQUIRE( libpapilo_problem_get_objective_offset( problem ) == 5.0 );
+
+      // Test variable bounds
+      int lb_size, ub_size;
+      const double* lower_bounds = libpapilo_problem_get_lower_bounds( problem, &lb_size );
+      const double* upper_bounds = libpapilo_problem_get_upper_bounds( problem, &ub_size );
+      REQUIRE( lb_size == 3 );
+      REQUIRE( ub_size == 3 );
+      
+      REQUIRE( lower_bounds[0] == 0.0 );
+      REQUIRE( (std::isinf( lower_bounds[1] ) && lower_bounds[1] < 0) );
+      REQUIRE( lower_bounds[2] == 1.0 );
+      
+      REQUIRE( upper_bounds[0] == 10.0 );
+      REQUIRE( upper_bounds[1] == 5.0 );
+      REQUIRE( (std::isinf( upper_bounds[2] ) && upper_bounds[2] > 0) );
+
+      // Test constraint bounds
+      int lhs_size, rhs_size;
+      const double* lhs = libpapilo_problem_get_row_lhs( problem, &lhs_size );
+      const double* rhs = libpapilo_problem_get_row_rhs( problem, &rhs_size );
+      REQUIRE( lhs_size == 2 );
+      REQUIRE( rhs_size == 2 );
+      
+      REQUIRE( lhs[0] == 2.0 );
+      REQUIRE( (std::isinf( lhs[1] ) && lhs[1] < 0) );
+      REQUIRE( (std::isinf( rhs[0] ) && rhs[0] > 0) );
+      REQUIRE( rhs[1] == 10.0 );
+
+      // Test row and column sizes
+      int row_sizes_len, col_sizes_len;
+      const int* row_sizes = libpapilo_problem_get_row_sizes( problem, &row_sizes_len );
+      const int* col_sizes = libpapilo_problem_get_col_sizes( problem, &col_sizes_len );
+      REQUIRE( row_sizes_len == 2 );
+      REQUIRE( col_sizes_len == 3 );
+      REQUIRE( row_sizes[0] == 3 ); // row 0: x + y + z (3 entries)
+      REQUIRE( row_sizes[1] == 2 ); // row 1: 2*x + y (2 entries)
+      REQUIRE( col_sizes[0] == 2 ); // x appears in 2 rows
+      REQUIRE( col_sizes[1] == 2 ); // y appears in 2 rows  
+      REQUIRE( col_sizes[2] == 1 ); // z appears in 1 row
+
+      // Test sparse matrix entries
+      const int* row0_cols;
+      const double* row0_vals;
+      int row0_len = libpapilo_problem_get_row_entries( problem, 0, &row0_cols, &row0_vals );
+      REQUIRE( row0_len == 3 );
+      REQUIRE( row0_vals[0] == 1.0 ); // coefficient for first variable in row 0
+      REQUIRE( row0_vals[1] == 1.0 ); // coefficient for second variable in row 0  
+      REQUIRE( row0_vals[2] == 1.0 ); // coefficient for third variable in row 0
+
+      const int* row1_cols;
+      const double* row1_vals;
+      int row1_len = libpapilo_problem_get_row_entries( problem, 1, &row1_cols, &row1_vals );
+      REQUIRE( row1_len == 2 );
+      REQUIRE( row1_vals[0] == 2.0 ); // coefficient for first variable in row 1
+      REQUIRE( row1_vals[1] == 1.0 ); // coefficient for second variable in row 1
+
+      // Test column entries
+      const int* col0_rows;
+      const double* col0_vals;
+      int col0_len = libpapilo_problem_get_col_entries( problem, 0, &col0_rows, &col0_vals );
+      REQUIRE( col0_len == 2 );
+      REQUIRE( col0_vals[0] == 1.0 ); // x coefficient in first constraint
+      REQUIRE( col0_vals[1] == 2.0 ); // x coefficient in second constraint
+
+      // Test names
+      REQUIRE( std::string( libpapilo_problem_get_name( problem ) ) == "test_problem" );
+      REQUIRE( std::string( libpapilo_problem_get_variable_name( problem, 0 ) ) == "x" );
+      REQUIRE( std::string( libpapilo_problem_get_variable_name( problem, 1 ) ) == "y" );
+      REQUIRE( std::string( libpapilo_problem_get_variable_name( problem, 2 ) ) == "z" );
+      REQUIRE( std::string( libpapilo_problem_get_constraint_name( problem, 0 ) ) == "constraint1" );
+      REQUIRE( std::string( libpapilo_problem_get_constraint_name( problem, 1 ) ) == "constraint2" );
+
+      // Test flags (basic check - exact flag values depend on internal processing)
+      // uint8_t col0_flags = libpapilo_problem_get_col_flags( problem, 0 );  // Not used in current test
+      uint8_t col1_flags = libpapilo_problem_get_col_flags( problem, 1 );  
+      uint8_t col2_flags = libpapilo_problem_get_col_flags( problem, 2 );
+      
+      // col1 should have LB_INF flag (lower bound is -infinity)
+      REQUIRE( (col1_flags & LIBPAPILO_COLFLAG_LB_INF) != 0 );
+      // col2 should have UB_INF flag (upper bound is +infinity)  
+      REQUIRE( (col2_flags & LIBPAPILO_COLFLAG_UB_INF) != 0 );
+
+      uint8_t row0_flags = libpapilo_problem_get_row_flags( problem, 0 );
+      uint8_t row1_flags = libpapilo_problem_get_row_flags( problem, 1 );
+      
+      // row0 should have RHS_INF flag (right hand side is +infinity)
+      REQUIRE( (row0_flags & LIBPAPILO_ROWFLAG_RHS_INF) != 0 );
+      // row1 should have LHS_INF flag (left hand side is -infinity)
+      REQUIRE( (row1_flags & LIBPAPILO_ROWFLAG_LHS_INF) != 0 );
+
+      // Test continuous/integral counts (all variables are continuous by default)
+      REQUIRE( libpapilo_problem_get_num_continuous_cols( problem ) == 3 );
+      REQUIRE( libpapilo_problem_get_num_integral_cols( problem ) == 0 );
+
       // Clean up
       libpapilo_problem_free( problem );
       libpapilo_problem_builder_free( builder );
@@ -115,6 +219,41 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( problem != nullptr );
       REQUIRE( libpapilo_problem_get_nnz( problem ) == 5 );
 
+      // Test objective coefficients from batch operation
+      int obj_size;
+      const double* retrieved_obj_coeffs = libpapilo_problem_get_objective_coefficients( problem, &obj_size );
+      REQUIRE( obj_size == 3 );
+      REQUIRE( retrieved_obj_coeffs[0] == 1.0 );
+      REQUIRE( retrieved_obj_coeffs[1] == 2.0 );
+      REQUIRE( retrieved_obj_coeffs[2] == 3.0 );
+
+      // Test bounds from batch operation
+      int lb_size, ub_size;
+      const double* lower_bounds = libpapilo_problem_get_lower_bounds( problem, &lb_size );
+      const double* upper_bounds = libpapilo_problem_get_upper_bounds( problem, &ub_size );
+      REQUIRE( lb_size == 3 );
+      REQUIRE( ub_size == 3 );
+      
+      REQUIRE( lower_bounds[0] == 0.0 );
+      REQUIRE( (std::isinf( lower_bounds[1] ) && lower_bounds[1] < 0) );
+      REQUIRE( lower_bounds[2] == 1.0 );
+      
+      REQUIRE( upper_bounds[0] == 10.0 );
+      REQUIRE( upper_bounds[1] == 5.0 );
+      REQUIRE( (std::isinf( upper_bounds[2] ) && upper_bounds[2] > 0) );
+
+      // Test constraint bounds from batch operation
+      int lhs_size, rhs_size;
+      const double* lhs = libpapilo_problem_get_row_lhs( problem, &lhs_size );
+      const double* rhs = libpapilo_problem_get_row_rhs( problem, &rhs_size );
+      REQUIRE( lhs_size == 2 );
+      REQUIRE( rhs_size == 2 );
+      
+      REQUIRE( lhs[0] == 2.0 );
+      REQUIRE( (std::isinf( lhs[1] ) && lhs[1] < 0) );
+      REQUIRE( (std::isinf( rhs[0] ) && rhs[0] > 0) );
+      REQUIRE( rhs[1] == 10.0 );
+
       libpapilo_problem_free( problem );
       libpapilo_problem_builder_free( builder );
    }
@@ -141,6 +280,20 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
 
       libpapilo_problem_t* problem = libpapilo_problem_builder_build( builder );
       REQUIRE( problem != nullptr );
+
+      // Test integer/continuous variable counts
+      REQUIRE( libpapilo_problem_get_num_integral_cols( problem ) == 2 );
+      REQUIRE( libpapilo_problem_get_num_continuous_cols( problem ) == 1 );
+
+      // Test column flags for integrality
+      uint8_t col0_flags = libpapilo_problem_get_col_flags( problem, 0 );
+      uint8_t col1_flags = libpapilo_problem_get_col_flags( problem, 1 );
+      uint8_t col2_flags = libpapilo_problem_get_col_flags( problem, 2 );
+      
+      // col0 and col2 should have INTEGRAL flag
+      REQUIRE( (col0_flags & LIBPAPILO_COLFLAG_INTEGRAL) != 0 );
+      REQUIRE( (col1_flags & LIBPAPILO_COLFLAG_INTEGRAL) == 0 );
+      REQUIRE( (col2_flags & LIBPAPILO_COLFLAG_INTEGRAL) != 0 );
 
       libpapilo_problem_free( problem );
       libpapilo_problem_builder_free( builder );
