@@ -434,9 +434,8 @@ extern "C"
        libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
    {
       check_problem_builder_ptr( builder );
-      custom_assert(
-          is_inf != nullptr,
-          "libpapilo_problem_builder_set_col_lb_inf_all: is_inf pointer is null" );
+      custom_assert( is_inf != nullptr, "libpapilo_problem_builder_set_col_lb_"
+                                        "inf_all: is_inf pointer is null" );
       int ncols = builder->builder.getNumCols();
       Vec<uint8_t> vals( is_inf, is_inf + ncols );
       builder->builder.setColLbInfAll( std::move( vals ) );
@@ -447,9 +446,8 @@ extern "C"
        libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
    {
       check_problem_builder_ptr( builder );
-      custom_assert(
-          is_inf != nullptr,
-          "libpapilo_problem_builder_set_col_ub_inf_all: is_inf pointer is null" );
+      custom_assert( is_inf != nullptr, "libpapilo_problem_builder_set_col_ub_"
+                                        "inf_all: is_inf pointer is null" );
       int ncols = builder->builder.getNumCols();
       Vec<uint8_t> vals( is_inf, is_inf + ncols );
       builder->builder.setColUbInfAll( std::move( vals ) );
@@ -549,9 +547,8 @@ extern "C"
        libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
    {
       check_problem_builder_ptr( builder );
-      custom_assert(
-          is_inf != nullptr,
-          "libpapilo_problem_builder_set_row_lhs_inf_all: is_inf pointer is null" );
+      custom_assert( is_inf != nullptr, "libpapilo_problem_builder_set_row_lhs_"
+                                        "inf_all: is_inf pointer is null" );
       int nrows = builder->builder.getNumRows();
       Vec<uint8_t> vals( is_inf, is_inf + nrows );
       builder->builder.setRowLhsInfAll( std::move( vals ) );
@@ -562,9 +559,8 @@ extern "C"
        libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
    {
       check_problem_builder_ptr( builder );
-      custom_assert(
-          is_inf != nullptr,
-          "libpapilo_problem_builder_set_row_rhs_inf_all: is_inf pointer is null" );
+      custom_assert( is_inf != nullptr, "libpapilo_problem_builder_set_row_rhs_"
+                                        "inf_all: is_inf pointer is null" );
       int nrows = builder->builder.getNumRows();
       Vec<uint8_t> vals( is_inf, is_inf + nrows );
       builder->builder.setRowRhsInfAll( std::move( vals ) );
@@ -1265,15 +1261,18 @@ extern "C"
    }
 
    libpapilo_timer_t*
-   libpapilo_timer_create()
+   libpapilo_timer_create( double* time_ref )
    {
-      return check_run(
-          []()
-          {
-             static double time = 0.0; // Timer needs a reference to double
-             return new libpapilo_timer_t( time );
-          },
-          "Failed to create timer object" );
+      if( time_ref == NULL )
+      {
+         std::cerr << "Error: time_ref cannot be NULL for timer creation"
+                   << std::endl;
+         std::terminate();
+      }
+
+      return check_run( [time_ref]()
+                        { return new libpapilo_timer_t( *time_ref ); },
+                        "Failed to create timer object" );
    }
 
    void

@@ -440,7 +440,7 @@ extern "C"
    libpapilo_num_free( libpapilo_num_t* num );
 
    LIBPAPILO_EXPORT libpapilo_timer_t*
-   libpapilo_timer_create();
+   libpapilo_timer_create( double* time_ref );
 
    LIBPAPILO_EXPORT void
    libpapilo_timer_free( libpapilo_timer_t* timer );
