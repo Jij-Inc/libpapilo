@@ -85,36 +85,56 @@ This phase established the C API foundation, providing the ability to build a pr
     - **38 C API functions** covering problem construction (`libpapilo_problem_builder_...`) and data retrieval (`libpapilo_problem_get_...`).
 - **Status**: Complete and comprehensively tested.
 
-### Phase 2: Presolving API Implementation 🚧 **IN PROGRESS**
+### Phase 2: Individual Presolver API Implementation 🚧 **IN PROGRESS**
 
-This phase will implement the core presolving functionality. The primary goal is to expose PaPILO's automated presolving pipeline.
+**Priority Goal**: Complete reproduction of `test/papilo/presolve/SingletonColsTest.cpp` using libpapilo C API.
 
-- **C API Design**: The design will follow a **one-to-one mapping** of core C++ classes to C opaque pointers to ensure a clear and maintainable wrapper. The following handles will be introduced:
-    - `libpapilo_presolve_options_t` -> `papilo::PresolveOptions`
-    - `libpapilo_statistics_t` -> `papilo::Statistics`
-    - `libpapilo_postsolve_storage_t` -> `papilo::PostsolveStorage<double>`
-    - `libpapilo_problem_update_t` -> `papilo::ProblemUpdate<double>`
-    - `libpapilo_reductions_t` -> `papilo::Reductions<double>`
+This phase implements the granular presolving functionality required to exactly replicate the existing C++ tests.
+
+- **C API Design**: The design follows a **one-to-one mapping** of core C++ classes to C opaque pointers:
+    - `libpapilo_presolve_options_t` -> `papilo::PresolveOptions` ✅ **COMPLETED**
+    - `libpapilo_statistics_t` -> `papilo::Statistics` ✅ **COMPLETED** 
+    - `libpapilo_postsolve_storage_t` -> `papilo::PostsolveStorage<double>` ✅ **COMPLETED**
+    - `libpapilo_problem_update_t` -> `papilo::ProblemUpdate<double>` ✅ **COMPLETED**
+    - `libpapilo_reductions_t` -> `papilo::Reductions<double>` ✅ **COMPLETED**
+    - `libpapilo_singleton_cols_t` -> `papilo::SingletonCols<double>` 🚧 **NEEDED**
+    - `libpapilo_num_t` -> `papilo::Num<double>` 🚧 **NEEDED**
+    - `libpapilo_timer_t` -> `papilo::Timer` 🚧 **NEEDED**
+    - `libpapilo_message_t` -> `papilo::Message` 🚧 **NEEDED**
+
+- **Required APIs for SingletonColsTest reproduction**:
+    - **Problem Modification API**:
+        - `libpapilo_problem_modify_row_lhs()` - Modify constraint left-hand side
+        - `libpapilo_problem_recompute_locks()` - Recompute variable locks
+        - `libpapilo_problem_recompute_activities()` - Recompute row activities
+    - **ProblemUpdate Control API**:
+        - `libpapilo_problem_update_create()` - Create ProblemUpdate with all dependencies
+        - `libpapilo_problem_update_trivial_column_presolve()` - Execute trivial column presolve
+        - `libpapilo_problem_update_get_reductions()` - Extract reductions from ProblemUpdate
+    - **Individual Presolver API**:
+        - `libpapilo_singleton_cols_create/free()` - SingletonCols presolver management
+        - `libpapilo_singleton_cols_execute()` - Execute individual presolver with full control
+    - **Utility Objects API**:
+        - `libpapilo_num_create/free()` - Numerical utilities
+        - `libpapilo_timer_create/free()` - Timer functionality
+        - `libpapilo_message_create/free()` - Message handling
+    - **Enhanced Reductions API**:
+        - Fix current empty implementation to properly extract from PostsolveStorage/ProblemUpdate
+        - Complete validation of reduction types (ColReduction::BOUNDS_LOCKED, etc.)
+
+- **Testing Strategy**:
+    - **Exact Test Migration**: Each test case from SingletonColsTest.cpp will be replicated 1:1
+    - **Setup Function Migration**: All `setupProblem*()` functions will be converted to C API calls
+    - **Assertion Verification**: Every `REQUIRE()` statement must pass with identical values
+
+### Phase 3: High-Level Automated API 🚧 **FUTURE WORK**
+
+This phase will provide simplified automated presolving for end users.
+
 - **Tasks**:
-    - **Automated Presolve API**:
-        - Implement a high-level `papilo_presolve_apply()` C function that internally creates a `papilo::Presolve` object, loads the default presolvers, and runs the `apply()` method.
-        - This function will return the results in new opaque objects like `libpapilo_reductions_t` and `libpapilo_postsolve_storage_t`.
-    - **Result Management API**:
-        - Implement C functions to query the results (e.g., `papilo_reductions_get_size`, `papilo_reductions_get_info`).
-        - Expose statistics (number of reductions, fixed variables, etc.).
-    - **End-to-End Testing**:
-        - Create tests that construct problems, run `papilo_presolve_apply`, and validate the results.
-
-### Phase 3: Advanced Control and Customization API 🚧 **FUTURE WORK**
-
-This phase will provide fine-grained control for expert users.
-
-- **Tasks**:
-    - **Presolve Customization API**:
-        - Expose key options from `PresolveOptions` via the C API.
-        - Implement functions to create and run custom presolving pipelines (e.g., `papilo_add_presolver_by_name`).
-    - **Individual Presolver Testing**:
-        - Migrate tests from `test/papilo/presolve/` to use the new C API, enabling targeted testing of each presolver through the C interface.
+    - **Automated Presolve API**: High-level `papilo_presolve_apply()` using all default presolvers
+    - **Batch Processing API**: Convenient functions for common use cases
+    - **Documentation and Examples**: User-friendly guides for typical workflows
 
 ## 5. Current C API Reference
 
