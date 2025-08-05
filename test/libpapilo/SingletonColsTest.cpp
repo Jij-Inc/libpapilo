@@ -18,8 +18,7 @@ forceCalculationOfSingletonRows( libpapilo_problem_t* problem,
                                  libpapilo_problem_update_t* problemUpdate )
 {
    libpapilo_problem_recompute_locks( problem );
-   // Note: trivialColumnPresolve currently causes segfault, so we skip it
-   // libpapilo_problem_update_trivial_column_presolve(problemUpdate);
+   libpapilo_problem_update_trivial_column_presolve( problemUpdate );
    libpapilo_problem_recompute_activities( problem );
 }
 

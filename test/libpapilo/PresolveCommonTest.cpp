@@ -128,8 +128,8 @@ TEST_CASE( "presolve-common", "[libpapilo]" )
           problem, postsolve, statistics, options, num, message );
       REQUIRE( update != nullptr );
 
-      // Test trivial column presolve operation (commented out due to segfault)
-      // libpapilo_problem_update_trivial_column_presolve( update );
+      // Test trivial column presolve operation
+      libpapilo_problem_update_trivial_column_presolve( update );
 
       // Test getting reductions (should return empty object)
       libpapilo_reductions_t* reductions =
