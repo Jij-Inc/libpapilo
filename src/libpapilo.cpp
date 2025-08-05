@@ -12,6 +12,7 @@
 #include "papilo/misc/Num.hpp"
 #include "papilo/misc/Timer.hpp"
 #include "papilo/misc/Vec.hpp"
+#include "papilo/presolvers/SingletonCols.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -79,6 +80,38 @@ struct libpapilo_reductions_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    Reductions<double> reductions;
+};
+
+struct libpapilo_singleton_cols_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   SingletonCols<double> presolver;
+};
+
+struct libpapilo_num_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Num<double> num;
+};
+
+struct libpapilo_timer_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Timer timer;
+
+   libpapilo_timer_t( double& time ) : timer( time ) {}
+};
+
+struct libpapilo_message_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Message message;
+};
+
+struct libpapilo_presolve_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Presolve<double> presolve;
 };
 
 /** Custom assert also working on release build */
@@ -155,6 +188,66 @@ check_reductions_ptr( const libpapilo_reductions_t* reductions )
    custom_assert(
        reductions->magic_number == LIBPAPILO_MAGIC_NUMBER,
        "Invalid libpapilo_reductions_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_singleton_cols_ptr( const libpapilo_singleton_cols_t* presolver )
+{
+   custom_assert( presolver != nullptr,
+                  "libpapilo_singleton_cols_t pointer is null" );
+   custom_assert(
+       presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_singleton_cols_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_num_ptr( const libpapilo_num_t* num )
+{
+   custom_assert( num != nullptr, "libpapilo_num_t pointer is null" );
+   custom_assert( num->magic_number == LIBPAPILO_MAGIC_NUMBER,
+                  "Invalid libpapilo_num_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_timer_ptr( const libpapilo_timer_t* timer )
+{
+   custom_assert( timer != nullptr, "libpapilo_timer_t pointer is null" );
+   custom_assert( timer->magic_number == LIBPAPILO_MAGIC_NUMBER,
+                  "Invalid libpapilo_timer_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_message_ptr( const libpapilo_message_t* message )
+{
+   custom_assert( message != nullptr, "libpapilo_message_t pointer is null" );
+   custom_assert(
+       message->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_message_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_problem_update_ptr( const libpapilo_problem_update_t* update )
+{
+   custom_assert( update != nullptr,
+                  "libpapilo_problem_update_t pointer is null" );
+   custom_assert(
+       update->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_problem_update_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_presolve_ptr( const libpapilo_presolve_t* presolve )
+{
+   custom_assert( presolve != nullptr, "libpapilo_presolve_t pointer is null" );
+   custom_assert(
+       presolve->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_presolve_t pointer (magic number mismatch)" );
 }
 
 template <typename Func>
@@ -811,6 +904,73 @@ extern "C"
       delete options;
    }
 
+   /* Core Presolve API Implementation */
+
+   libpapilo_presolve_t*
+   libpapilo_presolve_create()
+   {
+      return check_run( []() { return new libpapilo_presolve_t(); },
+                        "Failed to create presolve object" );
+   }
+
+   void
+   libpapilo_presolve_free( libpapilo_presolve_t* presolve )
+   {
+      check_presolve_ptr( presolve );
+      delete presolve;
+   }
+
+   void
+   libpapilo_presolve_add_default_presolvers( libpapilo_presolve_t* presolve )
+   {
+      check_presolve_ptr( presolve );
+      presolve->presolve.addDefaultPresolvers();
+   }
+
+   void
+   libpapilo_presolve_set_options( libpapilo_presolve_t* presolve,
+                                   libpapilo_presolve_options_t* options )
+   {
+      check_presolve_ptr( presolve );
+      check_presolve_options_ptr( options );
+      presolve->presolve.getPresolveOptions() = options->options;
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
+                                    libpapilo_problem_t* problem )
+   {
+      check_presolve_ptr( presolve );
+      check_problem_ptr( problem );
+
+      return check_run(
+          [&]()
+          {
+             PresolveResult<double> result =
+                 presolve->presolve.apply( problem->problem );
+
+             // Convert PresolveStatus to C enum
+             switch( result.status )
+             {
+             case PresolveStatus::kUnchanged:
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             case PresolveStatus::kReduced:
+                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+             case PresolveStatus::kUnbounded:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+             case PresolveStatus::kUnbndOrInfeas:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+             case PresolveStatus::kInfeasible:
+                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+             default:
+                custom_assert( false, "Unknown presolve status" );
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             }
+          },
+          "Failed to apply presolve" );
+   }
+
+   /* High-level presolve function for backward compatibility */
    libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
                              libpapilo_presolve_options_t* options,
@@ -830,40 +990,30 @@ extern "C"
       return check_run(
           [&]()
           {
-             // Create required objects
-             Num<double> num{};
-             Message msg{};
-             double time = 0.0;
-             Timer timer{ time };
-
-             // Create statistics
-             auto* stats = new libpapilo_statistics_t();
-
-             // Create presolve instance
-             Presolve<double> presolve;
-             presolve.addDefaultPresolvers();
-             presolve.getPresolveOptions() = options->options;
+             // Create presolve object
+             auto* presolve = libpapilo_presolve_create();
+             libpapilo_presolve_add_default_presolvers( presolve );
+             libpapilo_presolve_set_options( presolve, options );
 
              // Execute presolve
-             PresolveResult<double> result = presolve.apply( problem->problem );
+             PresolveResult<double> result =
+                 presolve->presolve.apply( problem->problem );
 
-             // Create postsolve storage using constructor
+             // Create output objects
              auto* postsolve_storage = new libpapilo_postsolve_storage_t(
                  std::move( result.postsolve ) );
-
-             // Create reductions - we need to extract them from the postsolve
-             // storage
              auto* reductions = new libpapilo_reductions_t();
-             // Note: Reductions are stored inside PostsolveStorage, not
-             // directly accessible For now, we'll leave it empty - this needs
-             // further investigation
+             auto* stats = new libpapilo_statistics_t();
 
              // Set output parameters
              *reductions_out = reductions;
              *postsolve_out = postsolve_storage;
              *statistics_out = stats;
 
-             // Convert PresolveStatus to C enum
+             // Clean up presolve object
+             libpapilo_presolve_free( presolve );
+
+             // Convert status
              switch( result.status )
              {
              case PresolveStatus::kUnchanged:
@@ -935,6 +1085,200 @@ extern "C"
    {
       check_statistics_ptr( statistics );
       delete statistics;
+   }
+
+   /* Problem Modification API Implementation */
+
+   void
+   libpapilo_problem_modify_row_lhs( libpapilo_problem_t* problem, int row,
+                                     double lhs )
+   {
+      check_problem_ptr( problem );
+      const Num<double> num{};
+      problem->problem.getConstraintMatrix().modifyLeftHandSide( row, num,
+                                                                 lhs );
+   }
+
+   void
+   libpapilo_problem_recompute_locks( libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      problem->problem.recomputeLocks();
+   }
+
+   void
+   libpapilo_problem_recompute_activities( libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      problem->problem.recomputeAllActivities();
+   }
+
+   /* Utility Objects API Implementation */
+
+   libpapilo_num_t*
+   libpapilo_num_create()
+   {
+      return check_run( []() { return new libpapilo_num_t(); },
+                        "Failed to create num object" );
+   }
+
+   void
+   libpapilo_num_free( libpapilo_num_t* num )
+   {
+      check_num_ptr( num );
+      delete num;
+   }
+
+   libpapilo_timer_t*
+   libpapilo_timer_create()
+   {
+      return check_run(
+          []()
+          {
+             static double time = 0.0; // Timer needs a reference to double
+             return new libpapilo_timer_t( time );
+          },
+          "Failed to create timer object" );
+   }
+
+   void
+   libpapilo_timer_free( libpapilo_timer_t* timer )
+   {
+      check_timer_ptr( timer );
+      delete timer;
+   }
+
+   libpapilo_message_t*
+   libpapilo_message_create()
+   {
+      return check_run( []() { return new libpapilo_message_t(); },
+                        "Failed to create message object" );
+   }
+
+   void
+   libpapilo_message_free( libpapilo_message_t* message )
+   {
+      check_message_ptr( message );
+      delete message;
+   }
+
+   /* ProblemUpdate Control API Implementation */
+
+   libpapilo_problem_update_t*
+   libpapilo_problem_update_create( libpapilo_problem_t* problem,
+                                    libpapilo_postsolve_storage_t* postsolve,
+                                    libpapilo_statistics_t* statistics,
+                                    libpapilo_presolve_options_t* options,
+                                    libpapilo_num_t* num,
+                                    libpapilo_message_t* message )
+   {
+      check_problem_ptr( problem );
+      check_postsolve_storage_ptr( postsolve );
+      check_statistics_ptr( statistics );
+      check_presolve_options_ptr( options );
+      check_num_ptr( num );
+      check_message_ptr( message );
+
+      return check_run(
+          [&]()
+          {
+             return new libpapilo_problem_update_t(
+                 problem->problem, postsolve->postsolve, statistics->statistics,
+                 options->options, num->num, message->message );
+          },
+          "Failed to create problem update" );
+   }
+
+   void
+   libpapilo_problem_update_free( libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+      delete update;
+   }
+
+   void
+   libpapilo_problem_update_trivial_column_presolve(
+       libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+      update->update.trivialColumnPresolve();
+   }
+
+   libpapilo_reductions_t*
+   libpapilo_problem_update_get_reductions( libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+      // Note: ProblemUpdate doesn't store reductions directly.
+      // Reductions are accumulated by presolver.execute() calls.
+      // This function creates an empty reductions object for now.
+      return check_run(
+          [&]()
+          {
+             auto* reductions = new libpapilo_reductions_t();
+             // reductions->reductions remains empty
+             return reductions;
+          },
+          "Failed to create reductions object" );
+   }
+
+   /* Individual Presolver API Implementation */
+
+   libpapilo_singleton_cols_t*
+   libpapilo_singleton_cols_create()
+   {
+      return check_run( []() { return new libpapilo_singleton_cols_t(); },
+                        "Failed to create singleton cols presolver" );
+   }
+
+   void
+   libpapilo_singleton_cols_free( libpapilo_singleton_cols_t* presolver )
+   {
+      check_singleton_cols_ptr( presolver );
+      delete presolver;
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_singleton_cols_execute( libpapilo_singleton_cols_t* presolver,
+                                     libpapilo_problem_t* problem,
+                                     libpapilo_problem_update_t* update,
+                                     libpapilo_num_t* num,
+                                     libpapilo_reductions_t* reductions,
+                                     libpapilo_timer_t* timer, int* cause )
+   {
+      check_singleton_cols_ptr( presolver );
+      check_problem_ptr( problem );
+      check_problem_update_ptr( update );
+      check_num_ptr( num );
+      check_reductions_ptr( reductions );
+      check_timer_ptr( timer );
+      custom_assert( cause != nullptr, "cause pointer is null" );
+
+      return check_run(
+          [&]()
+          {
+             PresolveStatus status = presolver->presolver.execute(
+                 problem->problem, update->update, num->num,
+                 reductions->reductions, timer->timer, *cause );
+
+             // Convert PresolveStatus to C enum
+             switch( status )
+             {
+             case PresolveStatus::kUnchanged:
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             case PresolveStatus::kReduced:
+                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+             case PresolveStatus::kUnbounded:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+             case PresolveStatus::kUnbndOrInfeas:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+             case PresolveStatus::kInfeasible:
+                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+             default:
+                custom_assert( false, "Unknown presolve status" );
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             }
+          },
+          "Failed to execute singleton cols presolver" );
    }
 
 } // extern "C"

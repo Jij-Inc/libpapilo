@@ -98,6 +98,16 @@ extern "C"
    typedef struct libpapilo_problem_update_t libpapilo_problem_update_t;
    /** Opaque pointer for papilo::Reductions<double> */
    typedef struct libpapilo_reductions_t libpapilo_reductions_t;
+   /** Opaque pointer for papilo::SingletonCols<double> */
+   typedef struct libpapilo_singleton_cols_t libpapilo_singleton_cols_t;
+   /** Opaque pointer for papilo::Num<double> */
+   typedef struct libpapilo_num_t libpapilo_num_t;
+   /** Opaque pointer for papilo::Timer */
+   typedef struct libpapilo_timer_t libpapilo_timer_t;
+   /** Opaque pointer for papilo::Message */
+   typedef struct libpapilo_message_t libpapilo_message_t;
+   /** Opaque pointer for papilo::Presolve<double> */
+   typedef struct libpapilo_presolve_t libpapilo_presolve_t;
 
    LIBPAPILO_EXPORT
    libpapilo_problem_builder_t*
@@ -312,6 +322,24 @@ extern "C"
 
    /* Phase 2: Presolve API */
 
+   /* Core Presolve API */
+   LIBPAPILO_EXPORT libpapilo_presolve_t*
+   libpapilo_presolve_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_free( libpapilo_presolve_t* presolve );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_add_default_presolvers( libpapilo_presolve_t* presolve );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_set_options( libpapilo_presolve_t* presolve,
+                                   libpapilo_presolve_options_t* options );
+
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
+                                    libpapilo_problem_t* problem );
+
    /* PresolveOptions management */
    LIBPAPILO_EXPORT libpapilo_presolve_options_t*
    libpapilo_presolve_options_create();
@@ -345,6 +373,71 @@ extern "C"
    /* Statistics access API */
    LIBPAPILO_EXPORT void
    libpapilo_statistics_free( libpapilo_statistics_t* statistics );
+
+   /* Problem Modification API */
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_modify_row_lhs( libpapilo_problem_t* problem, int row,
+                                     double lhs );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_recompute_locks( libpapilo_problem_t* problem );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_recompute_activities( libpapilo_problem_t* problem );
+
+   /* Utility Objects API */
+   LIBPAPILO_EXPORT libpapilo_num_t*
+   libpapilo_num_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_num_free( libpapilo_num_t* num );
+
+   LIBPAPILO_EXPORT libpapilo_timer_t*
+   libpapilo_timer_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_timer_free( libpapilo_timer_t* timer );
+
+   LIBPAPILO_EXPORT libpapilo_message_t*
+   libpapilo_message_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_free( libpapilo_message_t* message );
+
+   /* ProblemUpdate Control API */
+   LIBPAPILO_EXPORT libpapilo_problem_update_t*
+   libpapilo_problem_update_create( libpapilo_problem_t* problem,
+                                    libpapilo_postsolve_storage_t* postsolve,
+                                    libpapilo_statistics_t* statistics,
+                                    libpapilo_presolve_options_t* options,
+                                    libpapilo_num_t* num,
+                                    libpapilo_message_t* message );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_update_free( libpapilo_problem_update_t* update );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_update_trivial_column_presolve(
+       libpapilo_problem_update_t* update );
+
+   LIBPAPILO_EXPORT libpapilo_reductions_t*
+   libpapilo_problem_update_get_reductions(
+       libpapilo_problem_update_t* update );
+
+   /* Individual Presolver API */
+   LIBPAPILO_EXPORT libpapilo_singleton_cols_t*
+   libpapilo_singleton_cols_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_singleton_cols_free( libpapilo_singleton_cols_t* presolver );
+
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_singleton_cols_execute( libpapilo_singleton_cols_t* presolver,
+                                     libpapilo_problem_t* problem,
+                                     libpapilo_problem_update_t* update,
+                                     libpapilo_num_t* num,
+                                     libpapilo_reductions_t* reductions,
+                                     libpapilo_timer_t* timer, int* cause );
 
 #ifdef __cplusplus
 }
