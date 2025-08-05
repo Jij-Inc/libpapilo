@@ -20,6 +20,22 @@ extern "C"
 #define LIBPAPILO_EXPORT __attribute__( ( visibility( "default" ) ) )
 #endif
 
+   /* Flag definitions for column and row properties */
+   typedef enum {
+      LIBPAPILO_COLFLAG_LB_INF = 1 << 0,
+      LIBPAPILO_COLFLAG_UB_INF = 1 << 1,
+      LIBPAPILO_COLFLAG_INTEGRAL = 1 << 2,
+      LIBPAPILO_COLFLAG_IMPLIED_INTEGRAL = 1 << 3,
+      LIBPAPILO_COLFLAG_FIXED = 1 << 4
+   } libpapilo_col_flags_t;
+
+   typedef enum {
+      LIBPAPILO_ROWFLAG_LHS_INF = 1 << 0,
+      LIBPAPILO_ROWFLAG_RHS_INF = 1 << 1,
+      LIBPAPILO_ROWFLAG_REDUNDANT = 1 << 2,
+      LIBPAPILO_ROWFLAG_EQUATION = 1 << 3
+   } libpapilo_row_flags_t;
+
    /** Opaque pointer for papilo::Problem<double> */
    typedef struct libpapilo_problem_t libpapilo_problem_t;
    /** Opaque pointer for papilo::ProblemBuilder<double> */
@@ -160,6 +176,81 @@ extern "C"
 
    LIBPAPILO_EXPORT int
    libpapilo_problem_get_nnz( const libpapilo_problem_t* problem );
+
+   /* Problem data getters */
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_get_num_integral_cols( const libpapilo_problem_t* problem );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_get_num_continuous_cols( const libpapilo_problem_t* problem );
+
+   /* Objective getters */
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_objective_coefficients( const libpapilo_problem_t* problem,
+                                                 int* size );
+
+   LIBPAPILO_EXPORT double
+   libpapilo_problem_get_objective_offset( const libpapilo_problem_t* problem );
+
+   /* Bounds getters */
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_lower_bounds( const libpapilo_problem_t* problem,
+                                       int* size );
+
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_upper_bounds( const libpapilo_problem_t* problem,
+                                       int* size );
+
+   /* Constraint matrix getters */
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_row_lhs( const libpapilo_problem_t* problem,
+                                  int* size );
+
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_row_rhs( const libpapilo_problem_t* problem,
+                                  int* size );
+
+   LIBPAPILO_EXPORT const int*
+   libpapilo_problem_get_row_sizes( const libpapilo_problem_t* problem,
+                                    int* size );
+
+   LIBPAPILO_EXPORT const int*
+   libpapilo_problem_get_col_sizes( const libpapilo_problem_t* problem,
+                                    int* size );
+
+   /* Sparse matrix entry getters */
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
+                                      int row,
+                                      const int** cols,
+                                      const double** vals );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_get_col_entries( const libpapilo_problem_t* problem,
+                                      int col,
+                                      const int** rows,
+                                      const double** vals );
+
+   /* Name getters */
+   LIBPAPILO_EXPORT const char*
+   libpapilo_problem_get_name( const libpapilo_problem_t* problem );
+
+   LIBPAPILO_EXPORT const char*
+   libpapilo_problem_get_variable_name( const libpapilo_problem_t* problem,
+                                        int col );
+
+   LIBPAPILO_EXPORT const char*
+   libpapilo_problem_get_constraint_name( const libpapilo_problem_t* problem,
+                                          int row );
+
+   /* Flag getters */
+   LIBPAPILO_EXPORT uint8_t
+   libpapilo_problem_get_col_flags( const libpapilo_problem_t* problem,
+                                    int col );
+
+   LIBPAPILO_EXPORT uint8_t
+   libpapilo_problem_get_row_flags( const libpapilo_problem_t* problem,
+                                    int row );
 
 #ifdef __cplusplus
 }

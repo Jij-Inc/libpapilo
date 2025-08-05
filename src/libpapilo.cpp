@@ -460,4 +460,226 @@ extern "C"
       return problem->problem.getConstraintMatrix().getNnz();
    }
 
+   int
+   libpapilo_problem_get_num_integral_cols( const libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      return problem->problem.getNumIntegralCols();
+   }
+
+   int
+   libpapilo_problem_get_num_continuous_cols( const libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      return problem->problem.getNumContinuousCols();
+   }
+
+   const double*
+   libpapilo_problem_get_objective_coefficients( const libpapilo_problem_t* problem,
+                                                 int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& obj = problem->problem.getObjective();
+      if( size != nullptr )
+         *size = obj.coefficients.size();
+      return obj.coefficients.data();
+   }
+
+   double
+   libpapilo_problem_get_objective_offset( const libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      return problem->problem.getObjective().offset;
+   }
+
+   const double*
+   libpapilo_problem_get_lower_bounds( const libpapilo_problem_t* problem,
+                                       int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& bounds = problem->problem.getLowerBounds();
+      if( size != nullptr )
+         *size = bounds.size();
+      return bounds.data();
+   }
+
+   const double*
+   libpapilo_problem_get_upper_bounds( const libpapilo_problem_t* problem,
+                                       int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& bounds = problem->problem.getUpperBounds();
+      if( size != nullptr )
+         *size = bounds.size();
+      return bounds.data();
+   }
+
+   const double*
+   libpapilo_problem_get_row_lhs( const libpapilo_problem_t* problem,
+                                  int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& lhs = problem->problem.getConstraintMatrix().getLeftHandSides();
+      if( size != nullptr )
+         *size = lhs.size();
+      return lhs.data();
+   }
+
+   const double*
+   libpapilo_problem_get_row_rhs( const libpapilo_problem_t* problem,
+                                  int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& rhs = problem->problem.getConstraintMatrix().getRightHandSides();
+      if( size != nullptr )
+         *size = rhs.size();
+      return rhs.data();
+   }
+
+   const int*
+   libpapilo_problem_get_row_sizes( const libpapilo_problem_t* problem,
+                                    int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& sizes = problem->problem.getRowSizes();
+      if( size != nullptr )
+         *size = sizes.size();
+      return sizes.data();
+   }
+
+   const int*
+   libpapilo_problem_get_col_sizes( const libpapilo_problem_t* problem,
+                                    int* size )
+   {
+      check_problem_ptr( problem );
+      const auto& sizes = problem->problem.getColSizes();
+      if( size != nullptr )
+         *size = sizes.size();
+      return sizes.data();
+   }
+
+   const char*
+   libpapilo_problem_get_name( const libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      const auto& name = problem->problem.getName();
+      return name.c_str();
+   }
+
+   const char*
+   libpapilo_problem_get_variable_name( const libpapilo_problem_t* problem,
+                                        int col )
+   {
+      check_problem_ptr( problem );
+      const auto& names = problem->problem.getVariableNames();
+      if( col < 0 || col >= (int)names.size() )
+         return nullptr;
+      return names[col].c_str();
+   }
+
+   const char*
+   libpapilo_problem_get_constraint_name( const libpapilo_problem_t* problem,
+                                          int row )
+   {
+      check_problem_ptr( problem );
+      const auto& names = problem->problem.getConstraintNames();
+      if( row < 0 || row >= (int)names.size() )
+         return nullptr;
+      return names[row].c_str();
+   }
+
+   uint8_t
+   libpapilo_problem_get_col_flags( const libpapilo_problem_t* problem,
+                                    int col )
+   {
+      check_problem_ptr( problem );
+      const auto& flags = problem->problem.getColFlags();
+      if( col < 0 || col >= (int)flags.size() )
+         return 0;
+      
+      uint8_t c_flags = 0;
+      const auto& papilo_flags = flags[col];
+      
+      if( papilo_flags.test( papilo::ColFlag::kLbInf ) )
+         c_flags |= LIBPAPILO_COLFLAG_LB_INF;
+      if( papilo_flags.test( papilo::ColFlag::kUbInf ) )
+         c_flags |= LIBPAPILO_COLFLAG_UB_INF;
+      if( papilo_flags.test( papilo::ColFlag::kIntegral ) )
+         c_flags |= LIBPAPILO_COLFLAG_INTEGRAL;
+      if( papilo_flags.test( papilo::ColFlag::kImplInt ) )
+         c_flags |= LIBPAPILO_COLFLAG_IMPLIED_INTEGRAL;
+      if( papilo_flags.test( papilo::ColFlag::kFixed ) )
+         c_flags |= LIBPAPILO_COLFLAG_FIXED;
+      
+      return c_flags;
+   }
+
+   uint8_t
+   libpapilo_problem_get_row_flags( const libpapilo_problem_t* problem,
+                                    int row )
+   {
+      check_problem_ptr( problem );
+      const auto& flags = problem->problem.getRowFlags();
+      if( row < 0 || row >= (int)flags.size() )
+         return 0;
+      
+      uint8_t c_flags = 0;
+      const auto& papilo_flags = flags[row];
+      
+      if( papilo_flags.test( papilo::RowFlag::kLhsInf ) )
+         c_flags |= LIBPAPILO_ROWFLAG_LHS_INF;
+      if( papilo_flags.test( papilo::RowFlag::kRhsInf ) )
+         c_flags |= LIBPAPILO_ROWFLAG_RHS_INF;
+      if( papilo_flags.test( papilo::RowFlag::kRedundant ) )
+         c_flags |= LIBPAPILO_ROWFLAG_REDUNDANT;
+      if( papilo_flags.test( papilo::RowFlag::kEquation ) )
+         c_flags |= LIBPAPILO_ROWFLAG_EQUATION;
+      
+      return c_flags;
+   }
+
+   int
+   libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
+                                      int row,
+                                      const int** cols,
+                                      const double** vals )
+   {
+      check_problem_ptr( problem );
+      const auto& matrix = problem->problem.getConstraintMatrix();
+      
+      if( row < 0 || row >= matrix.getNRows() )
+         return -1;
+      
+      auto rowvec = matrix.getRowCoefficients( row );
+      
+      if( cols != nullptr )
+         *cols = rowvec.getIndices();
+      if( vals != nullptr )
+         *vals = rowvec.getValues();
+      
+      return rowvec.getLength();
+   }
+
+   int
+   libpapilo_problem_get_col_entries( const libpapilo_problem_t* problem,
+                                      int col,
+                                      const int** rows,
+                                      const double** vals )
+   {
+      check_problem_ptr( problem );
+      const auto& matrix = problem->problem.getConstraintMatrix();
+      
+      if( col < 0 || col >= matrix.getNCols() )
+         return -1;
+      
+      auto colvec = matrix.getColumnCoefficients( col );
+      
+      if( rows != nullptr )
+         *rows = colvec.getIndices();
+      if( vals != nullptr )
+         *vals = colvec.getValues();
+      
+      return colvec.getLength();
+   }
+
 } // extern "C"
