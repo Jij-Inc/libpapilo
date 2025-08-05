@@ -52,28 +52,37 @@ extern "C"
    typedef enum
    {
       LIBPAPILO_COL_REDUCTION_NONE = -1,
-      LIBPAPILO_COL_REDUCTION_REDUNDANT = -2,
-      LIBPAPILO_COL_REDUCTION_REPLACE = -3,
-      LIBPAPILO_COL_REDUCTION_SUBSTITUTE_OBJ = -4,
-      LIBPAPILO_COL_REDUCTION_PARALLEL = -5,
-      LIBPAPILO_COL_REDUCTION_FIXED = -6,
-      LIBPAPILO_COL_REDUCTION_BOUNDS_LOCKED = -7,
-      LIBPAPILO_COL_REDUCTION_NONE_LOCKED = -8
+      LIBPAPILO_COL_REDUCTION_LOWER_BOUND = -3,
+      LIBPAPILO_COL_REDUCTION_UPPER_BOUND = -4,
+      LIBPAPILO_COL_REDUCTION_FIXED = -5,
+      LIBPAPILO_COL_REDUCTION_LOCKED = -6,
+      LIBPAPILO_COL_REDUCTION_SUBSTITUTE = -8,
+      LIBPAPILO_COL_REDUCTION_BOUNDS_LOCKED = -9,
+      LIBPAPILO_COL_REDUCTION_REPLACE = -10,
+      LIBPAPILO_COL_REDUCTION_SUBSTITUTE_OBJ = -11,
+      LIBPAPILO_COL_REDUCTION_PARALLEL = -12,
+      LIBPAPILO_COL_REDUCTION_IMPL_INT = -13,
+      LIBPAPILO_COL_REDUCTION_FIXED_INFINITY = -14
    } libpapilo_col_reduction_t;
 
    /* Reduction type for rows */
    typedef enum
    {
       LIBPAPILO_ROW_REDUCTION_NONE = -1,
-      LIBPAPILO_ROW_REDUCTION_REDUNDANT = -2,
+      LIBPAPILO_ROW_REDUCTION_RHS = -2,
       LIBPAPILO_ROW_REDUCTION_LHS = -3,
-      LIBPAPILO_ROW_REDUCTION_RHS = -4,
-      LIBPAPILO_ROW_REDUCTION_LHS_INF = -5,
-      LIBPAPILO_ROW_REDUCTION_RHS_INF = -6,
-      LIBPAPILO_ROW_REDUCTION_REDUNDANT_LHS = -7,
-      LIBPAPILO_ROW_REDUCTION_REDUNDANT_RHS = -8,
-      LIBPAPILO_ROW_REDUCTION_LOCKED = -9,
-      LIBPAPILO_ROW_REDUCTION_NONE_LOCKED = -10
+      LIBPAPILO_ROW_REDUCTION_REDUNDANT = -4,
+      LIBPAPILO_ROW_REDUCTION_LOCKED = -5,
+      LIBPAPILO_ROW_REDUCTION_RHS_INF = -7,
+      LIBPAPILO_ROW_REDUCTION_LHS_INF = -8,
+      LIBPAPILO_ROW_REDUCTION_SPARSIFY = -9,
+      LIBPAPILO_ROW_REDUCTION_RHS_LESS_RESTRICTIVE = -10,
+      LIBPAPILO_ROW_REDUCTION_LHS_LESS_RESTRICTIVE = -11,
+      LIBPAPILO_ROW_REDUCTION_REASON_FOR_LESS_RESTRICTIVE_BOUND_CHANGE = -12,
+      LIBPAPILO_ROW_REDUCTION_SAVE_ROW = -13,
+      LIBPAPILO_ROW_REDUCTION_CERTIFICATE_RHS_GCD = -14,
+      LIBPAPILO_ROW_REDUCTION_IMPLIED_BOUNDS = -15,
+      LIBPAPILO_ROW_REDUCTION_PARALLEL_ROW = -16
    } libpapilo_row_reduction_t;
 
    /* Reduction info structure */
@@ -168,6 +177,15 @@ extern "C"
    libpapilo_problem_builder_set_col_ub_all(
        libpapilo_problem_builder_t* builder, const double* ubs );
 
+   /* Column infinity bounds */
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_builder_set_col_lb_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_builder_set_col_ub_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf );
+
    /* Column properties */
    LIBPAPILO_EXPORT void
    libpapilo_problem_builder_set_col_integral(
@@ -193,6 +211,15 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_problem_builder_set_row_rhs_all(
        libpapilo_problem_builder_t* builder, const double* rhs_vals );
+
+   /* Row infinity bounds */
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_builder_set_row_lhs_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_builder_set_row_rhs_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf );
 
    /* Matrix entries */
    LIBPAPILO_EXPORT void
@@ -226,6 +253,15 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_problem_builder_set_row_name( libpapilo_problem_builder_t* builder,
                                            int row, const char* name );
+
+   /* Batch name setters */
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_builder_set_col_name_all(
+       libpapilo_problem_builder_t* builder, const char* const* names );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_builder_set_row_name_all(
+       libpapilo_problem_builder_t* builder, const char* const* names );
 
    /* Build */
    LIBPAPILO_EXPORT
@@ -367,6 +403,11 @@ extern "C"
    libpapilo_reductions_free( libpapilo_reductions_t* reductions );
 
    /* PostsolveStorage management */
+   LIBPAPILO_EXPORT libpapilo_postsolve_storage_t*
+   libpapilo_postsolve_storage_create( libpapilo_problem_t* problem,
+                                       libpapilo_num_t* num,
+                                       libpapilo_presolve_options_t* options );
+
    LIBPAPILO_EXPORT void
    libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve );
 

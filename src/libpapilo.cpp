@@ -427,6 +427,34 @@ extern "C"
       }
    }
 
+   /* Column infinity bounds implementations */
+
+   void
+   libpapilo_problem_builder_set_col_lb_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
+   {
+      check_problem_builder_ptr( builder );
+      custom_assert(
+          is_inf != nullptr,
+          "libpapilo_problem_builder_set_col_lb_inf_all: is_inf pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<uint8_t> vals( is_inf, is_inf + ncols );
+      builder->builder.setColLbInfAll( std::move( vals ) );
+   }
+
+   void
+   libpapilo_problem_builder_set_col_ub_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
+   {
+      check_problem_builder_ptr( builder );
+      custom_assert(
+          is_inf != nullptr,
+          "libpapilo_problem_builder_set_col_ub_inf_all: is_inf pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<uint8_t> vals( is_inf, is_inf + ncols );
+      builder->builder.setColUbInfAll( std::move( vals ) );
+   }
+
    void
    libpapilo_problem_builder_set_col_integral(
        libpapilo_problem_builder_t* builder, int col, int is_integral )
@@ -512,6 +540,34 @@ extern "C"
          else
             builder->builder.setRowRhsInf( i, false );
       }
+   }
+
+   /* Row infinity bounds implementations */
+
+   void
+   libpapilo_problem_builder_set_row_lhs_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
+   {
+      check_problem_builder_ptr( builder );
+      custom_assert(
+          is_inf != nullptr,
+          "libpapilo_problem_builder_set_row_lhs_inf_all: is_inf pointer is null" );
+      int nrows = builder->builder.getNumRows();
+      Vec<uint8_t> vals( is_inf, is_inf + nrows );
+      builder->builder.setRowLhsInfAll( std::move( vals ) );
+   }
+
+   void
+   libpapilo_problem_builder_set_row_rhs_inf_all(
+       libpapilo_problem_builder_t* builder, const uint8_t* is_inf )
+   {
+      check_problem_builder_ptr( builder );
+      custom_assert(
+          is_inf != nullptr,
+          "libpapilo_problem_builder_set_row_rhs_inf_all: is_inf pointer is null" );
+      int nrows = builder->builder.getNumRows();
+      Vec<uint8_t> vals( is_inf, is_inf + nrows );
+      builder->builder.setRowRhsInfAll( std::move( vals ) );
    }
 
    void
@@ -620,6 +676,50 @@ extern "C"
           name != nullptr,
           "libpapilo_problem_builder_set_row_name: name pointer is null" );
       builder->builder.setRowName( row, name );
+   }
+
+   /* Batch name setters implementations */
+
+   void
+   libpapilo_problem_builder_set_col_name_all(
+       libpapilo_problem_builder_t* builder, const char* const* names )
+   {
+      check_problem_builder_ptr( builder );
+      custom_assert(
+          names != nullptr,
+          "libpapilo_problem_builder_set_col_name_all: names pointer is null" );
+      int ncols = builder->builder.getNumCols();
+      Vec<std::string> name_vec;
+      name_vec.reserve( ncols );
+      for( int i = 0; i < ncols; ++i )
+      {
+         if( names[i] != nullptr )
+            name_vec.emplace_back( names[i] );
+         else
+            name_vec.emplace_back( "" );
+      }
+      builder->builder.setColNameAll( std::move( name_vec ) );
+   }
+
+   void
+   libpapilo_problem_builder_set_row_name_all(
+       libpapilo_problem_builder_t* builder, const char* const* names )
+   {
+      check_problem_builder_ptr( builder );
+      custom_assert(
+          names != nullptr,
+          "libpapilo_problem_builder_set_row_name_all: names pointer is null" );
+      int nrows = builder->builder.getNumRows();
+      Vec<std::string> name_vec;
+      name_vec.reserve( nrows );
+      for( int i = 0; i < nrows; ++i )
+      {
+         if( names[i] != nullptr )
+            name_vec.emplace_back( names[i] );
+         else
+            name_vec.emplace_back( "" );
+      }
+      builder->builder.setRowNameAll( std::move( name_vec ) );
    }
 
    libpapilo_problem_t*
@@ -1071,6 +1171,27 @@ extern "C"
    {
       check_reductions_ptr( reductions );
       delete reductions;
+   }
+
+   /* PostsolveStorage management implementation */
+
+   libpapilo_postsolve_storage_t*
+   libpapilo_postsolve_storage_create( libpapilo_problem_t* problem,
+                                       libpapilo_num_t* num,
+                                       libpapilo_presolve_options_t* options )
+   {
+      check_problem_ptr( problem );
+      check_num_ptr( num );
+      check_presolve_options_ptr( options );
+
+      return check_run(
+          [&]()
+          {
+             PostsolveStorage<double> postsolve( problem->problem, num->num,
+                                                 options->options );
+             return new libpapilo_postsolve_storage_t( std::move( postsolve ) );
+          },
+          "Failed to create postsolve storage" );
    }
 
    void
