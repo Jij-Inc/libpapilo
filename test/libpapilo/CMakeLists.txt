@@ -3,6 +3,7 @@
 set(LIBPAPILO_TESTS
     ProblemBuilderTest.cpp
     PresolveCommonTest.cpp
+    SingletonColsTest.cpp
     # Add more test files as needed
 )
 
