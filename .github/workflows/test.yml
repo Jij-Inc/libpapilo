@@ -13,18 +13,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Cache APT packages
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: cmake ninja-build libtbb-dev libboost-dev
-          version: 1.0
-
-      - name: Configure CMake
-        run: cmake --preset debug
-
+      - name: Setup Environment
+        uses: ./.github/actions/setup-test-environment
       - name: Build
-        run: cmake --build --preset debug
-
+        run: task build:all
       - name: Test
-        run: ctest --preset debug
+        run: task test:all
+
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Environment
+        uses: ./.github/actions/setup-test-environment
+      - name: Try format libpapilo codes
+        run: task format:libpapilo
+      - name: Check formatted
+        run: |
+          if ! git diff --exit-code; then
+            echo "Formatting issues found. Please run 'task format:libpapilo' to fix them."
+            exit 1
+          fi
