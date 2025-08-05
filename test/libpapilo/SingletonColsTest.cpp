@@ -596,7 +596,8 @@ setupProblemWithOnlyOneEntryIn1stRowAndColumn()
    uint8_t isLefthandsideInfinity[] = { 1, 1 };
    uint8_t isRighthandsideInfinity[] = { 0, 0 };
    double rhs[] = { 3.0, 10.0 };
-   const char* rowNames[] = { "A1", "A2" };
+   // Only used for array size in original C++ test
+   // const char* rowNames[] = { "A1", "A2" };
    const char* columnNames[] = { "x", "y", "z" };
 
    libpapilo_problem_builder_t* pb = libpapilo_problem_builder_create();
@@ -641,7 +642,8 @@ setupProblemWithSingletonColumn()
    uint8_t isLefthandsideInfinity[] = { 0, 1, 1 };
    uint8_t isRighthandsideInfinity[] = { 0, 0, 0 };
    double rhs[] = { 1.0, 2.0, 3.0 };
-   const char* rowNames[] = { "A1", "A2", "A3" };
+   // Only used for array size in original C++ test
+   // const char* rowNames[] = { "A1", "A2", "A3" };
    const char* columnNames[] = { "c1", "c2", "c3" };
 
    libpapilo_problem_builder_t* pb = libpapilo_problem_builder_create();
@@ -687,7 +689,8 @@ setupProblemWithSingletonColumnInEquationWithNoImpliedBounds(
    uint8_t isLefthandsideInfinity[] = { 0, 1, 1 };
    uint8_t isRighthandsideInfinity[] = { 0, 0, 0 };
    double rhs[] = { 1.0, 2.0, 3.0 };
-   const char* rowNames[] = { "A1", "A2", "A3" };
+   // Only used for array size in original C++ test
+   // const char* rowNames[] = { "A1", "A2", "A3" };
    const char* columnNames[] = { "c1", "c2", "c3" };
 
    libpapilo_problem_builder_t* pb = libpapilo_problem_builder_create();
@@ -729,7 +732,8 @@ setupProblemWithSingletonColumnInEquationWithInfinityBounds()
    uint8_t lower_bound_infinity[] = { 0, 0, 0 };
 
    double rhs[] = { 1.0, 2.0, 3.0 };
-   const char* rowNames[] = { "A1", "A2", "A3" };
+   // Only used for array size in original C++ test
+   // const char* rowNames[] = { "A1", "A2", "A3" };
    const char* columnNames[] = { "c1", "c2", "c3" };
 
    libpapilo_problem_builder_t* pb = libpapilo_problem_builder_create();
