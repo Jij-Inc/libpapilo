@@ -7,6 +7,11 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
 {
    SECTION( "basic builder workflow" )
    {
+      // Test Purpose: Verify individual setter functions work correctly and
+      // validate that the constructed problem contains the expected data.
+      // Uses individual setters (set_obj, set_col_lb, add_entry, etc.) to build
+      // a 3-variable, 2-constraint optimization problem with names and bounds.
+      // Comprehensive validation using all getter APIs to ensure data integrity.
       // Create builder
       libpapilo_problem_builder_t* builder = libpapilo_problem_builder_create();
       REQUIRE( builder != nullptr );
@@ -183,6 +188,10 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
 
    SECTION( "batch operations" )
    {
+      // Test Purpose: Verify batch/array setter functions (*_all methods) work correctly.
+      // Uses batch setters (set_obj_all, set_col_lb_all, add_entry_all, etc.) to build
+      // the same logical problem structure as the basic workflow, but with different
+      // construction methods. Validates that batch operations produce equivalent results.
       libpapilo_problem_builder_t* builder = libpapilo_problem_builder_create();
       REQUIRE( builder != nullptr );
 
@@ -260,6 +269,10 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
 
    SECTION( "integer variables" )
    {
+      // Test Purpose: Verify integer variable designation works correctly.
+      // Tests both individual (set_col_integral) and batch (set_col_integral_all)
+      // methods for setting variable integrality. Validates that the problem
+      // correctly distinguishes between integer and continuous variables.
       libpapilo_problem_builder_t* builder = libpapilo_problem_builder_create();
       REQUIRE( builder != nullptr );
 
@@ -301,6 +314,11 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
 
    SECTION( "row and column entry methods" )
    {
+      // Test Purpose: Verify alternative matrix entry construction methods work correctly.
+      // Tests add_row_entries (adding multiple entries for a single row) and
+      // add_col_entries (adding multiple entries for a single column) methods.
+      // Uses a different problem structure (4 variables, 3 constraints) to validate
+      // these specialized entry addition functions.
       libpapilo_problem_builder_t* builder = libpapilo_problem_builder_create();
       REQUIRE( builder != nullptr );
 
