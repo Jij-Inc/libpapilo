@@ -1,0 +1,24 @@
+# https://taskfile.dev
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  format:libpapilo:
+    desc: Format only libpapilo codes
+    cmds:
+      - clang-format -i src/libpapilo.* test/libpapilo/*.cpp
+
+  build:all:
+    cmds:
+      - cmake --preset debug
+      - cmake --build --preset debug
+
+  test:all:
+    cmds:
+      - task: build
+      - ctest --preset debug
+
+  test:libpapilo:
+    cmds:
+      - cmake --build --preset debug --target libpapilo_unit_test
+      - ctest --preset debug --tests-regex libpapilo

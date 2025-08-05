@@ -185,8 +185,9 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* lbs )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( lbs != nullptr,
-                     "libpapilo_problem_builder_set_col_lb_all: lbs pointer is null" );
+      custom_assert(
+          lbs != nullptr,
+          "libpapilo_problem_builder_set_col_lb_all: lbs pointer is null" );
       int ncols = builder->builder.getNumCols();
       Vec<double> vals( lbs, lbs + ncols );
       builder->builder.setColLbAll( std::move( vals ) );
@@ -218,8 +219,9 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* ubs )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( ubs != nullptr,
-                     "libpapilo_problem_builder_set_col_ub_all: ubs pointer is null" );
+      custom_assert(
+          ubs != nullptr,
+          "libpapilo_problem_builder_set_col_ub_all: ubs pointer is null" );
       int ncols = builder->builder.getNumCols();
       Vec<double> vals( ubs, ubs + ncols );
       builder->builder.setColUbAll( std::move( vals ) );
@@ -248,7 +250,8 @@ extern "C"
    {
       check_problem_builder_ptr( builder );
       custom_assert( is_integral != nullptr,
-                     "libpapilo_problem_builder_set_col_integral_all: is_integral pointer is null" );
+                     "libpapilo_problem_builder_set_col_integral_all: "
+                     "is_integral pointer is null" );
       int ncols = builder->builder.getNumCols();
       Vec<uint8_t> vals( is_integral, is_integral + ncols );
       builder->builder.setColIntegralAll( std::move( vals ) );
@@ -271,8 +274,8 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* lhs_vals )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( lhs_vals != nullptr,
-                     "libpapilo_problem_builder_set_row_lhs_all: lhs_vals pointer is null" );
+      custom_assert( lhs_vals != nullptr, "libpapilo_problem_builder_set_row_"
+                                          "lhs_all: lhs_vals pointer is null" );
       int nrows = builder->builder.getNumRows();
       Vec<double> vals( lhs_vals, lhs_vals + nrows );
       builder->builder.setRowLhsAll( std::move( vals ) );
@@ -304,8 +307,8 @@ extern "C"
        libpapilo_problem_builder_t* builder, const double* rhs_vals )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( rhs_vals != nullptr,
-                     "libpapilo_problem_builder_set_row_rhs_all: rhs_vals pointer is null" );
+      custom_assert( rhs_vals != nullptr, "libpapilo_problem_builder_set_row_"
+                                          "rhs_all: rhs_vals pointer is null" );
       int nrows = builder->builder.getNumRows();
       Vec<double> vals( rhs_vals, rhs_vals + nrows );
       builder->builder.setRowRhsAll( std::move( vals ) );
@@ -337,12 +340,15 @@ extern "C"
        const int* cols, const double* vals )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( rows != nullptr,
-                     "libpapilo_problem_builder_add_entry_all: rows pointer is null" );
-      custom_assert( cols != nullptr,
-                     "libpapilo_problem_builder_add_entry_all: cols pointer is null" );
-      custom_assert( vals != nullptr,
-                     "libpapilo_problem_builder_add_entry_all: vals pointer is null" );
+      custom_assert(
+          rows != nullptr,
+          "libpapilo_problem_builder_add_entry_all: rows pointer is null" );
+      custom_assert(
+          cols != nullptr,
+          "libpapilo_problem_builder_add_entry_all: cols pointer is null" );
+      custom_assert(
+          vals != nullptr,
+          "libpapilo_problem_builder_add_entry_all: vals pointer is null" );
       if( count > 0 )
       {
          Vec<std::tuple<int, int, double>> entries;
@@ -362,10 +368,12 @@ extern "C"
        const double* vals )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( cols != nullptr,
-                     "libpapilo_problem_builder_add_row_entries: cols pointer is null" );
-      custom_assert( vals != nullptr,
-                     "libpapilo_problem_builder_add_row_entries: vals pointer is null" );
+      custom_assert(
+          cols != nullptr,
+          "libpapilo_problem_builder_add_row_entries: cols pointer is null" );
+      custom_assert(
+          vals != nullptr,
+          "libpapilo_problem_builder_add_row_entries: vals pointer is null" );
       if( len > 0 )
       {
          builder->builder.addRowEntries( row, len, cols, vals );
@@ -378,10 +386,12 @@ extern "C"
        const double* vals )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( rows != nullptr,
-                     "libpapilo_problem_builder_add_col_entries: rows pointer is null" );
-      custom_assert( vals != nullptr,
-                     "libpapilo_problem_builder_add_col_entries: vals pointer is null" );
+      custom_assert(
+          rows != nullptr,
+          "libpapilo_problem_builder_add_col_entries: rows pointer is null" );
+      custom_assert(
+          vals != nullptr,
+          "libpapilo_problem_builder_add_col_entries: vals pointer is null" );
       if( len > 0 )
       {
          builder->builder.addColEntries( col, len, rows, vals );
@@ -393,8 +403,9 @@ extern "C"
        libpapilo_problem_builder_t* builder, const char* name )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( name != nullptr,
-                     "libpapilo_problem_builder_set_problem_name: name pointer is null" );
+      custom_assert(
+          name != nullptr,
+          "libpapilo_problem_builder_set_problem_name: name pointer is null" );
       builder->builder.setProblemName( name );
    }
 
@@ -403,8 +414,9 @@ extern "C"
                                            int col, const char* name )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( name != nullptr,
-                     "libpapilo_problem_builder_set_col_name: name pointer is null" );
+      custom_assert(
+          name != nullptr,
+          "libpapilo_problem_builder_set_col_name: name pointer is null" );
       builder->builder.setColName( col, name );
    }
 
@@ -413,8 +425,9 @@ extern "C"
                                            int row, const char* name )
    {
       check_problem_builder_ptr( builder );
-      custom_assert( name != nullptr,
-                     "libpapilo_problem_builder_set_row_name: name pointer is null" );
+      custom_assert(
+          name != nullptr,
+          "libpapilo_problem_builder_set_row_name: name pointer is null" );
       builder->builder.setRowName( row, name );
    }
 
@@ -423,13 +436,14 @@ extern "C"
    {
       check_problem_builder_ptr( builder );
 
-      return check_run( 
-         [builder]() {
-            auto* problem = new libpapilo_problem_t();
-            problem->problem = builder->builder.build();
-            return problem;
-         },
-         "Failed to build problem" );
+      return check_run(
+          [builder]()
+          {
+             auto* problem = new libpapilo_problem_t();
+             problem->problem = builder->builder.build();
+             return problem;
+          },
+          "Failed to build problem" );
    }
 
    void
@@ -468,15 +482,16 @@ extern "C"
    }
 
    int
-   libpapilo_problem_get_num_continuous_cols( const libpapilo_problem_t* problem )
+   libpapilo_problem_get_num_continuous_cols(
+       const libpapilo_problem_t* problem )
    {
       check_problem_ptr( problem );
       return problem->problem.getNumContinuousCols();
    }
 
    const double*
-   libpapilo_problem_get_objective_coefficients( const libpapilo_problem_t* problem,
-                                                 int* size )
+   libpapilo_problem_get_objective_coefficients(
+       const libpapilo_problem_t* problem, int* size )
    {
       check_problem_ptr( problem );
       const auto& obj = problem->problem.getObjective();
@@ -519,7 +534,8 @@ extern "C"
                                   int* size )
    {
       check_problem_ptr( problem );
-      const auto& lhs = problem->problem.getConstraintMatrix().getLeftHandSides();
+      const auto& lhs =
+          problem->problem.getConstraintMatrix().getLeftHandSides();
       if( size != nullptr )
          *size = lhs.size();
       return lhs.data();
@@ -530,7 +546,8 @@ extern "C"
                                   int* size )
    {
       check_problem_ptr( problem );
-      const auto& rhs = problem->problem.getConstraintMatrix().getRightHandSides();
+      const auto& rhs =
+          problem->problem.getConstraintMatrix().getRightHandSides();
       if( size != nullptr )
          *size = rhs.size();
       return rhs.data();
@@ -596,10 +613,10 @@ extern "C"
       const auto& flags = problem->problem.getColFlags();
       if( col < 0 || col >= (int)flags.size() )
          return 0;
-      
+
       uint8_t c_flags = 0;
       const auto& papilo_flags = flags[col];
-      
+
       if( papilo_flags.test( papilo::ColFlag::kLbInf ) )
          c_flags |= LIBPAPILO_COLFLAG_LB_INF;
       if( papilo_flags.test( papilo::ColFlag::kUbInf ) )
@@ -610,7 +627,7 @@ extern "C"
          c_flags |= LIBPAPILO_COLFLAG_IMPLIED_INTEGRAL;
       if( papilo_flags.test( papilo::ColFlag::kFixed ) )
          c_flags |= LIBPAPILO_COLFLAG_FIXED;
-      
+
       return c_flags;
    }
 
@@ -622,10 +639,10 @@ extern "C"
       const auto& flags = problem->problem.getRowFlags();
       if( row < 0 || row >= (int)flags.size() )
          return 0;
-      
+
       uint8_t c_flags = 0;
       const auto& papilo_flags = flags[row];
-      
+
       if( papilo_flags.test( papilo::RowFlag::kLhsInf ) )
          c_flags |= LIBPAPILO_ROWFLAG_LHS_INF;
       if( papilo_flags.test( papilo::RowFlag::kRhsInf ) )
@@ -634,51 +651,49 @@ extern "C"
          c_flags |= LIBPAPILO_ROWFLAG_REDUNDANT;
       if( papilo_flags.test( papilo::RowFlag::kEquation ) )
          c_flags |= LIBPAPILO_ROWFLAG_EQUATION;
-      
+
       return c_flags;
    }
 
    int
    libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
-                                      int row,
-                                      const int** cols,
+                                      int row, const int** cols,
                                       const double** vals )
    {
       check_problem_ptr( problem );
       const auto& matrix = problem->problem.getConstraintMatrix();
-      
+
       if( row < 0 || row >= matrix.getNRows() )
          return -1;
-      
+
       auto rowvec = matrix.getRowCoefficients( row );
-      
+
       if( cols != nullptr )
          *cols = rowvec.getIndices();
       if( vals != nullptr )
          *vals = rowvec.getValues();
-      
+
       return rowvec.getLength();
    }
 
    int
    libpapilo_problem_get_col_entries( const libpapilo_problem_t* problem,
-                                      int col,
-                                      const int** rows,
+                                      int col, const int** rows,
                                       const double** vals )
    {
       check_problem_ptr( problem );
       const auto& matrix = problem->problem.getConstraintMatrix();
-      
+
       if( col < 0 || col >= matrix.getNCols() )
          return -1;
-      
+
       auto colvec = matrix.getColumnCoefficients( col );
-      
+
       if( rows != nullptr )
          *rows = colvec.getIndices();
       if( vals != nullptr )
          *vals = colvec.getValues();
-      
+
       return colvec.getLength();
    }
 

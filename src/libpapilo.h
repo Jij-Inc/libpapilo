@@ -21,7 +21,8 @@ extern "C"
 #endif
 
    /* Flag definitions for column and row properties */
-   typedef enum {
+   typedef enum
+   {
       LIBPAPILO_COLFLAG_LB_INF = 1 << 0,
       LIBPAPILO_COLFLAG_UB_INF = 1 << 1,
       LIBPAPILO_COLFLAG_INTEGRAL = 1 << 2,
@@ -29,7 +30,8 @@ extern "C"
       LIBPAPILO_COLFLAG_FIXED = 1 << 4
    } libpapilo_col_flags_t;
 
-   typedef enum {
+   typedef enum
+   {
       LIBPAPILO_ROWFLAG_LHS_INF = 1 << 0,
       LIBPAPILO_ROWFLAG_RHS_INF = 1 << 1,
       LIBPAPILO_ROWFLAG_REDUNDANT = 1 << 2,
@@ -179,15 +181,17 @@ extern "C"
 
    /* Problem data getters */
    LIBPAPILO_EXPORT int
-   libpapilo_problem_get_num_integral_cols( const libpapilo_problem_t* problem );
+   libpapilo_problem_get_num_integral_cols(
+       const libpapilo_problem_t* problem );
 
    LIBPAPILO_EXPORT int
-   libpapilo_problem_get_num_continuous_cols( const libpapilo_problem_t* problem );
+   libpapilo_problem_get_num_continuous_cols(
+       const libpapilo_problem_t* problem );
 
    /* Objective getters */
    LIBPAPILO_EXPORT const double*
-   libpapilo_problem_get_objective_coefficients( const libpapilo_problem_t* problem,
-                                                 int* size );
+   libpapilo_problem_get_objective_coefficients(
+       const libpapilo_problem_t* problem, int* size );
 
    LIBPAPILO_EXPORT double
    libpapilo_problem_get_objective_offset( const libpapilo_problem_t* problem );
@@ -221,14 +225,12 @@ extern "C"
    /* Sparse matrix entry getters */
    LIBPAPILO_EXPORT int
    libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
-                                      int row,
-                                      const int** cols,
+                                      int row, const int** cols,
                                       const double** vals );
 
    LIBPAPILO_EXPORT int
    libpapilo_problem_get_col_entries( const libpapilo_problem_t* problem,
-                                      int col,
-                                      const int** rows,
+                                      int col, const int** rows,
                                       const double** vals );
 
    /* Name getters */
