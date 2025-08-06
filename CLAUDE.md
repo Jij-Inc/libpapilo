@@ -87,22 +87,26 @@ This phase established the C API foundation, providing the ability to build a pr
 
 ### Phase 2: Individual Presolver API Implementation 🚧 **IN PROGRESS**
 
-**Priority Goal**: Complete reproduction of `test/papilo/presolve/SingletonColsTest.cpp` using libpapilo C API.
+**Phase 2 Goal**: Complete reproduction of all tests in `test/papilo/presolve/` directory using libpapilo C API.
 
-This phase implements the granular presolving functionality required to exactly replicate the existing C++ tests.
+**First Milestone Completed**: ✅ Full reproduction of `test/papilo/presolve/SingletonColsTest.cpp` using libpapilo C API ([PR #8](https://github.com/Jij-Inc/libpapilo/pull/8))
 
-- **C API Design**: The design follows a **one-to-one mapping** of core C++ classes to C opaque pointers:
-    - `libpapilo_presolve_options_t` -> `papilo::PresolveOptions` ✅ **COMPLETED**
-    - `libpapilo_statistics_t` -> `papilo::Statistics` ✅ **COMPLETED** 
-    - `libpapilo_postsolve_storage_t` -> `papilo::PostsolveStorage<double>` ✅ **COMPLETED**
-    - `libpapilo_problem_update_t` -> `papilo::ProblemUpdate<double>` ✅ **COMPLETED**
-    - `libpapilo_reductions_t` -> `papilo::Reductions<double>` ✅ **COMPLETED**
-    - `libpapilo_singleton_cols_t` -> `papilo::SingletonCols<double>` 🚧 **NEEDED**
-    - `libpapilo_num_t` -> `papilo::Num<double>` 🚧 **NEEDED**
-    - `libpapilo_timer_t` -> `papilo::Timer` 🚧 **NEEDED**
-    - `libpapilo_message_t` -> `papilo::Message` 🚧 **NEEDED**
+This phase implements the granular presolving functionality required to exactly replicate all existing C++ presolve tests, providing complete validation that the C API exposes all necessary PaPILO functionality.
 
-- **Required APIs for SingletonColsTest reproduction**:
+#### Completed Components (PR #8)
+
+- **Core C++ to C API Mappings** ✅:
+    - `libpapilo_presolve_options_t` -> `papilo::PresolveOptions` ✅
+    - `libpapilo_statistics_t` -> `papilo::Statistics` ✅
+    - `libpapilo_postsolve_storage_t` -> `papilo::PostsolveStorage<double>` ✅
+    - `libpapilo_problem_update_t` -> `papilo::ProblemUpdate<double>` ✅
+    - `libpapilo_reductions_t` -> `papilo::Reductions<double>` ✅
+    - `libpapilo_singleton_cols_t` -> `papilo::SingletonCols<double>` ✅
+    - `libpapilo_num_t` -> `papilo::Num<double>` ✅
+    - `libpapilo_timer_t` -> `papilo::Timer` ✅
+    - `libpapilo_message_t` -> `papilo::Message` ✅
+
+- **Implemented APIs** ✅:
     - **Problem Modification API**:
         - `libpapilo_problem_modify_row_lhs()` - Modify constraint left-hand side
         - `libpapilo_problem_recompute_locks()` - Recompute variable locks
@@ -118,14 +122,47 @@ This phase implements the granular presolving functionality required to exactly 
         - `libpapilo_num_create/free()` - Numerical utilities
         - `libpapilo_timer_create/free()` - Timer functionality
         - `libpapilo_message_create/free()` - Message handling
-    - **Enhanced Reductions API**:
-        - Fix current empty implementation to properly extract from PostsolveStorage/ProblemUpdate
-        - Complete validation of reduction types (ColReduction::BOUNDS_LOCKED, etc.)
+    - **Reductions API**:
+        - Full implementation extracting from PostsolveStorage/ProblemUpdate
+        - Complete reduction type enums (14 column types, 16 row types)
 
-- **Testing Strategy**:
-    - **Exact Test Migration**: Each test case from SingletonColsTest.cpp will be replicated 1:1
-    - **Setup Function Migration**: All `setupProblem*()` functions will be converted to C API calls
-    - **Assertion Verification**: Every `REQUIRE()` statement must pass with identical values
+- **Test Migration Completed** ✅:
+    - All 7 test cases from SingletonColsTest.cpp successfully migrated
+    - All `setupProblem*()` functions converted to C API calls
+    - Every `REQUIRE()` assertion passes with identical values
+
+#### Remaining Phase 2 Work
+
+- **Test Migrations Required** (15 remaining tests):
+    - `CoefficientStrengtheningTest.cpp`
+    - `ConstraintPropagationTest.cpp`
+    - `DominatedColsTest.cpp`
+    - `DualFixTest.cpp`
+    - `FixContinuousTest.cpp`
+    - `FreeVarSubstitutionTest.cpp`
+    - `ImplIntDetectionTest.cpp`
+    - `ParallelColDetectionTest.cpp`
+    - `ParallelRowDetectionTest.cpp`
+    - `ProbingTest.cpp`
+    - `SimpleProbingTest.cpp`
+    - `SimpleSubstitutionTest.cpp`
+    - `SimplifyInequalitiesTest.cpp`
+    - `SingletonStuffingTest.cpp`
+    - `SparsifyTest.cpp`
+
+- **Required Presolver Wrappers** (to be determined based on test requirements):
+    - Each test file will require its corresponding presolver to be wrapped
+    - Pattern established with SingletonCols can be replicated
+
+- **High-Level Presolve Orchestrator** 🚧:
+    - `libpapilo_presolve_t` wrapper implementation
+    - Default presolver pipeline configuration
+    - Batch presolve execution API
+
+- **Postsolve API** 🚧:
+    - Solution reconstruction functions
+    - Dual value recovery
+    - Basis information handling
 
 ### Phase 3: High-Level Automated API 🚧 **FUTURE WORK**
 
