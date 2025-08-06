@@ -1,3 +1,25 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/*                                                                           */
+/* This file is part of the library libpapilo, a fork of PaPILO from ZIB     */
+/*                                                                           */
+/* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
+/* Copyright (C) 2025      Jij-Inc.                                          */
+/*                                                                           */
+/* This program is free software: you can redistribute it and/or modify      */
+/* it under the terms of the GNU Lesser General Public License as published  */
+/* by the Free Software Foundation, either version 3 of the License, or      */
+/* (at your option) any later version.                                       */
+/*                                                                           */
+/* This program is distributed in the hope that it will be useful,           */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
+/* GNU Lesser General Public License for more details.                       */
+/*                                                                           */
+/* You should have received a copy of the GNU Lesser General Public License  */
+/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/*                                                                           */
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "libpapilo.h"
 
 #include "papilo/core/Presolve.hpp"
@@ -12,6 +34,7 @@
 #include "papilo/misc/Num.hpp"
 #include "papilo/misc/Timer.hpp"
 #include "papilo/misc/Vec.hpp"
+#include "papilo/presolvers/SimpleSubstitution.hpp"
 #include "papilo/presolvers/SingletonCols.hpp"
 
 #include <cstring>
@@ -86,6 +109,12 @@ struct libpapilo_singleton_cols_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    SingletonCols<double> presolver;
+};
+
+struct libpapilo_simple_substitution_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   SimpleSubstitution<double> presolver;
 };
 
 struct libpapilo_num_t
@@ -199,6 +228,18 @@ check_singleton_cols_ptr( const libpapilo_singleton_cols_t* presolver )
    custom_assert(
        presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
        "Invalid libpapilo_singleton_cols_t pointer (magic number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_simple_substitution_ptr(
+    const libpapilo_simple_substitution_t* presolver )
+{
+   custom_assert( presolver != nullptr,
+                  "libpapilo_simple_substitution_t pointer is null" );
+   custom_assert( presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
+                  "Invalid libpapilo_simple_substitution_t pointer (magic "
+                  "number mismatch)" );
 }
 
 /** Check the pointer passed from user code is valid. */
@@ -1000,6 +1041,14 @@ extern "C"
       delete options;
    }
 
+   void
+   libpapilo_presolve_options_set_dualreds(
+       libpapilo_presolve_options_t* options, int dualreds )
+   {
+      check_presolve_options_ptr( options );
+      options->options.dualreds = dualreds;
+   }
+
    /* Core Presolve API Implementation */
 
    libpapilo_presolve_t*
@@ -1235,6 +1284,13 @@ extern "C"
       problem->problem.recomputeAllActivities();
    }
 
+   void
+   libpapilo_problem_recompute_all_activities( libpapilo_problem_t* problem )
+   {
+      check_problem_ptr( problem );
+      problem->problem.recomputeAllActivities();
+   }
+
    /* Utility Objects API Implementation */
 
    libpapilo_num_t*
@@ -1404,6 +1460,66 @@ extern "C"
              }
           },
           "Failed to execute singleton cols presolver" );
+   }
+
+   /* SimpleSubstitution Presolver API Implementation */
+
+   libpapilo_simple_substitution_t*
+   libpapilo_simple_substitution_create()
+   {
+      return check_run( []() { return new libpapilo_simple_substitution_t(); },
+                        "Failed to create simple substitution presolver" );
+   }
+
+   void
+   libpapilo_simple_substitution_free(
+       libpapilo_simple_substitution_t* presolver )
+   {
+      check_simple_substitution_ptr( presolver );
+      delete presolver;
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_simple_substitution_execute(
+       libpapilo_simple_substitution_t* presolver, libpapilo_problem_t* problem,
+       libpapilo_problem_update_t* update, libpapilo_num_t* num,
+       libpapilo_reductions_t* reductions, libpapilo_timer_t* timer,
+       int* cause )
+   {
+      check_simple_substitution_ptr( presolver );
+      check_problem_ptr( problem );
+      check_problem_update_ptr( update );
+      check_num_ptr( num );
+      check_reductions_ptr( reductions );
+      check_timer_ptr( timer );
+      custom_assert( cause != nullptr, "cause pointer is null" );
+
+      return check_run(
+          [&]()
+          {
+             PresolveStatus status = presolver->presolver.execute(
+                 problem->problem, update->update, num->num,
+                 reductions->reductions, timer->timer, *cause );
+
+             // Convert PresolveStatus to C enum
+             switch( status )
+             {
+             case PresolveStatus::kUnchanged:
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             case PresolveStatus::kReduced:
+                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+             case PresolveStatus::kUnbounded:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+             case PresolveStatus::kUnbndOrInfeas:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+             case PresolveStatus::kInfeasible:
+                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+             default:
+                custom_assert( false, "Unknown presolve status" );
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             }
+          },
+          "Failed to execute simple substitution presolver" );
    }
 
 } // extern "C"
