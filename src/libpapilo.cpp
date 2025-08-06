@@ -1138,30 +1138,21 @@ extern "C"
    }
 
    int
-   libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions )
+   libpapilo_reductions_get_size( libpapilo_reductions_t* reductions )
    {
       check_reductions_ptr( reductions );
-      // Cast away const as size() is not const in the C++ API
-      auto* mutable_reductions =
-          const_cast<libpapilo_reductions_t*>( reductions );
-      return static_cast<int>( mutable_reductions->reductions.size() );
+      return static_cast<int>( reductions->reductions.size() );
    }
 
    libpapilo_reduction_info_t
-   libpapilo_reductions_get_info( const libpapilo_reductions_t* reductions,
+   libpapilo_reductions_get_info( libpapilo_reductions_t* reductions,
                                   int index )
    {
       check_reductions_ptr( reductions );
-      // Cast away const as size() and getReduction() are not const in the C++
-      // API
-      auto* mutable_reductions =
-          const_cast<libpapilo_reductions_t*>( reductions );
-      custom_assert( index >= 0 &&
-                         index < (int)mutable_reductions->reductions.size(),
+      custom_assert( index >= 0 && index < (int)reductions->reductions.size(),
                      "Reduction index out of bounds" );
 
-      const auto& reduction =
-          mutable_reductions->reductions.getReduction( index );
+      const auto& reduction = reductions->reductions.getReduction( index );
       libpapilo_reduction_info_t info;
       info.row = reduction.row;
       info.col = reduction.col;

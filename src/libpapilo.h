@@ -48,10 +48,10 @@ extern "C"
       LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE = 4
    } libpapilo_presolve_status_t;
 
-   /* Reduction type for columns 
-    * Note: Negative values are used to maintain compatibility with the underlying
-    * C++ implementation where these values distinguish reduction types from 
-    * row/column indices in the internal data structures. */
+   /* Reduction type for columns
+    * Note: Negative values are used to maintain compatibility with the
+    * underlying C++ implementation where these values distinguish reduction
+    * types from row/column indices in the internal data structures. */
    typedef enum
    {
       LIBPAPILO_COL_REDUCTION_NONE = -1,
@@ -68,10 +68,10 @@ extern "C"
       LIBPAPILO_COL_REDUCTION_FIXED_INFINITY = -14
    } libpapilo_col_reduction_t;
 
-   /* Reduction type for rows 
-    * Note: Negative values are used to maintain compatibility with the underlying
-    * C++ implementation where these values distinguish reduction types from 
-    * row/column indices in the internal data structures. */
+   /* Reduction type for rows
+    * Note: Negative values are used to maintain compatibility with the
+    * underlying C++ implementation where these values distinguish reduction
+    * types from row/column indices in the internal data structures. */
    typedef enum
    {
       LIBPAPILO_ROW_REDUCTION_NONE = -1,
@@ -402,10 +402,10 @@ extern "C"
    libpapilo_reductions_create();
 
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions );
+   libpapilo_reductions_get_size( libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT libpapilo_reduction_info_t
-   libpapilo_reductions_get_info( const libpapilo_reductions_t* reductions,
+   libpapilo_reductions_get_info( libpapilo_reductions_t* reductions,
                                   int index );
 
    LIBPAPILO_EXPORT void
