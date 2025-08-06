@@ -573,14 +573,14 @@ setupProblemWithSimpleSubstitutionInfeasibleGcd()
 libpapilo_problem_t*
 setupProblemWithSimpleSubstitutionFeasibleGcd()
 {
-   // Use the same setup as the infeasible one but with a feasible RHS
-   // 6x + 8y = 36 (GCD(6,8) = 2, and 2 divides 36)
+   // 6x + 9y = 15 with 15/6 and 9/6 no integer
+   // 0<= x,y y= 5
    double coefficients[] = { 3.0, 1.0 };
    double upperBounds[] = { 5.0, 5.0 };
    double lowerBounds[] = { 0.0, 0.0 };
    uint8_t isIntegral[] = { 1, 1 };
 
-   double rhs[] = { 36.0 };  // Changed from 37.0 to 36.0 to make it feasible
+   double rhs[] = { 15.0 };
    const char* columnNames[] = { "c1", "c2" };
 
    libpapilo_problem_builder_t* pb = libpapilo_problem_builder_create();
@@ -594,7 +594,7 @@ setupProblemWithSimpleSubstitutionFeasibleGcd()
    libpapilo_problem_builder_set_col_integral_all( pb, isIntegral );
    libpapilo_problem_builder_set_row_rhs_all( pb, rhs );
    libpapilo_problem_builder_add_entry( pb, 0, 0, 6.0 );
-   libpapilo_problem_builder_add_entry( pb, 0, 1, 8.0 );
+   libpapilo_problem_builder_add_entry( pb, 0, 1, 9.0 );
    libpapilo_problem_builder_set_col_name_all( pb, columnNames );
    libpapilo_problem_builder_set_problem_name( pb, "gcd(x,y) is divisor of rhs" );
    
