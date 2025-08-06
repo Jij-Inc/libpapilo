@@ -1263,7 +1263,7 @@ extern "C"
    libpapilo_timer_t*
    libpapilo_timer_create( double* time_ref )
    {
-      if( time_ref == NULL )
+      if( time_ref == nullptr )
       {
          std::cerr << "Error: time_ref cannot be NULL for timer creation"
                    << std::endl;

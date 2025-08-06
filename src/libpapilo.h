@@ -48,7 +48,10 @@ extern "C"
       LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE = 4
    } libpapilo_presolve_status_t;
 
-   /* Reduction type for columns */
+   /* Reduction type for columns 
+    * Note: Negative values are used to maintain compatibility with the underlying
+    * C++ implementation where these values distinguish reduction types from 
+    * row/column indices in the internal data structures. */
    typedef enum
    {
       LIBPAPILO_COL_REDUCTION_NONE = -1,
@@ -65,7 +68,10 @@ extern "C"
       LIBPAPILO_COL_REDUCTION_FIXED_INFINITY = -14
    } libpapilo_col_reduction_t;
 
-   /* Reduction type for rows */
+   /* Reduction type for rows 
+    * Note: Negative values are used to maintain compatibility with the underlying
+    * C++ implementation where these values distinguish reduction types from 
+    * row/column indices in the internal data structures. */
    typedef enum
    {
       LIBPAPILO_ROW_REDUCTION_NONE = -1,
