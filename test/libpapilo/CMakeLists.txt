@@ -29,7 +29,7 @@ set(LIBPAPILO_TEST_NAMES
     "simple-substitution-happy-path-for-int-continuous-coeff"
     "simple-substitution-happy-path-for-2-continuous"
     "simple-substitution-happy-path-for-continuous-and-integer"
-    "simple-substitution-simple-substitution-for-2-int"
+    "simple-substitution-for-2-int"
     "simple-substitution-2-negative-integer"
     "simple-substitution-feasible-gcd"
     "simple-substitution-non-coprime"

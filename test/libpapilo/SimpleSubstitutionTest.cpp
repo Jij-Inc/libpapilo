@@ -281,7 +281,7 @@ TEST_CASE( "simple-substitution-happy-path-for-continuous-and-integer",
    libpapilo_num_free( num );
 }
 
-TEST_CASE( "simple-substitution-simple-substitution-for-2-int", "[libpapilo]" )
+TEST_CASE( "simple-substitution-for-2-int", "[libpapilo]" )
 {
    libpapilo_num_t* num = libpapilo_num_create();
    double time = 0.0;
@@ -562,7 +562,7 @@ setupProblemWithSimpleSubstitution( uint8_t is_x_integer, uint8_t is_y_integer,
                                     double a_y )
 {
    // 2x + y = 4
-   // 0<= x,y y= 3
+   // 0 <= x, y <= 3
    double coefficients[] = { 3.0, 1.0 };
    double upperBounds[] = { 3.0, 3.0 };
    double lowerBounds[] = { 0.0, 0.0 };
@@ -598,7 +598,7 @@ libpapilo_problem_t*
 setupProblemWithSimpleSubstitutionInfeasibleGcd()
 {
    // 6x + 8y = 37
-   // 0<= x,y y= 5
+   // 0 <= x, y <= 5
    double coefficients[] = { 3.0, 1.0 };
    double upperBounds[] = { 5.0, 5.0 };
    double lowerBounds[] = { 0.0, 0.0 };
@@ -634,7 +634,7 @@ libpapilo_problem_t*
 setupProblemWithSimpleSubstitutionFeasibleGcd()
 {
    // 6x + 9y = 15 with 15/6 and 9/6 no integer
-   // 0<= x,y y= 5
+   // 0 <= x, y <= 5
    double coefficients[] = { 3.0, 1.0 };
    double upperBounds[] = { 5.0, 5.0 };
    double lowerBounds[] = { 0.0, 0.0 };
