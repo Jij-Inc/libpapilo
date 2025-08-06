@@ -12,8 +12,8 @@
 #include "papilo/misc/Num.hpp"
 #include "papilo/misc/Timer.hpp"
 #include "papilo/misc/Vec.hpp"
-#include "papilo/presolvers/SingletonCols.hpp"
 #include "papilo/presolvers/SimpleSubstitution.hpp"
+#include "papilo/presolvers/SingletonCols.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -210,13 +210,14 @@ check_singleton_cols_ptr( const libpapilo_singleton_cols_t* presolver )
 
 /** Check the pointer passed from user code is valid. */
 void
-check_simple_substitution_ptr( const libpapilo_simple_substitution_t* presolver )
+check_simple_substitution_ptr(
+    const libpapilo_simple_substitution_t* presolver )
 {
    custom_assert( presolver != nullptr,
                   "libpapilo_simple_substitution_t pointer is null" );
-   custom_assert(
-       presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
-       "Invalid libpapilo_simple_substitution_t pointer (magic number mismatch)" );
+   custom_assert( presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
+                  "Invalid libpapilo_simple_substitution_t pointer (magic "
+                  "number mismatch)" );
 }
 
 /** Check the pointer passed from user code is valid. */
@@ -1019,7 +1020,8 @@ extern "C"
    }
 
    void
-   libpapilo_presolve_options_set_dualreds( libpapilo_presolve_options_t* options, int dualreds )
+   libpapilo_presolve_options_set_dualreds(
+       libpapilo_presolve_options_t* options, int dualreds )
    {
       check_presolve_options_ptr( options );
       options->options.dualreds = dualreds;
@@ -1448,19 +1450,19 @@ extern "C"
    }
 
    void
-   libpapilo_simple_substitution_free( libpapilo_simple_substitution_t* presolver )
+   libpapilo_simple_substitution_free(
+       libpapilo_simple_substitution_t* presolver )
    {
       check_simple_substitution_ptr( presolver );
       delete presolver;
    }
 
    libpapilo_presolve_status_t
-   libpapilo_simple_substitution_execute( libpapilo_simple_substitution_t* presolver,
-                                           libpapilo_problem_t* problem,
-                                           libpapilo_problem_update_t* update,
-                                           libpapilo_num_t* num,
-                                           libpapilo_reductions_t* reductions,
-                                           libpapilo_timer_t* timer, int* cause )
+   libpapilo_simple_substitution_execute(
+       libpapilo_simple_substitution_t* presolver, libpapilo_problem_t* problem,
+       libpapilo_problem_update_t* update, libpapilo_num_t* num,
+       libpapilo_reductions_t* reductions, libpapilo_timer_t* timer,
+       int* cause )
    {
       check_simple_substitution_ptr( presolver );
       check_problem_ptr( problem );

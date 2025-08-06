@@ -115,8 +115,9 @@ extern "C"
    typedef struct libpapilo_reductions_t libpapilo_reductions_t;
    /** Opaque pointer for papilo::SingletonCols<double> */
    typedef struct libpapilo_singleton_cols_t libpapilo_singleton_cols_t;
-  /** Opaque pointer for papilo::SimpleSubstitution<double> */
-  typedef struct libpapilo_simple_substitution_t libpapilo_simple_substitution_t;
+   /** Opaque pointer for papilo::SimpleSubstitution<double> */
+   typedef struct libpapilo_simple_substitution_t
+       libpapilo_simple_substitution_t;
    /** Opaque pointer for papilo::Num<double> */
    typedef struct libpapilo_num_t libpapilo_num_t;
    /** Opaque pointer for papilo::Timer */
@@ -391,8 +392,9 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_free( libpapilo_presolve_options_t* options );
 
-  LIBPAPILO_EXPORT void
-  libpapilo_presolve_options_set_dualreds( libpapilo_presolve_options_t* options, int dualreds );
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_options_set_dualreds(
+       libpapilo_presolve_options_t* options, int dualreds );
 
    /* Main presolve function */
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
@@ -443,8 +445,8 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_problem_recompute_activities( libpapilo_problem_t* problem );
 
-  LIBPAPILO_EXPORT void
-  libpapilo_problem_recompute_all_activities( libpapilo_problem_t* problem );
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_recompute_all_activities( libpapilo_problem_t* problem );
 
    /* Utility Objects API */
    LIBPAPILO_EXPORT libpapilo_num_t*
@@ -500,20 +502,20 @@ extern "C"
                                      libpapilo_reductions_t* reductions,
                                      libpapilo_timer_t* timer, int* cause );
 
-  /* SimpleSubstitution Presolver API */
-  LIBPAPILO_EXPORT libpapilo_simple_substitution_t*
-  libpapilo_simple_substitution_create();
+   /* SimpleSubstitution Presolver API */
+   LIBPAPILO_EXPORT libpapilo_simple_substitution_t*
+   libpapilo_simple_substitution_create();
 
-  LIBPAPILO_EXPORT void
-  libpapilo_simple_substitution_free( libpapilo_simple_substitution_t* presolver );
+   LIBPAPILO_EXPORT void
+   libpapilo_simple_substitution_free(
+       libpapilo_simple_substitution_t* presolver );
 
-  LIBPAPILO_EXPORT libpapilo_presolve_status_t
-  libpapilo_simple_substitution_execute( libpapilo_simple_substitution_t* presolver,
-                                          libpapilo_problem_t* problem,
-                                          libpapilo_problem_update_t* update,
-                                          libpapilo_num_t* num,
-                                          libpapilo_reductions_t* reductions,
-                                          libpapilo_timer_t* timer, int* cause );
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_simple_substitution_execute(
+       libpapilo_simple_substitution_t* presolver, libpapilo_problem_t* problem,
+       libpapilo_problem_update_t* update, libpapilo_num_t* num,
+       libpapilo_reductions_t* reductions, libpapilo_timer_t* timer,
+       int* cause );
 
 #ifdef __cplusplus
 }
