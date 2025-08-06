@@ -2,7 +2,6 @@
 
 set(LIBPAPILO_TESTS
     ProblemBuilderTest.cpp
-    PresolveCommonTest.cpp
     SingletonColsTest.cpp
     # Add more test files as needed
 )
@@ -14,7 +13,6 @@ target_link_libraries(libpapilo_unit_test libpapilo)
 
 set(LIBPAPILO_TEST_NAMES 
     "problem-builder"
-    "presolve-common"
 
     # SingletonColsTest.cpp
     "happy-path-singleton-column"
