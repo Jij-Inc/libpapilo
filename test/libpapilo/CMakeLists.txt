@@ -3,6 +3,7 @@
 set(LIBPAPILO_TESTS
     ProblemBuilderTest.cpp
     SingletonColsTest.cpp
+    SimpleSubstitutionTest.cpp
     # Add more test files as needed
 )
 
@@ -22,6 +23,20 @@ set(LIBPAPILO_TEST_NAMES
     "happy-path-singleton-column-implied-bounds-positive-coeff-pos-bounds"
     "happy-path-singleton-column-implied-bounds-positive-coeff-neg-bounds"
     "happy-path-singleton-column-infinity-bounds-equation"
+
+    # SimpleSubstitutionTest.cpp
+    "simple-substitution-happy-path-for-2-int"
+    "simple-substitution-happy-path-for-int-continuous-coeff"
+    "simple-substitution-happy-path-for-2-continuous"
+    "simple-substitution-happy-path-for-continuous-and-integer"
+    "simple-substitution-simple-substitution-for-2-int"
+    "simple-substitution-2-negative-integer"
+    "simple-substitution-feasible-gcd"
+    "simple-substitution-non-coprime"
+    "simple-substitution-violated-gcd"
+    "example_10_1_in_constraint_integer_programming"
+    "simple-substitution-should_return_feasible_if_gcd_of_coeff_is_in_rhs"
+    "simple-substitution-should_return_infeasible_if_gcd_of_coeff_is_in_rhs"
 )
 
 # Register test targets for each test file
