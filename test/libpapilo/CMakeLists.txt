@@ -6,6 +6,7 @@ set(LIBPAPILO_TESTS
     SimpleSubstitutionTest.cpp
     ProblemUpdateTest.cpp
     PresolveTest.cpp
+    PostsolveTest.cpp
     # Add more test files as needed
 )
 
@@ -49,6 +50,10 @@ set(LIBPAPILO_TEST_NAMES
     "happy-path-replace-variable"
     "happy-path-substitute-matrix-coefficient-into-objective"
     "happy-path-aggregate-free-column"
+    
+    # PostsolveTest.cpp
+    "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf"
+    "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf"
 )
 
 # Register test targets for each test file
