@@ -31,6 +31,26 @@ PaPILO employs a hybrid approach to identify and manage variables and constraint
 
 This dual system allows PaPILO to benefit from the raw speed of index-based access during computation while guaranteeing that every reduction can be correctly traced back to the original problem structure for the final postsolve step.
 
+## Core Data Structures
+
+The presolve process is orchestrated through a set of core data structures that manage settings, track changes, and store results. Understanding their roles is key to understanding the overall architecture.
+
+-   **`PresolveOptions`**: A simple data structure that holds all user-configurable parameters for the presolve process. This includes settings like the maximum number of rounds, time limits, and tolerances. It allows users to customize the behavior of the presolve engine.
+
+-   **`Statistics`**: This object collects detailed statistics during the presolve run. It tracks the number of times each presolver was run, how many reductions of each type were found, and the total time spent. This is crucial for performance analysis and debugging.
+
+-   **`Reductions`**: This is a **temporary, transactional** data structure. When an individual presolver (e.g., `SingletonCols`) is executed, it does not modify the problem directly. Instead, it identifies potential changes and records them in a `Reductions` object. This object acts as a "shopping cart" of proposed changes. The main presolve driver then receives this object and is responsible for applying these changes to the problem. This design decouples the *finding* of reductions from the *applying* of reductions, which is key for modularity and parallel execution.
+
+-   **`ProblemUpdate`**: This class acts as the central hub for applying changes to the `Problem` object. It takes the proposed changes from a `Reductions` object and executes them. Crucially, as it modifies the problem, it also collaborates with `PostsolveStorage` to ensure that every change is logged correctly so it can be undone later. It also manages complex operations like the compression of the constraint matrix.
+
+-   **`PostsolveStorage`**: This is the **permanent, official log** of every modification made to the problem. For every variable fixed, every constraint removed, and every coefficient changed by `ProblemUpdate`, a corresponding entry is made in `PostsolveStorage`. This log is built up during the presolve phase and is the sole source of information used by the postsolve process to reconstruct the original solution. It uses a LIFO (Last-In, First-Out) structure, ensuring that changes are undone in the reverse order they were applied.
+
+In summary, the flow is as follows:
+1. A presolver runs and proposes changes in a `Reductions` object.
+2. The `Presolve` engine passes these `Reductions` to the `ProblemUpdate` object.
+3. `ProblemUpdate` modifies the `Problem` and simultaneously records the inverse operation in `PostsolveStorage`.
+4. `Statistics` are updated along the way, all guided by settings in `PresolveOptions`.
+
 ## Presolve Driver Routine
 
 The `Presolve` class in `src/papilo/core/Presolve.hpp` acts as the main driver for the entire presolving process. Its main entry point is the `Presolve::apply()` method.

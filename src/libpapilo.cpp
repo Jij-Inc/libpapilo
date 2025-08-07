@@ -314,6 +314,28 @@ check_run( Func func, const char* message )
    std::terminate();
 }
 
+// Helper function to convert PresolveStatus to libpapilo_presolve_status_t
+static libpapilo_presolve_status_t
+convert_presolve_status( PresolveStatus status )
+{
+   switch( status )
+   {
+   case PresolveStatus::kUnchanged:
+      return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+   case PresolveStatus::kReduced:
+      return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+   case PresolveStatus::kUnbounded:
+      return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+   case PresolveStatus::kUnbndOrInfeas:
+      return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+   case PresolveStatus::kInfeasible:
+      return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+   default:
+      custom_assert( false, "Unknown presolve status" );
+      return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+   }
+}
+
 extern "C"
 {
 
@@ -984,6 +1006,18 @@ extern "C"
    }
 
    int
+   libpapilo_problem_is_row_redundant( const libpapilo_problem_t* problem,
+                                       int row )
+   {
+      check_problem_ptr( problem );
+      const auto& flags = problem->problem.getRowFlags();
+      if( row < 0 || row >= (int)flags.size() )
+         return 0;
+
+      return flags[row].test( papilo::RowFlag::kRedundant ) ? 1 : 0;
+   }
+
+   int
    libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
                                       int row, const int** cols,
                                       const double** vals )
@@ -1093,24 +1127,7 @@ extern "C"
           {
              PresolveResult<double> result =
                  presolve->presolve.apply( problem->problem );
-
-             // Convert PresolveStatus to C enum
-             switch( result.status )
-             {
-             case PresolveStatus::kUnchanged:
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             case PresolveStatus::kReduced:
-                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
-             case PresolveStatus::kUnbounded:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
-             case PresolveStatus::kUnbndOrInfeas:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
-             case PresolveStatus::kInfeasible:
-                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
-             default:
-                custom_assert( false, "Unknown presolve status" );
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             }
+             return convert_presolve_status( result.status );
           },
           "Failed to apply presolve" );
    }
@@ -1159,22 +1176,7 @@ extern "C"
              libpapilo_presolve_free( presolve );
 
              // Convert status
-             switch( result.status )
-             {
-             case PresolveStatus::kUnchanged:
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             case PresolveStatus::kReduced:
-                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
-             case PresolveStatus::kUnbounded:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
-             case PresolveStatus::kUnbndOrInfeas:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
-             case PresolveStatus::kInfeasible:
-                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
-             default:
-                custom_assert( false, "Unknown presolve status" );
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             }
+             return convert_presolve_status( result.status );
           },
           "Failed to apply presolve" );
    }
@@ -1377,12 +1379,51 @@ extern "C"
       delete update;
    }
 
-   void
+   libpapilo_presolve_status_t
    libpapilo_problem_update_trivial_column_presolve(
        libpapilo_problem_update_t* update )
    {
       check_problem_update_ptr( update );
-      update->update.trivialColumnPresolve();
+
+      return check_run(
+          [&]()
+          {
+             PresolveStatus status = update->update.trivialColumnPresolve();
+             return convert_presolve_status( status );
+          },
+          "Failed to execute trivial column presolve" );
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_problem_update_trivial_presolve(
+       libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+
+      return check_run(
+          // clang-format off
+          [&]() {
+             PresolveStatus status = update->update.trivialPresolve();
+             return convert_presolve_status( status );
+          },
+          // clang-format on
+          "Failed to execute trivial presolve" );
+   }
+
+   int
+   libpapilo_problem_update_get_singleton_cols_count(
+       libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+
+      return check_run(
+          // clang-format off
+          [&]() {
+             return static_cast<int>(
+                 update->update.getSingletonCols().size() );
+          },
+          // clang-format on
+          "Failed to get singleton columns count" );
    }
 
    libpapilo_reductions_t*
@@ -1440,24 +1481,7 @@ extern "C"
              PresolveStatus status = presolver->presolver.execute(
                  problem->problem, update->update, num->num,
                  reductions->reductions, timer->timer, *cause );
-
-             // Convert PresolveStatus to C enum
-             switch( status )
-             {
-             case PresolveStatus::kUnchanged:
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             case PresolveStatus::kReduced:
-                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
-             case PresolveStatus::kUnbounded:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
-             case PresolveStatus::kUnbndOrInfeas:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
-             case PresolveStatus::kInfeasible:
-                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
-             default:
-                custom_assert( false, "Unknown presolve status" );
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             }
+             return convert_presolve_status( status );
           },
           "Failed to execute singleton cols presolver" );
    }
@@ -1500,24 +1524,7 @@ extern "C"
              PresolveStatus status = presolver->presolver.execute(
                  problem->problem, update->update, num->num,
                  reductions->reductions, timer->timer, *cause );
-
-             // Convert PresolveStatus to C enum
-             switch( status )
-             {
-             case PresolveStatus::kUnchanged:
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             case PresolveStatus::kReduced:
-                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
-             case PresolveStatus::kUnbounded:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
-             case PresolveStatus::kUnbndOrInfeas:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
-             case PresolveStatus::kInfeasible:
-                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
-             default:
-                custom_assert( false, "Unknown presolve status" );
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             }
+             return convert_presolve_status( status );
           },
           "Failed to execute simple substitution presolver" );
    }

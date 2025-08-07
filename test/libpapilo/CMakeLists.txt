@@ -4,6 +4,7 @@ set(LIBPAPILO_TESTS
     ProblemBuilderTest.cpp
     SingletonColsTest.cpp
     SimpleSubstitutionTest.cpp
+    ProblemUpdateTest.cpp
     # Add more test files as needed
 )
 
@@ -37,6 +38,10 @@ set(LIBPAPILO_TEST_NAMES
     "example_10_1_in_constraint_integer_programming"
     "simple-substitution-should_return_feasible_if_gcd_of_coeff_is_in_rhs"
     "simple-substitution-should_return_infeasible_if_gcd_of_coeff_is_in_rhs"
+    
+    # ProblemUpdateTest.cpp
+    "trivial-presolve-singleton-row"
+    "trivial-presolve-singleton-row-pt-2"
 )
 
 # Register test targets for each test file
