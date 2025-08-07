@@ -5,6 +5,7 @@ set(LIBPAPILO_TESTS
     SingletonColsTest.cpp
     SimpleSubstitutionTest.cpp
     ProblemUpdateTest.cpp
+    PresolveTest.cpp
     # Add more test files as needed
 )
 
@@ -42,6 +43,12 @@ set(LIBPAPILO_TEST_NAMES
     # ProblemUpdateTest.cpp
     "trivial-presolve-singleton-row"
     "trivial-presolve-singleton-row-pt-2"
+    
+    # PresolveTest.cpp
+    "replacing-variables-is-postponed-by-flag"
+    "happy-path-replace-variable"
+    "happy-path-substitute-matrix-coefficient-into-objective"
+    "happy-path-aggregate-free-column"
 )
 
 # Register test targets for each test file
