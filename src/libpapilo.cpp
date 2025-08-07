@@ -1384,7 +1384,7 @@ extern "C"
        libpapilo_problem_update_t* update )
    {
       check_problem_update_ptr( update );
-      
+
       return check_run(
           [&]()
           {
