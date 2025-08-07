@@ -387,6 +387,11 @@ extern "C"
    libpapilo_problem_get_row_flags( const libpapilo_problem_t* problem,
                                     int row );
 
+   /* Flag helper functions */
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_is_row_redundant( const libpapilo_problem_t* problem,
+                                       int row );
+
    /* Phase 2: Presolve API */
 
    /* Core Presolve API */
@@ -503,6 +508,14 @@ extern "C"
 
    LIBPAPILO_EXPORT void
    libpapilo_problem_update_trivial_column_presolve(
+       libpapilo_problem_update_t* update );
+
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_problem_update_trivial_presolve(
+       libpapilo_problem_update_t* update );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_update_get_singleton_cols_count(
        libpapilo_problem_update_t* update );
 
    LIBPAPILO_EXPORT libpapilo_reductions_t*

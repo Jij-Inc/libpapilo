@@ -984,6 +984,18 @@ extern "C"
    }
 
    int
+   libpapilo_problem_is_row_redundant( const libpapilo_problem_t* problem,
+                                       int row )
+   {
+      check_problem_ptr( problem );
+      const auto& flags = problem->problem.getRowFlags();
+      if( row < 0 || row >= (int)flags.size() )
+         return 0;
+
+      return flags[row].test( papilo::RowFlag::kRedundant ) ? 1 : 0;
+   }
+
+   int
    libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
                                       int row, const int** cols,
                                       const double** vals )
@@ -1383,6 +1395,53 @@ extern "C"
    {
       check_problem_update_ptr( update );
       update->update.trivialColumnPresolve();
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_problem_update_trivial_presolve(
+       libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+
+      return check_run(
+          [&]()
+          {
+             PresolveStatus status = update->update.trivialPresolve();
+
+             // Convert PresolveStatus to C enum
+             switch( status )
+             {
+             case PresolveStatus::kUnchanged:
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             case PresolveStatus::kReduced:
+                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+             case PresolveStatus::kUnbounded:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+             case PresolveStatus::kUnbndOrInfeas:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+             case PresolveStatus::kInfeasible:
+                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+             default:
+                custom_assert( false, "Unknown presolve status" );
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             }
+          },
+          "Failed to execute trivial presolve" );
+   }
+
+   int
+   libpapilo_problem_update_get_singleton_cols_count(
+       libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+
+      return check_run(
+          [&]()
+          {
+             return static_cast<int>(
+                 update->update.getSingletonCols().size() );
+          },
+          "Failed to get singleton columns count" );
    }
 
    libpapilo_reductions_t*
