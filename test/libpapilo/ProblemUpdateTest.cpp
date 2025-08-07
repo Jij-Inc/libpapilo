@@ -154,6 +154,10 @@ TEST_CASE( "trivial-presolve-singleton-row", "[libpapilo]" )
    // Execute trivial presolve
    libpapilo_presolve_status_t status =
        libpapilo_problem_update_trivial_presolve( update );
+   
+   // Check that presolve succeeded (not infeasible or unbounded)
+   REQUIRE( (status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED ||
+             status == LIBPAPILO_PRESOLVE_STATUS_REDUCED) );
 
    // Check results
    int size;
@@ -194,6 +198,10 @@ TEST_CASE( "trivial-presolve-singleton-row-pt-2", "[libpapilo]" )
    // Execute trivial presolve
    libpapilo_presolve_status_t status =
        libpapilo_problem_update_trivial_presolve( update );
+   
+   // Check that presolve succeeded (not infeasible or unbounded)
+   REQUIRE( (status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED ||
+             status == LIBPAPILO_PRESOLVE_STATUS_REDUCED) );
 
    // Check results
    int size;
