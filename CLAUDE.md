@@ -89,7 +89,11 @@ This phase established the C API foundation, providing the ability to build a pr
 
 **Phase 2 Goal**: Complete reproduction of all tests in `test/papilo/presolve/` directory using libpapilo C API.
 
-**First Milestone Completed**: ✅ Full reproduction of `test/papilo/presolve/SingletonColsTest.cpp` using libpapilo C API ([PR #8](https://github.com/Jij-Inc/libpapilo/pull/8))
+**Major Milestones Completed**: 
+- ✅ Full reproduction of `test/papilo/presolve/SingletonColsTest.cpp` using libpapilo C API ([PR #8](https://github.com/Jij-Inc/libpapilo/pull/8))
+- ✅ Full reproduction of `test/papilo/presolve/SimpleSubstitutionTest.cpp` using libpapilo C API ([PR #9](https://github.com/Jij-Inc/libpapilo/pull/9))
+- ✅ Full reproduction of `test/papilo/core/ProblemUpdateTest.cpp` using libpapilo C API ([PR #10](https://github.com/Jij-Inc/libpapilo/pull/10))
+- ✅ **Full reproduction of `test/papilo/core/PresolveTest.cpp` using libpapilo C API** ([PR #11](https://github.com/Jij-Inc/libpapilo/pull/11))
 
 This phase implements the granular presolving functionality required to exactly replicate all existing C++ presolve tests, providing complete validation that the C API exposes all necessary PaPILO functionality.
 
@@ -112,10 +116,33 @@ This phase implements the granular presolving functionality required to exactly 
         - `libpapilo_problem_modify_row_lhs()` - Modify constraint left-hand side
         - `libpapilo_problem_recompute_locks()` - Recompute variable locks
         - `libpapilo_problem_recompute_activities()` - Recompute row activities
+        - `libpapilo_problem_recompute_all_activities()` - Recompute all row activities
+    - **Problem Query APIs** ✅:
+        - `libpapilo_problem_is_row_redundant()` - Check row redundancy status
+        - `libpapilo_problem_is_col_substituted()` - Check column substitution status
+        - `libpapilo_problem_get_objective_coefficients_mutable()` - Mutable objective access
+        - `libpapilo_problem_get_row_left_hand_sides()` - Get constraint LHS values
+        - `libpapilo_problem_get_row_right_hand_sides()` - Get constraint RHS values
     - **ProblemUpdate Control API**:
         - `libpapilo_problem_update_create()` - Create ProblemUpdate with all dependencies
         - `libpapilo_problem_update_trivial_column_presolve()` - Execute trivial column presolve
+        - `libpapilo_problem_update_trivial_presolve()` - Execute full trivial presolve
+        - `libpapilo_problem_update_get_singleton_cols_count()` - Get singleton columns count
         - `libpapilo_problem_update_get_reductions()` - Extract reductions from ProblemUpdate
+        - `libpapilo_problem_update_set_postpone_substitutions()` - Control substitution timing
+    - **Advanced Reductions Manipulation API** ✅:
+        - `libpapilo_reductions_replace_col()` - Column replacement/substitution
+        - `libpapilo_reductions_lock_col_bounds()` - Lock column bounds for atomic operations
+        - `libpapilo_reductions_lock_row()` - Lock row constraints during reductions
+        - `libpapilo_reductions_substitute_col_in_objective()` - Substitute variables in objective
+        - `libpapilo_reductions_mark_row_redundant()` - Mark rows as redundant
+        - `libpapilo_reductions_aggregate_free_col()` - Aggregate free columns
+        - `libpapilo_reductions_begin_transaction()` - Start atomic transaction
+        - `libpapilo_reductions_end_transaction()` - Commit atomic transaction safely
+    - **Presolve Execution API** ✅:
+        - `libpapilo_presolve_apply_reductions()` - Apply specific reductions with result tracking
+        - `libpapilo_presolve_apply_simple()` - Execute simple presolve pipeline
+        - `libpapilo_presolve_apply()` - High-level presolve with full result extraction
     - **Individual Presolver API**:
         - `libpapilo_singleton_cols_create/free()` - SingletonCols presolver management
         - `libpapilo_singleton_cols_execute()` - Execute individual presolver with full control
@@ -128,13 +155,17 @@ This phase implements the granular presolving functionality required to exactly 
     - **Reductions API**:
         - Full implementation extracting from PostsolveStorage/ProblemUpdate
         - Complete reduction type enums (14 column types, 16 row types)
+        - Transaction-safe operations through managed RAII objects
 
 - **Test Migrations Completed** ✅:
     - **SingletonColsTest.cpp** (7 test cases): All test cases successfully migrated to C API
     - **SimpleSubstitutionTest.cpp** (12 test cases): All test cases successfully migrated to C API
+    - **ProblemUpdateTest.cpp** (2 test cases): Core problem update functionality validated
+    - **PresolveTest.cpp** (4 test cases): Advanced reduction operations and transaction management
     - All `setupProblem*()` functions converted to C API calls
     - Every `REQUIRE()` assertion passes with identical values
     - Mathematical content verified for consistency between C++ and C API versions
+    - **25 total test cases** successfully migrated demonstrating full API coverage
 
 #### Remaining Phase 2 Work
 
@@ -158,10 +189,11 @@ This phase implements the granular presolving functionality required to exactly 
     - Each test file will require its corresponding presolver to be wrapped
     - Pattern established with SingletonCols and SimpleSubstitution can be replicated
 
-- **High-Level Presolve Orchestrator** 🚧:
-    - `libpapilo_presolve_t` wrapper implementation
-    - Default presolver pipeline configuration
-    - Batch presolve execution API
+- **High-Level Presolve Orchestrator** ✅:
+    - `libpapilo_presolve_t` wrapper implementation ✅
+    - Default presolver pipeline configuration ✅
+    - Batch presolve execution API ✅
+    - Advanced reductions application with transaction safety ✅
 
 - **Postsolve API** 🚧:
     - Solution reconstruction functions
@@ -179,7 +211,28 @@ This phase will provide simplified automated presolving for end users.
 
 ## 5. Current C API Reference
 
-The libpapilo C API currently provides 38 functions for problem construction and data access.
+The libpapilo C API now provides **67 functions** covering the complete presolving workflow from problem construction to advanced reduction operations.
 
+### **Phase 1 APIs (38 functions)** - Problem Construction & Data Access ✅
 - **Problem Builder API (19 functions)**: `create()`, `free()`, `build()`, `reserve()`, `set_num_rows/cols()`, `set_obj()`, `set_col_lb/ub()`, etc.
 - **Problem Data API (19 functions)**: `get_nrows/ncols/nnz()`, `get_objective_coefficients()`, `get_lower/upper_bounds()`, `get_row/col_entries()`, `get_col/row_flags()`, etc.
+
+### **Phase 2 APIs (29 functions)** - Advanced Presolving Operations ✅
+- **Reductions Manipulation API (10 functions)**: Column/row operations, substitution, transaction management
+- **ProblemUpdate Control API (6 functions)**: Trivial presolve, singleton analysis, substitution control
+- **Presolve Execution API (3 functions)**: Reduction application, pipeline execution
+- **Individual Presolvers API (4 functions)**: SingletonCols, SimpleSubstitution wrappers
+- **Enhanced Problem Query API (4 functions)**: Substitution status, mutable access, constraint sides
+- **Utility Objects API (2 functions)**: Timer, Message, Numerical utilities
+
+### **Major Phase 2 Achievement: Advanced Reduction Operations**
+
+The recent completion of PresolveTest.cpp migration represents a **major milestone** in Phase 2, adding sophisticated reduction manipulation capabilities:
+
+- **Transaction-Safe Operations**: RAII-style transaction management for atomic reduction sequences
+- **Column Substitution & Aggregation**: Full support for variable replacement and free column aggregation  
+- **Objective Function Manipulation**: Direct substitution of variables in objective functions
+- **Constraint Locking**: Fine-grained control over row/column modifications during presolve
+- **Complete API Parity**: C API now supports the most advanced presolving operations from PaPILO core
+
+This advancement significantly accelerates Phase 2 progress, establishing the foundation for migrating the remaining 14 presolver test files.
