@@ -1127,24 +1127,7 @@ extern "C"
           {
              PresolveResult<double> result =
                  presolve->presolve.apply( problem->problem );
-
-             // Convert PresolveStatus to C enum
-             switch( result.status )
-             {
-             case PresolveStatus::kUnchanged:
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             case PresolveStatus::kReduced:
-                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
-             case PresolveStatus::kUnbounded:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
-             case PresolveStatus::kUnbndOrInfeas:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
-             case PresolveStatus::kInfeasible:
-                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
-             default:
-                custom_assert( false, "Unknown presolve status" );
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             }
+             return convert_presolve_status( result.status );
           },
           "Failed to apply presolve" );
    }
@@ -1193,22 +1176,7 @@ extern "C"
              libpapilo_presolve_free( presolve );
 
              // Convert status
-             switch( result.status )
-             {
-             case PresolveStatus::kUnchanged:
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             case PresolveStatus::kReduced:
-                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
-             case PresolveStatus::kUnbounded:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
-             case PresolveStatus::kUnbndOrInfeas:
-                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
-             case PresolveStatus::kInfeasible:
-                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
-             default:
-                custom_assert( false, "Unknown presolve status" );
-                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
-             }
+             return convert_presolve_status( result.status );
           },
           "Failed to apply presolve" );
    }
