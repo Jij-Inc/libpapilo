@@ -1298,11 +1298,12 @@ extern "C"
    {
       check_reductions_ptr( reductions );
       check_run(
-          [&]()
-          {
+          // clang-format off
+          [&]() {
              reductions->reductions.replaceCol( col, replace_col, scale,
                                                 offset );
           },
+          // clang-format on
           "Failed to replace column in reductions" );
    }
 
