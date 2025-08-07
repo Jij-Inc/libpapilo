@@ -103,6 +103,7 @@ struct libpapilo_reductions_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    Reductions<double> reductions;
+   std::unique_ptr<TransactionGuard<double>> transaction_guard;
 };
 
 struct libpapilo_singleton_cols_t
@@ -1018,6 +1019,52 @@ extern "C"
    }
 
    int
+   libpapilo_problem_is_col_substituted( const libpapilo_problem_t* problem,
+                                         int col )
+   {
+      check_problem_ptr( problem );
+      const auto& flags = problem->problem.getColFlags();
+      if( col < 0 || col >= (int)flags.size() )
+         return 0;
+      return flags[col].test( papilo::ColFlag::kSubstituted ) ? 1 : 0;
+   }
+
+   double*
+   libpapilo_problem_get_objective_coefficients_mutable(
+       libpapilo_problem_t* problem, int* size )
+   {
+      check_problem_ptr( problem );
+      custom_assert( size != nullptr, "size pointer is null" );
+      auto& coeffs = problem->problem.getObjective().coefficients;
+      *size = static_cast<int>( coeffs.size() );
+      return coeffs.data();
+   }
+
+   const double*
+   libpapilo_problem_get_row_left_hand_sides(
+       const libpapilo_problem_t* problem, int* size )
+   {
+      check_problem_ptr( problem );
+      custom_assert( size != nullptr, "size pointer is null" );
+      const auto& lhs =
+          problem->problem.getConstraintMatrix().getLeftHandSides();
+      *size = static_cast<int>( lhs.size() );
+      return lhs.data();
+   }
+
+   const double*
+   libpapilo_problem_get_row_right_hand_sides(
+       const libpapilo_problem_t* problem, int* size )
+   {
+      check_problem_ptr( problem );
+      custom_assert( size != nullptr, "size pointer is null" );
+      const auto& rhs =
+          problem->problem.getConstraintMatrix().getRightHandSides();
+      *size = static_cast<int>( rhs.size() );
+      return rhs.data();
+   }
+
+   int
    libpapilo_problem_get_row_entries( const libpapilo_problem_t* problem,
                                       int row, const int** cols,
                                       const double** vals )
@@ -1132,6 +1179,30 @@ extern "C"
           "Failed to apply presolve" );
    }
 
+   void
+   libpapilo_presolve_apply_reductions( libpapilo_presolve_t* presolve,
+                                        int round,
+                                        libpapilo_reductions_t* reductions,
+                                        libpapilo_problem_update_t* update,
+                                        int* num_rounds, int* num_changes )
+   {
+      check_presolve_ptr( presolve );
+      check_reductions_ptr( reductions );
+      check_problem_update_ptr( update );
+      custom_assert( num_rounds != nullptr, "num_rounds pointer is null" );
+      custom_assert( num_changes != nullptr, "num_changes pointer is null" );
+
+      check_run(
+          [&]()
+          {
+             std::pair<int, int> result = presolve->presolve.applyReductions(
+                 round, reductions->reductions, update->update );
+             *num_rounds = result.first;
+             *num_changes = result.second;
+          },
+          "Failed to apply reductions" );
+   }
+
    /* High-level presolve function for backward compatibility */
    libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
@@ -1216,6 +1287,98 @@ extern "C"
    {
       check_reductions_ptr( reductions );
       delete reductions;
+   }
+
+   /* Reductions manipulation API Implementation */
+
+   void
+   libpapilo_reductions_replace_col( libpapilo_reductions_t* reductions,
+                                     int col, int replace_col, double scale,
+                                     double offset )
+   {
+      check_reductions_ptr( reductions );
+      check_run(
+          // clang-format off
+          [&]() {
+             reductions->reductions.replaceCol( col, replace_col, scale,
+                                                offset );
+          },
+          // clang-format on
+          "Failed to replace column in reductions" );
+   }
+
+   void
+   libpapilo_reductions_lock_col_bounds( libpapilo_reductions_t* reductions,
+                                         int col )
+   {
+      check_reductions_ptr( reductions );
+      check_run( [&]() { reductions->reductions.lockColBounds( col ); },
+                 "Failed to lock column bounds in reductions" );
+   }
+
+   void
+   libpapilo_reductions_lock_row( libpapilo_reductions_t* reductions, int row )
+   {
+      check_reductions_ptr( reductions );
+      check_run( [&]() { reductions->reductions.lockRow( row ); },
+                 "Failed to lock row in reductions" );
+   }
+
+   void
+   libpapilo_reductions_substitute_col_in_objective(
+       libpapilo_reductions_t* reductions, int col, int row )
+   {
+      check_reductions_ptr( reductions );
+      check_run(
+          [&]()
+          { reductions->reductions.substituteColInObjective( col, row ); },
+          "Failed to substitute column in objective" );
+   }
+
+   void
+   libpapilo_reductions_mark_row_redundant( libpapilo_reductions_t* reductions,
+                                            int row )
+   {
+      check_reductions_ptr( reductions );
+      check_run( [&]() { reductions->reductions.markRowRedundant( row ); },
+                 "Failed to mark row redundant in reductions" );
+   }
+
+   void
+   libpapilo_reductions_aggregate_free_col( libpapilo_reductions_t* reductions,
+                                            int col, int row )
+   {
+      check_reductions_ptr( reductions );
+      check_run( [&]() { reductions->reductions.aggregateFreeCol( col, row ); },
+                 "Failed to aggregate free column in reductions" );
+   }
+
+   void
+   libpapilo_reductions_begin_transaction( libpapilo_reductions_t* reductions )
+   {
+      check_reductions_ptr( reductions );
+      check_run(
+          [&]()
+          {
+             // Create a new transaction guard
+             reductions->transaction_guard =
+                 std::make_unique<TransactionGuard<double>>(
+                     reductions->reductions );
+          },
+          "Failed to begin transaction" );
+   }
+
+   void
+   libpapilo_reductions_end_transaction( libpapilo_reductions_t* reductions )
+   {
+      check_reductions_ptr( reductions );
+      check_run(
+          [&]()
+          {
+             // Release the transaction guard, which commits the transaction
+             reductions->transaction_guard.reset();
+          },
+          "Failed to end transaction" );
    }
 
    /* PostsolveStorage management implementation */
@@ -1441,6 +1604,15 @@ extern "C"
              return reductions;
           },
           "Failed to create reductions object" );
+   }
+
+   void
+   libpapilo_problem_update_set_postpone_substitutions(
+       libpapilo_problem_update_t* update, int postpone )
+   {
+      check_problem_update_ptr( update );
+      check_run( [&]() { update->update.setPostponeSubstitutions( postpone ); },
+                 "Failed to set postpone substitutions" );
    }
 
    /* Individual Presolver API Implementation */

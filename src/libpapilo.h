@@ -392,6 +392,23 @@ extern "C"
    libpapilo_problem_is_row_redundant( const libpapilo_problem_t* problem,
                                        int row );
 
+   LIBPAPILO_EXPORT int
+   libpapilo_problem_is_col_substituted( const libpapilo_problem_t* problem,
+                                         int col );
+
+   /* Additional Problem query APIs */
+   LIBPAPILO_EXPORT double*
+   libpapilo_problem_get_objective_coefficients_mutable(
+       libpapilo_problem_t* problem, int* size );
+
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_row_left_hand_sides(
+       const libpapilo_problem_t* problem, int* size );
+
+   LIBPAPILO_EXPORT const double*
+   libpapilo_problem_get_row_right_hand_sides(
+       const libpapilo_problem_t* problem, int* size );
+
    /* Phase 2: Presolve API */
 
    /* Core Presolve API */
@@ -411,6 +428,13 @@ extern "C"
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
                                     libpapilo_problem_t* problem );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_apply_reductions( libpapilo_presolve_t* presolve,
+                                        int round,
+                                        libpapilo_reductions_t* reductions,
+                                        libpapilo_problem_update_t* update,
+                                        int* num_rounds, int* num_changes );
 
    /* PresolveOptions management */
    LIBPAPILO_EXPORT libpapilo_presolve_options_t*
@@ -444,6 +468,37 @@ extern "C"
 
    LIBPAPILO_EXPORT void
    libpapilo_reductions_free( libpapilo_reductions_t* reductions );
+
+   /* Reductions manipulation API */
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_replace_col( libpapilo_reductions_t* reductions,
+                                     int col, int replace_col, double scale,
+                                     double offset );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_lock_col_bounds( libpapilo_reductions_t* reductions,
+                                         int col );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_lock_row( libpapilo_reductions_t* reductions, int row );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_substitute_col_in_objective(
+       libpapilo_reductions_t* reductions, int col, int row );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_mark_row_redundant( libpapilo_reductions_t* reductions,
+                                            int row );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_aggregate_free_col( libpapilo_reductions_t* reductions,
+                                            int col, int row );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_begin_transaction( libpapilo_reductions_t* reductions );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_reductions_end_transaction( libpapilo_reductions_t* reductions );
 
    /* PostsolveStorage management */
    LIBPAPILO_EXPORT libpapilo_postsolve_storage_t*
@@ -521,6 +576,10 @@ extern "C"
    LIBPAPILO_EXPORT libpapilo_reductions_t*
    libpapilo_problem_update_get_reductions(
        libpapilo_problem_update_t* update );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_problem_update_set_postpone_substitutions(
+       libpapilo_problem_update_t* update, int postpone );
 
    /* Individual Presolver API */
    LIBPAPILO_EXPORT libpapilo_singleton_cols_t*
