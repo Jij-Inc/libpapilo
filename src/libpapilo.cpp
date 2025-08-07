@@ -1401,11 +1401,12 @@ extern "C"
       check_problem_update_ptr( update );
 
       return check_run(
-          [&]()
-          {
+          // clang-format off
+          [&]() {
              PresolveStatus status = update->update.trivialPresolve();
              return convert_presolve_status( status );
           },
+          // clang-format on
           "Failed to execute trivial presolve" );
    }
 
@@ -1416,11 +1417,12 @@ extern "C"
       check_problem_update_ptr( update );
 
       return check_run(
-          [&]()
-          {
+          // clang-format off
+          [&]() {
              return static_cast<int>(
                  update->update.getSingletonCols().size() );
           },
+          // clang-format on
           "Failed to get singleton columns count" );
    }
 
