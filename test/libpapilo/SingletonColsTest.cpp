@@ -40,7 +40,11 @@ forceCalculationOfSingletonRows( libpapilo_problem_t* problem,
                                  libpapilo_problem_update_t* problemUpdate )
 {
    libpapilo_problem_recompute_locks( problem );
-   libpapilo_problem_update_trivial_column_presolve( problemUpdate );
+   libpapilo_presolve_status_t status = 
+      libpapilo_problem_update_trivial_column_presolve( problemUpdate );
+   // Check that column presolve succeeded
+   REQUIRE( (status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED ||
+             status == LIBPAPILO_PRESOLVE_STATUS_REDUCED) );
    libpapilo_problem_recompute_activities( problem );
 }
 

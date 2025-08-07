@@ -506,7 +506,7 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_problem_update_free( libpapilo_problem_update_t* update );
 
-   LIBPAPILO_EXPORT void
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_problem_update_trivial_column_presolve(
        libpapilo_problem_update_t* update );
 

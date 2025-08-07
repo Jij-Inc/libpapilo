@@ -1389,12 +1389,36 @@ extern "C"
       delete update;
    }
 
-   void
+   libpapilo_presolve_status_t
    libpapilo_problem_update_trivial_column_presolve(
        libpapilo_problem_update_t* update )
    {
       check_problem_update_ptr( update );
-      update->update.trivialColumnPresolve();
+      
+      return check_run(
+          [&]()
+          {
+             PresolveStatus status = update->update.trivialColumnPresolve();
+             
+             // Convert PresolveStatus to C enum
+             switch( status )
+             {
+             case PresolveStatus::kUnchanged:
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             case PresolveStatus::kReduced:
+                return LIBPAPILO_PRESOLVE_STATUS_REDUCED;
+             case PresolveStatus::kUnbounded:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED;
+             case PresolveStatus::kUnbndOrInfeas:
+                return LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE;
+             case PresolveStatus::kInfeasible:
+                return LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE;
+             default:
+                custom_assert( false, "Unknown presolve status" );
+                return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+             }
+          },
+          "Failed to execute trivial column presolve" );
    }
 
    libpapilo_presolve_status_t
