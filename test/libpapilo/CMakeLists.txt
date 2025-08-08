@@ -14,6 +14,7 @@ set(LIBPAPILO_TESTS
 include_directories(${CMAKE_SOURCE_DIR}/src/papilo/external/catch)
 add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/papilo/external/catch/catch_amalgamated.cpp)
 target_link_libraries(libpapilo_unit_test libpapilo)
+target_compile_definitions(libpapilo_unit_test PRIVATE LIBPAPILO_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 # -----------------------------------------------------------------------------
 # Fixture regeneration target for dual_fix_* .postsolve archives

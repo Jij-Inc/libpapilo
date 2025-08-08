@@ -29,11 +29,9 @@
 #include "papilo/core/ProblemUpdate.hpp"
 #include "papilo/core/Reductions.hpp"
 #include "papilo/core/Solution.hpp"
+#include "papilo/core/Statistics.hpp"
 #include "papilo/core/postsolve/Postsolve.hpp"
 #include "papilo/core/postsolve/PostsolveStatus.hpp"
-#include <boost/archive/binary_iarchive.hpp>
-#include <fstream>
-#include "papilo/core/Statistics.hpp"
 #include "papilo/core/postsolve/PostsolveStorage.hpp"
 #include "papilo/io/Message.hpp"
 #include "papilo/misc/Num.hpp"
@@ -41,6 +39,8 @@
 #include "papilo/misc/Vec.hpp"
 #include "papilo/presolvers/SimpleSubstitution.hpp"
 #include "papilo/presolvers/SingletonCols.hpp"
+#include <boost/archive/binary_iarchive.hpp>
+#include <fstream>
 
 #include <cstring>
 #include <iostream>
@@ -163,7 +163,9 @@ struct libpapilo_postsolve_t
    Postsolve<double> postsolve;
 
    libpapilo_postsolve_t( const Message& msg, const Num<double>& num )
-       : postsolve( msg, num ) {}
+       : postsolve( msg, num )
+   {
+   }
 };
 
 /** Custom assert also working on release build */
@@ -326,7 +328,8 @@ check_solution_ptr( const libpapilo_solution_t* solution )
 static void
 check_postsolve_ptr( const libpapilo_postsolve_t* postsolve )
 {
-   custom_assert( postsolve != nullptr, "libpapilo_postsolve_t pointer is null" );
+   custom_assert( postsolve != nullptr,
+                  "libpapilo_postsolve_t pointer is null" );
    custom_assert(
        postsolve->magic_number == LIBPAPILO_MAGIC_NUMBER,
        "Invalid libpapilo_postsolve_t pointer (magic number mismatch)" );
@@ -1808,9 +1811,7 @@ extern "C"
 
       return check_run(
           [&]()
-          {
-             return new libpapilo_postsolve_t( message->message, num->num );
-          },
+          { return new libpapilo_postsolve_t( message->message, num->num ); },
           "Failed to create postsolve object" );
    }
 

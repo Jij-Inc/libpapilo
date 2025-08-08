@@ -29,25 +29,30 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf",
    // Create objects with C API
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_message_t* message = libpapilo_message_create();
-   libpapilo_postsolve_storage_t* postsolveStorage = 
-      libpapilo_postsolve_storage_load_from_file( "../../test/resources/dual_fix_neg_inf.postsolve" );
-   
+   libpapilo_postsolve_storage_t* postsolveStorage =
+       libpapilo_postsolve_storage_load_from_file(
+           ( std::string( LIBPAPILO_SOURCE_DIR ) +
+             "/test/resources/dual_fix_neg_inf.postsolve" )
+               .c_str() );
+
    libpapilo_solution_t* reduced_solution = libpapilo_solution_create();
    libpapilo_solution_t* original_solution = libpapilo_solution_create();
-   libpapilo_postsolve_t* postsolve = libpapilo_postsolve_create( message, num );
+   libpapilo_postsolve_t* postsolve =
+       libpapilo_postsolve_create( message, num );
 
-   libpapilo_postsolve_status_t status = libpapilo_postsolve_undo( 
-      postsolve, reduced_solution, original_solution, postsolveStorage );
-   
+   libpapilo_postsolve_status_t status = libpapilo_postsolve_undo(
+       postsolve, reduced_solution, original_solution, postsolveStorage );
+
    REQUIRE( status == LIBPAPILO_POSTSOLVE_STATUS_OK );
-   
+
    int size;
-   const double* values = libpapilo_solution_get_primal( original_solution, &size );
+   const double* values =
+       libpapilo_solution_get_primal( original_solution, &size );
    REQUIRE( size == 3 );
    REQUIRE( values[0] == -11.0 );
    REQUIRE( values[1] == -5.0 );
    REQUIRE( values[2] == -5.0 );
-   
+
    // Clean up
    libpapilo_postsolve_storage_free( postsolveStorage );
    libpapilo_solution_free( reduced_solution );
@@ -63,26 +68,31 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf",
    // Create objects with C API
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_message_t* message = libpapilo_message_create();
-   libpapilo_postsolve_storage_t* postsolveStorage = 
-      libpapilo_postsolve_storage_load_from_file( "../../test/resources/dual_fix_pos_inf.postsolve" );
-   
+   libpapilo_postsolve_storage_t* postsolveStorage =
+       libpapilo_postsolve_storage_load_from_file(
+           ( std::string( LIBPAPILO_SOURCE_DIR ) +
+             "/test/resources/dual_fix_pos_inf.postsolve" )
+               .c_str() );
+
    libpapilo_solution_t* reduced_solution = libpapilo_solution_create();
    libpapilo_solution_t* original_solution = libpapilo_solution_create();
-   libpapilo_postsolve_t* postsolve = libpapilo_postsolve_create( message, num );
+   libpapilo_postsolve_t* postsolve =
+       libpapilo_postsolve_create( message, num );
 
-   libpapilo_postsolve_status_t status = libpapilo_postsolve_undo( 
-      postsolve, reduced_solution, original_solution, postsolveStorage );
-   
+   libpapilo_postsolve_status_t status = libpapilo_postsolve_undo(
+       postsolve, reduced_solution, original_solution, postsolveStorage );
+
    REQUIRE( status == LIBPAPILO_POSTSOLVE_STATUS_OK );
-   
+
    int size;
-   const double* values = libpapilo_solution_get_primal( original_solution, &size );
+   const double* values =
+       libpapilo_solution_get_primal( original_solution, &size );
    REQUIRE( size == 4 );
    REQUIRE( values[0] == 13.0 );
    REQUIRE( values[1] == 9.0 );
    REQUIRE( values[2] == -5.0 );
    REQUIRE( values[3] == -2.5 );
-   
+
    // Clean up
    libpapilo_postsolve_storage_free( postsolveStorage );
    libpapilo_solution_free( reduced_solution );
