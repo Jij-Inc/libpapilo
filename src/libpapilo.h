@@ -70,6 +70,13 @@ extern "C"
       LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE = 4
    } libpapilo_presolve_status_t;
 
+   /* Postsolve status codes */
+   typedef enum
+   {
+      LIBPAPILO_POSTSOLVE_STATUS_OK = 0,
+      LIBPAPILO_POSTSOLVE_STATUS_ERROR = 1
+   } libpapilo_postsolve_status_t;
+
    /* Reduction type for columns
     * Note: Negative values are used to maintain compatibility with the
     * underlying C++ implementation where these values distinguish reduction
@@ -148,6 +155,10 @@ extern "C"
    typedef struct libpapilo_message_t libpapilo_message_t;
    /** Opaque pointer for papilo::Presolve<double> */
    typedef struct libpapilo_presolve_t libpapilo_presolve_t;
+   /** Opaque pointer for papilo::Solution<double> */
+   typedef struct libpapilo_solution_t libpapilo_solution_t;
+   /** Opaque pointer for papilo::Postsolve<double> */
+   typedef struct libpapilo_postsolve_t libpapilo_postsolve_t;
 
    LIBPAPILO_EXPORT
    libpapilo_problem_builder_t*
@@ -610,6 +621,39 @@ extern "C"
        libpapilo_problem_update_t* update, libpapilo_num_t* num,
        libpapilo_reductions_t* reductions, libpapilo_timer_t* timer,
        int* cause );
+
+   /* Solution Management API */
+   LIBPAPILO_EXPORT libpapilo_solution_t*
+   libpapilo_solution_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_solution_free( libpapilo_solution_t* solution );
+
+   LIBPAPILO_EXPORT const double*
+   libpapilo_solution_get_primal( const libpapilo_solution_t* solution,
+                                  int* size );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_solution_set_primal( libpapilo_solution_t* solution,
+                                  const double* values, int size );
+
+   /* Postsolve Engine API */
+   LIBPAPILO_EXPORT libpapilo_postsolve_t*
+   libpapilo_postsolve_create( libpapilo_message_t* message,
+                               libpapilo_num_t* num );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_postsolve_free( libpapilo_postsolve_t* postsolve );
+
+   LIBPAPILO_EXPORT libpapilo_postsolve_status_t
+   libpapilo_postsolve_undo( libpapilo_postsolve_t* postsolve,
+                             const libpapilo_solution_t* reduced_solution,
+                             libpapilo_solution_t* original_solution,
+                             const libpapilo_postsolve_storage_t* storage );
+
+   /* PostsolveStorage File I/O API */
+   LIBPAPILO_EXPORT libpapilo_postsolve_storage_t*
+   libpapilo_postsolve_storage_load_from_file( const char* filename );
 
 #ifdef __cplusplus
 }

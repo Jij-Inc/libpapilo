@@ -200,14 +200,49 @@ This phase implements the granular presolving functionality required to exactly 
     - Dual value recovery
     - Basis information handling
 
-### Phase 3: High-Level Automated API 🚧 **FUTURE WORK**
+### Phase 3: Data Export and Postsolve API 🚧 **NEXT STEPS**
+
+**Primary Goal**: Enable external systems to consume the presolved problem and its transformation history, and to verify custom postsolve implementations against PaPILO's own logic.
+
+This phase focuses on two key deliverables: making all presolve data accessible and providing a reference postsolve implementation.
+
+#### 1. `PostsolveStorage` Data Export API
+**Objective**: Expose the complete, detailed log of all reductions applied during presolve. This is essential for any external tool to implement its own postsolve logic.
+
+- **Strategy**:
+    - **API-Driven by Tests**: The development will be guided by transplanting `test/papilo/core/PostsolveTest.cpp`. This test reads a serialized `PostsolveStorage` object and uses it, making it the perfect blueprint for identifying the necessary data access functions.
+    - **Granular Accessors**: Implement a comprehensive set of `libpapilo_postsolve_storage_get_*()` functions.
+- **Required APIs**:
+    - `libpapilo_postsolve_storage_get_num_reductions()`: Get the total number of reduction steps.
+    - `libpapilo_postsolve_storage_get_reduction_type(int index)`: Get the type of a specific reduction (e.g., `kFixedCol`, `kSubstitutedCol`).
+    - **Detailed Data Functions**: For each reduction type, provide functions to get its specific data. For example:
+        - `libpapilo_postsolve_storage_get_fixed_col_data(int index, ...)`
+        - `libpapilo_postsolve_storage_get_substituted_col_data(int index, ...)`
+        - This will cover all reduction types detailed in `POSTSOLVE.md`.
+
+#### 2. Reference Postsolve Implementation API
+**Objective**: Provide a C API to run PaPILO's own postsolve process. This allows users to verify their external postsolve implementation against a trusted "golden" result.
+
+- **Strategy**: This requires wrapping the core C++ `Postsolve` and `Solution` classes.
+- **Required APIs**:
+    - **`Solution` Object Management**:
+        - `libpapilo_solution_t`: A new opaque C type for solutions.
+        - `libpapilo_solution_create/free()`: For resource management.
+        - `libpapilo_solution_set_primal_value()`: To provide the presolved problem's solution as input.
+        - `libpapilo_solution_get_primal_values()`: To retrieve the final, postsolved solution.
+    - **`Postsolve` Execution**:
+        - `libpapilo_postsolve_undo()`: The main function to execute the postsolve process, taking a presolved solution and the `PostsolveStorage` log as input, and returning the original solution.
+    - **`PostsolveStorage` File I/O**:
+        - `libpapilo_postsolve_storage_load_from_file()`: A helper function to support the test transplantation by loading serialized storage objects.
+
+### Phase 4: High-Level Automated API 🚧 **FUTURE WORK**
 
 This phase will provide simplified automated presolving for end users.
 
 - **Tasks**:
-    - **Automated Presolve API**: High-level `papilo_presolve_apply()` using all default presolvers
-    - **Batch Processing API**: Convenient functions for common use cases
-    - **Documentation and Examples**: User-friendly guides for typical workflows
+    - **Automated Presolve API**: High-level `papilo_presolve_apply()` using all default presolvers.
+    - **Batch Processing API**: Convenient functions for common use cases.
+    - **Documentation and Examples**: User-friendly guides for typical workflows.
 
 ## 5. Current C API Reference
 

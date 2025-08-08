@@ -79,23 +79,11 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # Search for Boost: headers are required and the other components are needed for the binaries.
-find_package(Boost ${BOOST_MIN_VERSION} CONFIG REQUIRED OPTIONAL_COMPONENTS iostreams program_options serialization)
-if(Boost_IOSTREAMS_FOUND)
-   set(PAPILO_HAVE_BOOST_IOSTREAMS 1)
-else()
-   set(PAPILO_HAVE_BOOST_IOSTREAMS 0)
-endif()
-if(Boost_PROGRAM_OPTIONS_FOUND)
-   set(PAPILO_COMMAND_LINE_AVAILABLE 1)
-else()
-   set(PAPILO_COMMAND_LINE_AVAILABLE 0)
-endif()
-if(Boost_SERIALIZATION_FOUND)
-   set(PAPILO_SERIALIZATION_AVAILABLE 1)
-endif()
-if(NOT Boost_IOSTREAMS_FOUND OR NOT Boost_PROGRAM_OPTIONS_FOUND OR NOT Boost_SERIALIZATION_FOUND)
-   message("WARNING: Boost iostreams, program_options or serialization not found. PaPILO can only be used as a library!")
-endif()
+find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS iostreams program_options serialization)
+# All requested components are required; if we get here they are present.
+set(PAPILO_HAVE_BOOST_IOSTREAMS 1)
+set(PAPILO_COMMAND_LINE_AVAILABLE 1)
+set(PAPILO_SERIALIZATION_AVAILABLE 1)
 
 # Search for GMP.
 if(GMP)

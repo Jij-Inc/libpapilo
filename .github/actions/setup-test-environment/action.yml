@@ -13,5 +13,7 @@ runs:
     - name: Cache APT packages
       uses: awalsh128/cache-apt-pkgs-action@v1
       with:
-        packages: cmake ninja-build libtbb-dev libboost-dev
+        packages: >-
+          cmake ninja-build libtbb-dev
+          libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
         version: 1.0
