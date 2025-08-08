@@ -14,7 +14,33 @@ set(LIBPAPILO_TESTS
 include_directories(${CMAKE_SOURCE_DIR}/src/papilo/external/catch)
 add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/papilo/external/catch/catch_amalgamated.cpp)
 target_link_libraries(libpapilo_unit_test libpapilo)
-target_compile_definitions(libpapilo_unit_test PRIVATE LIBPAPILO_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+target_compile_definitions(libpapilo_unit_test PRIVATE
+    LIBPAPILO_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    LIBPAPILO_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}")
+
+# -----------------------------------------------------------------------------
+# Build-time generation of postsolve fixtures in build tree (neg/pos inf cases)
+# -----------------------------------------------------------------------------
+if(TARGET papilo-executable)
+    set(GEN_PS_NEG ${CMAKE_CURRENT_BINARY_DIR}/dual_fix_neg_inf.postsolve)
+    set(GEN_PS_POS ${CMAKE_CURRENT_BINARY_DIR}/dual_fix_pos_inf.postsolve)
+    add_custom_command(
+        OUTPUT ${GEN_PS_NEG}
+        COMMAND $<TARGET_FILE:papilo-executable> presolve -f ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_neg_inf.mps -v ${GEN_PS_NEG}
+        DEPENDS papilo-executable ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_neg_inf.mps
+        COMMENT "Generating ${GEN_PS_NEG}"
+        VERBATIM
+    )
+    add_custom_command(
+        OUTPUT ${GEN_PS_POS}
+        COMMAND $<TARGET_FILE:papilo-executable> presolve -f ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_pos_inf.mps -v ${GEN_PS_POS}
+        DEPENDS papilo-executable ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_pos_inf.mps
+        COMMENT "Generating ${GEN_PS_POS}"
+        VERBATIM
+    )
+    add_custom_target(gen_postsolve_fixtures DEPENDS ${GEN_PS_NEG} ${GEN_PS_POS})
+    add_dependencies(libpapilo_unit_test gen_postsolve_fixtures)
+endif()
 
 # -----------------------------------------------------------------------------
 # Fixture regeneration (only if CLI executable is available)

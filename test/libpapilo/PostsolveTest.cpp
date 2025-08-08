@@ -22,6 +22,8 @@
 
 #include "libpapilo.h"
 #include "papilo/external/catch/catch_amalgamated.hpp"
+#include <cstdlib>
+#include <string>
 
 TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf",
            "[core]" )
@@ -29,11 +31,10 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf",
    // Create objects with C API
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_message_t* message = libpapilo_message_create();
+   const std::string gen_neg =
+       std::string( LIBPAPILO_BUILD_DIR ) + "/dual_fix_neg_inf.postsolve";
    libpapilo_postsolve_storage_t* postsolveStorage =
-       libpapilo_postsolve_storage_load_from_file(
-           ( std::string( LIBPAPILO_SOURCE_DIR ) +
-             "/test/resources/dual_fix_neg_inf.postsolve" )
-               .c_str() );
+       libpapilo_postsolve_storage_load_from_file( gen_neg.c_str() );
 
    libpapilo_solution_t* reduced_solution = libpapilo_solution_create();
    libpapilo_solution_t* original_solution = libpapilo_solution_create();
@@ -68,11 +69,10 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf",
    // Create objects with C API
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_message_t* message = libpapilo_message_create();
+   const std::string gen_pos =
+       std::string( LIBPAPILO_BUILD_DIR ) + "/dual_fix_pos_inf.postsolve";
    libpapilo_postsolve_storage_t* postsolveStorage =
-       libpapilo_postsolve_storage_load_from_file(
-           ( std::string( LIBPAPILO_SOURCE_DIR ) +
-             "/test/resources/dual_fix_pos_inf.postsolve" )
-               .c_str() );
+       libpapilo_postsolve_storage_load_from_file( gen_pos.c_str() );
 
    libpapilo_solution_t* reduced_solution = libpapilo_solution_create();
    libpapilo_solution_t* original_solution = libpapilo_solution_create();
