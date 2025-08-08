@@ -15,6 +15,35 @@ include_directories(${CMAKE_SOURCE_DIR}/src/papilo/external/catch)
 add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/papilo/external/catch/catch_amalgamated.cpp)
 target_link_libraries(libpapilo_unit_test libpapilo)
 
+# -----------------------------------------------------------------------------
+# Fixture regeneration target for dual_fix_* .postsolve archives
+# Usage:  cmake --build <build_dir> --target update_dual_fix_postsolve
+# This will overwrite the fixture files in the source tree.
+# -----------------------------------------------------------------------------
+set(DUAL_FIX_MPS_NEG  ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_neg_inf.mps)
+set(DUAL_FIX_MPS_POS  ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_pos_inf.mps)
+set(DUAL_FIX_PS_NEG   ${CMAKE_SOURCE_DIR}/test/resources/dual_fix_neg_inf.postsolve)
+set(DUAL_FIX_PS_POS   ${CMAKE_SOURCE_DIR}/test/resources/dual_fix_pos_inf.postsolve)
+
+add_custom_command(
+    OUTPUT ${DUAL_FIX_PS_NEG}
+    COMMAND $<TARGET_FILE:papilo-executable> presolve -f ${DUAL_FIX_MPS_NEG} -v ${DUAL_FIX_PS_NEG}
+    DEPENDS papilo-executable ${DUAL_FIX_MPS_NEG}
+    COMMENT "Regenerating dual_fix_neg_inf.postsolve"
+    VERBATIM
+)
+add_custom_command(
+    OUTPUT ${DUAL_FIX_PS_POS}
+    COMMAND $<TARGET_FILE:papilo-executable> presolve -f ${DUAL_FIX_MPS_POS} -v ${DUAL_FIX_PS_POS}
+    DEPENDS papilo-executable ${DUAL_FIX_MPS_POS}
+    COMMENT "Regenerating dual_fix_pos_inf.postsolve"
+    VERBATIM
+)
+
+add_custom_target(update_dual_fix_postsolve
+    DEPENDS ${DUAL_FIX_PS_NEG} ${DUAL_FIX_PS_POS}
+    COMMENT "Update both dual_fix_* postsolve fixture archives")
+
 set(LIBPAPILO_TEST_NAMES 
     "problem-builder"
 
