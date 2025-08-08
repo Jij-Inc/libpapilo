@@ -22,11 +22,9 @@
 
 #include "libpapilo.h"
 #include "papilo/external/catch/catch_amalgamated.hpp"
-#include <cstdlib>
-#include <string>
 
 TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf",
-           "[core]" )
+           "[libpapilo]" )
 {
    // Create objects with C API
    libpapilo_num_t* num = libpapilo_num_create();
@@ -64,7 +62,7 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf",
 }
 
 TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf",
-           "[core]" )
+           "[libpapilo]" )
 {
    // Create objects with C API
    libpapilo_num_t* num = libpapilo_num_create();
