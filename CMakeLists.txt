@@ -609,7 +609,7 @@ install(TARGETS papilo papilo-core ${CLUSOL_TARGET} EXPORT papilo-targets ARCHIV
 # Install the papilo-targets.
 install(EXPORT papilo-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/papilo)
 
-# Enable cpack for packaging ZIP
+# Enable CPack for packaging TGZ
 # CPack Configuration for libpapilo
 # Package only libpapilo shared library and header
 
