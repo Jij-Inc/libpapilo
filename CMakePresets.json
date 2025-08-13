@@ -52,15 +52,14 @@
   ],
   "packagePresets": [
     {
-      "name": "tgz-release",
-      "displayName": "TGZ Archive (Release)",
-      "description": "Create TGZ archive for libpapilo",
+      "name": "tgz",
+      "displayName": "TGZ Archive (Release Build)",
+      "description": "Create tar.gz archive for libpapilo",
       "configurePreset": "default",
       "generators": [
         "TGZ"
       ],
-      "packageDirectory": "${sourceDir}/build/packages",
-      "vendorName": "Jij Inc."
+      "packageDirectory": "${sourceDir}/build/packages"
     }
   ]
 }
