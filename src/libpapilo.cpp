@@ -395,6 +395,12 @@ convert_postsolve_status( PostsolveStatus status )
 extern "C"
 {
 
+   const char*
+   libpapilo_version()
+   {
+      return "2.4.3-jij.1";
+   }
+
    libpapilo_problem_builder_t*
    libpapilo_problem_builder_create()
    {

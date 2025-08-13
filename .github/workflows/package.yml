@@ -66,6 +66,9 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download DEB package
         uses: actions/download-artifact@v4
         with:
@@ -75,7 +78,7 @@ jobs:
       - name: Install dependencies and test DEB package
         run: |
           apt-get update
-          apt-get install -y file
+          apt-get install -y file gcc
           
           # List the DEB file
           ls -la *.deb
@@ -93,22 +96,9 @@ jobs:
           # Test that the library can be loaded (ldconfig was run by postinst script)
           ldd /usr/lib/libpapilo.so
           
-          # Create a simple test program
-          cat > test.c << 'EOF'
-          #include <libpapilo.h>
-          #include <stdio.h>
-          
-          int main() {
-              const char* version = libpapilo_version();
-              printf("libpapilo version: %s\n", version);
-              return 0;
-          }
-          EOF
-          
-          # Compile and run the test
-          apt-get install -y gcc
-          gcc -o test test.c -lpapilo
-          ./test
+          # Compile and run the link test
+          gcc -o linktest test/libpapilo/LinkTest.c -lpapilo
+          ./linktest
 
   publish:
     permissions:
