@@ -6,6 +6,7 @@ set(LIBPAPILO_TESTS
     SimpleSubstitutionTest.cpp
     ProblemUpdateTest.cpp
     PresolveTest.cpp
+    PostsolveTest.cpp
     # Add more test files as needed
 )
 
@@ -13,6 +14,29 @@ set(LIBPAPILO_TESTS
 include_directories(${CMAKE_SOURCE_DIR}/src/papilo/external/catch)
 add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/papilo/external/catch/catch_amalgamated.cpp)
 target_link_libraries(libpapilo_unit_test libpapilo)
+target_compile_definitions(libpapilo_unit_test PRIVATE
+    LIBPAPILO_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    LIBPAPILO_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}")
+
+set(GEN_PS_NEG ${CMAKE_CURRENT_BINARY_DIR}/dual_fix_neg_inf.postsolve)
+set(GEN_PS_POS ${CMAKE_CURRENT_BINARY_DIR}/dual_fix_pos_inf.postsolve)
+add_custom_command(
+    OUTPUT ${GEN_PS_NEG}
+    COMMAND $<TARGET_FILE:papilo-executable> presolve -f ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_neg_inf.mps -v ${GEN_PS_NEG}
+    DEPENDS papilo-executable ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_neg_inf.mps
+    COMMENT "Generating ${GEN_PS_NEG}"
+    VERBATIM
+)
+add_custom_command(
+    OUTPUT ${GEN_PS_POS}
+    COMMAND $<TARGET_FILE:papilo-executable> presolve -f ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_pos_inf.mps -v ${GEN_PS_POS}
+    DEPENDS papilo-executable ${CMAKE_SOURCE_DIR}/test/instances/dual_fix_pos_inf.mps
+    COMMENT "Generating ${GEN_PS_POS}"
+    VERBATIM
+)
+add_custom_target(gen_postsolve_fixtures DEPENDS ${GEN_PS_NEG} ${GEN_PS_POS})
+add_dependencies(libpapilo_unit_test gen_postsolve_fixtures)
+
 
 set(LIBPAPILO_TEST_NAMES 
     "problem-builder"
@@ -49,6 +73,10 @@ set(LIBPAPILO_TEST_NAMES
     "happy-path-replace-variable"
     "happy-path-substitute-matrix-coefficient-into-objective"
     "happy-path-aggregate-free-column"
+    
+    # PostsolveTest.cpp
+    "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf"
+    "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf"
 )
 
 # Register test targets for each test file

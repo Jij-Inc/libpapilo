@@ -28,7 +28,10 @@
 #include "papilo/core/ProblemBuilder.hpp"
 #include "papilo/core/ProblemUpdate.hpp"
 #include "papilo/core/Reductions.hpp"
+#include "papilo/core/Solution.hpp"
 #include "papilo/core/Statistics.hpp"
+#include "papilo/core/postsolve/Postsolve.hpp"
+#include "papilo/core/postsolve/PostsolveStatus.hpp"
 #include "papilo/core/postsolve/PostsolveStorage.hpp"
 #include "papilo/io/Message.hpp"
 #include "papilo/misc/Num.hpp"
@@ -36,6 +39,8 @@
 #include "papilo/misc/Vec.hpp"
 #include "papilo/presolvers/SimpleSubstitution.hpp"
 #include "papilo/presolvers/SingletonCols.hpp"
+#include <boost/archive/binary_iarchive.hpp>
+#include <fstream>
 
 #include <cstring>
 #include <iostream>
@@ -76,6 +81,8 @@ struct libpapilo_postsolve_storage_t
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    PostsolveStorage<double> postsolve;
 
+   // Default constructor
+   libpapilo_postsolve_storage_t() = default;
    // Constructor to properly initialize postsolve
    libpapilo_postsolve_storage_t( PostsolveStorage<double>&& ps )
        : postsolve( std::move( ps ) )
@@ -142,6 +149,23 @@ struct libpapilo_presolve_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    Presolve<double> presolve;
+};
+
+struct libpapilo_solution_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Solution<double> solution;
+};
+
+struct libpapilo_postsolve_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   Postsolve<double> postsolve;
+
+   libpapilo_postsolve_t( const Message& msg, const Num<double>& num )
+       : postsolve( msg, num )
+   {
+   }
 };
 
 /** Custom assert also working on release build */
@@ -292,6 +316,25 @@ check_presolve_ptr( const libpapilo_presolve_t* presolve )
        "Invalid libpapilo_presolve_t pointer (magic number mismatch)" );
 }
 
+static void
+check_solution_ptr( const libpapilo_solution_t* solution )
+{
+   custom_assert( solution != nullptr, "libpapilo_solution_t pointer is null" );
+   custom_assert(
+       solution->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_solution_t pointer (magic number mismatch)" );
+}
+
+static void
+check_postsolve_ptr( const libpapilo_postsolve_t* postsolve )
+{
+   custom_assert( postsolve != nullptr,
+                  "libpapilo_postsolve_t pointer is null" );
+   custom_assert(
+       postsolve->magic_number == LIBPAPILO_MAGIC_NUMBER,
+       "Invalid libpapilo_postsolve_t pointer (magic number mismatch)" );
+}
+
 template <typename Func>
 auto
 check_run( Func func, const char* message )
@@ -334,6 +377,18 @@ convert_presolve_status( PresolveStatus status )
    default:
       custom_assert( false, "Unknown presolve status" );
       return LIBPAPILO_PRESOLVE_STATUS_UNCHANGED;
+   }
+}
+
+static libpapilo_postsolve_status_t
+convert_postsolve_status( PostsolveStatus status )
+{
+   switch( status )
+   {
+   case PostsolveStatus::kOk:
+      return LIBPAPILO_POSTSOLVE_STATUS_OK;
+   default:
+      return LIBPAPILO_POSTSOLVE_STATUS_ERROR;
    }
 }
 
@@ -1699,6 +1754,120 @@ extern "C"
              return convert_presolve_status( status );
           },
           "Failed to execute simple substitution presolver" );
+   }
+
+   /* Solution Management API Implementation */
+
+   libpapilo_solution_t*
+   libpapilo_solution_create()
+   {
+      return check_run( []() { return new libpapilo_solution_t(); },
+                        "Failed to create solution object" );
+   }
+
+   void
+   libpapilo_solution_free( libpapilo_solution_t* solution )
+   {
+      check_solution_ptr( solution );
+      delete solution;
+   }
+
+   const double*
+   libpapilo_solution_get_primal( const libpapilo_solution_t* solution,
+                                  int* size )
+   {
+      check_solution_ptr( solution );
+      custom_assert( size != nullptr, "size pointer is null" );
+
+      *size = static_cast<int>( solution->solution.primal.size() );
+      return solution->solution.primal.data();
+   }
+
+   void
+   libpapilo_solution_set_primal( libpapilo_solution_t* solution,
+                                  const double* values, int size )
+   {
+      check_solution_ptr( solution );
+      custom_assert( values != nullptr || size == 0,
+                     "values pointer is null for non-zero size" );
+      custom_assert( size >= 0, "size cannot be negative" );
+
+      solution->solution.primal.clear();
+      solution->solution.primal.reserve( size );
+      for( int i = 0; i < size; ++i )
+      {
+         solution->solution.primal.push_back( values[i] );
+      }
+   }
+
+   /* Postsolve Engine API Implementation */
+
+   libpapilo_postsolve_t*
+   libpapilo_postsolve_create( libpapilo_message_t* message,
+                               libpapilo_num_t* num )
+   {
+      check_message_ptr( message );
+      check_num_ptr( num );
+
+      return check_run(
+          [&]()
+          { return new libpapilo_postsolve_t( message->message, num->num ); },
+          "Failed to create postsolve object" );
+   }
+
+   void
+   libpapilo_postsolve_free( libpapilo_postsolve_t* postsolve )
+   {
+      check_postsolve_ptr( postsolve );
+      delete postsolve;
+   }
+
+   libpapilo_postsolve_status_t
+   libpapilo_postsolve_undo( libpapilo_postsolve_t* postsolve,
+                             const libpapilo_solution_t* reduced_solution,
+                             libpapilo_solution_t* original_solution,
+                             const libpapilo_postsolve_storage_t* storage )
+   {
+      check_postsolve_ptr( postsolve );
+      check_solution_ptr( reduced_solution );
+      check_solution_ptr( original_solution );
+      check_postsolve_storage_ptr( storage );
+
+      return check_run(
+          [&]()
+          {
+             PostsolveStatus status = postsolve->postsolve.undo(
+                 reduced_solution->solution, original_solution->solution,
+                 storage->postsolve );
+             return convert_postsolve_status( status );
+          },
+          "Failed to perform postsolve operation" );
+   }
+
+   /* PostsolveStorage File I/O API Implementation */
+
+   libpapilo_postsolve_storage_t*
+   libpapilo_postsolve_storage_load_from_file( const char* filename )
+   {
+      custom_assert( filename != nullptr, "filename pointer is null" );
+
+      return check_run(
+          [&]()
+          {
+             libpapilo_postsolve_storage_t* storage =
+                 new libpapilo_postsolve_storage_t();
+             std::ifstream inArchiveFile( filename, std::ios_base::binary );
+             if( !inArchiveFile.is_open() )
+             {
+                delete storage;
+                custom_assert( false, "Failed to open file for reading" );
+             }
+             boost::archive::binary_iarchive inputArchive( inArchiveFile );
+             inputArchive >> storage->postsolve;
+             inArchiveFile.close();
+             return storage;
+          },
+          "Failed to load PostsolveStorage from file" );
    }
 
 } // extern "C"
