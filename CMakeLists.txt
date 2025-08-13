@@ -610,13 +610,6 @@ install(EXPORT papilo-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/papilo)
 # CPack Configuration for libpapilo
 # Package only libpapilo shared library and header
 
-# Configure spec file for RPM (optional - for manual rpmbuild)
-configure_file(
-   ${CMAKE_SOURCE_DIR}/libpapilo.spec.in
-   ${CMAKE_BINARY_DIR}/libpapilo.spec
-   @ONLY
-)
-
 # General CPack settings
 set(CPACK_PACKAGE_NAME "libpapilo")
 set(CPACK_PACKAGE_VENDOR "Jij Inc.")
@@ -633,40 +626,11 @@ set(CPACK_COMPONENT_LIBPAPILO_DISPLAY_NAME "libpapilo")
 set(CPACK_COMPONENT_LIBPAPILO_DESCRIPTION "PaPILO presolve library with C API")
 set(CPACK_COMPONENT_LIBPAPILO_REQUIRED TRUE)
 
-# RPM specific settings
-set(CPACK_RPM_PACKAGE_NAME "libpapilo")
-set(CPACK_RPM_PACKAGE_SUMMARY "PaPILO Presolve Library - C API")
-set(CPACK_RPM_PACKAGE_DESCRIPTION "libpapilo provides PaPILO (Parallel Presolve for Integer and Linear Optimization) as a presolve-only shared library with a C API for easy integration with other solvers and optimization tools.")
-set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0")
-set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-set(CPACK_RPM_PACKAGE_URL "https://github.com/Jij-Inc/libpapilo")
-set(CPACK_RPM_PACKAGE_REQUIRES "glibc >= 2.17")
-set(CPACK_RPM_PACKAGE_AUTOREQ YES)
-set(CPACK_RPM_PACKAGE_AUTOPROV YES)
-set(CPACK_RPM_COMPONENT_INSTALL ON)
-set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
-
-# DEB specific settings (optional, but useful)
-set(CPACK_DEBIAN_PACKAGE_NAME "libpapilo")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jij Inc.")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
-set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
-set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-
 # TGZ and TBZ2 archives
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 # Set installation directories
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-
-# Exclude other components from packaging
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
-    /usr/local
-    /usr/local/lib
-    /usr/local/include
-)
 
 # Source package settings (exclude unnecessary files)
 set(CPACK_SOURCE_IGNORE_FILES

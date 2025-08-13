@@ -52,57 +52,12 @@
   ],
   "packagePresets": [
     {
-      "name": "rpm-release",
-      "displayName": "RPM Package (Release)",
-      "description": "Create RPM package for libpapilo",
-      "configurePreset": "default",
-      "generators": [
-        "RPM"
-      ],
-      "packageDirectory": "${sourceDir}/packages",
-      "vendorName": "Jij Inc."
-    },
-    {
-      "name": "deb-release",
-      "displayName": "DEB Package (Release)",
-      "description": "Create DEB package for libpapilo",
-      "configurePreset": "default",
-      "generators": [
-        "DEB"
-      ],
-      "packageDirectory": "${sourceDir}/packages",
-      "vendorName": "Jij Inc."
-    },
-    {
       "name": "tgz-release",
       "displayName": "TGZ Archive (Release)",
       "description": "Create TGZ archive for libpapilo",
       "configurePreset": "default",
       "generators": [
         "TGZ"
-      ],
-      "packageDirectory": "${sourceDir}/packages",
-      "vendorName": "Jij Inc."
-    },
-    {
-      "name": "macos-release",
-      "displayName": "macOS Package (Release)",
-      "description": "Create macOS package for libpapilo",
-      "configurePreset": "default",
-      "generators": [
-        "productbuild"
-      ],
-      "packageDirectory": "${sourceDir}/packages",
-      "vendorName": "Jij Inc."
-    },
-    {
-      "name": "all-release",
-      "displayName": "All Packages (Release)",
-      "description": "Create all package types for libpapilo",
-      "configurePreset": "default",
-      "generators": [
-        "TGZ",
-        "ZIP"
       ],
       "packageDirectory": "${sourceDir}/packages",
       "vendorName": "Jij Inc."
