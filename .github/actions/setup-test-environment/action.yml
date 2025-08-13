@@ -15,7 +15,7 @@ runs:
       uses: awalsh128/cache-apt-pkgs-action@v1
       with:
         packages: >-
-          cmake ninja-build libtbb-dev
+          cmake ninja-build libtbb-dev file
           libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
         version: 1.0
 

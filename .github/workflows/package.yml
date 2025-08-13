@@ -40,11 +40,7 @@ jobs:
 
       - name: Create DEB package (Linux only)
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y file
-          cd build/release
-          cpack -G DEB
+        run: cpack --preset deb
 
       - name: Upload TGZ package as artifact
         uses: actions/upload-artifact@v4
@@ -58,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: libpapilo-deb-package
-          path: build/release/*.deb
+          path: build/packages/*.deb
           retention-days: 30
 
   test-deb-install:
