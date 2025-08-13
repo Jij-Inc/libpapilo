@@ -59,7 +59,7 @@
       "generators": [
         "TGZ"
       ],
-      "packageDirectory": "${sourceDir}/packages",
+      "packageDirectory": "${sourceDir}/build/packages",
       "vendorName": "Jij Inc."
     }
   ]
