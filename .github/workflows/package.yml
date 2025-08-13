@@ -35,21 +35,91 @@ jobs:
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
 
-      - name: Create package
+      - name: Create TGZ package
         run: cpack --preset tgz
 
-      - name: Upload package as artifact
+      - name: Create DEB package (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y file
+          cd build/release
+          cpack -G DEB
+
+      - name: Upload TGZ package as artifact
         uses: actions/upload-artifact@v4
         with:
           name: libpapilo-package-${{ matrix.platform }}
           path: build/packages/*.tar.gz
           retention-days: 30
 
+      - name: Upload DEB package as artifact (Linux only)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-deb-package
+          path: build/release/*.deb
+          retention-days: 30
+
+  test-deb-install:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download DEB package
+        uses: actions/download-artifact@v4
+        with:
+          name: libpapilo-deb-package
+          path: .
+
+      - name: Install dependencies and test DEB package
+        run: |
+          apt-get update
+          apt-get install -y file
+          
+          # List the DEB file
+          ls -la *.deb
+          
+          # Show package information
+          dpkg -I *.deb
+          
+          # Install the package (this will also install dependencies)
+          apt-get install -y ./*.deb
+          
+          # Verify the library is installed
+          ls -la /usr/lib/libpapilo.so*
+          ls -la /usr/include/libpapilo.h
+          
+          # Test that the library can be loaded
+          ldconfig
+          ldd /usr/lib/libpapilo.so
+          
+          # Create a simple test program
+          cat > test.c << 'EOF'
+          #include <libpapilo.h>
+          #include <stdio.h>
+          
+          int main() {
+              const char* version = libpapilo_version();
+              printf("libpapilo version: %s\n", version);
+              return 0;
+          }
+          EOF
+          
+          # Compile and run the test
+          apt-get install -y gcc
+          gcc -o test test.c -lpapilo
+          ./test
+
   publish:
     permissions:
       contents: write
     if: github.event_name == 'release'
-    needs: [build]
+    needs: [build, test-deb-install]
     runs-on: ubuntu-latest
 
     steps:
@@ -61,7 +131,9 @@ jobs:
       - name: Add packages to GitHub Release
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          files: packages/**/*.tar.gz
+          files: |
+            packages/**/*.tar.gz
+            packages/**/*.deb
           tag_name: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
