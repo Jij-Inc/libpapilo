@@ -1,0 +1,77 @@
+name: Package libpapilo
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      upload_to_release:
+        description: 'Upload package to latest release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-and-package:
+    name: Build and Package libpapilo
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: Linux
+          - os: macos-latest
+            platform: Darwin
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build libboost-all-dev libtbb-dev build-essential
+        
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake ninja boost tbb
+        
+    - name: Configure CMake
+      run: cmake --preset default
+      
+    - name: Build libpapilo
+      run: cmake --build --preset default --target libpapilo
+      
+    - name: Create package
+      run: cpack --preset tgz
+      
+    - name: Display package info
+      run: |
+        echo "Generated packages:"
+        ls -la build/packages/
+        echo ""
+        echo "Package contents:"
+        for pkg in build/packages/*.tar.gz; do
+          echo "=== $pkg ==="
+          tar -tzf "$pkg" | head -10
+          echo ""
+        done
+        
+    - name: Upload package as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libpapilo-package-${{ matrix.platform }}
+        path: build/packages/*.tar.gz
+        retention-days: 30
+        
+    - name: Upload to GitHub Release
+      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_release == 'true')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/packages/*.tar.gz
+        tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
