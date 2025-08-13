@@ -3,6 +3,9 @@ cmake_minimum_required (VERSION 3.11.0)
 set(PAPILO_VERSION_MAJOR 2)
 set(PAPILO_VERSION_MINOR 4)
 set(PAPILO_VERSION_PATCH 3)
+
+# Jij-specific patch version for libpapilo packaging
+set(LIBPAPILO_JIJ_PATCH_VERSION 1)
 set(PAPILO_API_VERSION 3)
 
 project(papilo VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}.0)
@@ -322,8 +325,8 @@ set_target_properties(libpapilo PROPERTIES
 )
 install(TARGETS libpapilo
    EXPORT papilo-targets
-   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libpapilo
+   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT libpapilo
 )
 
 # Create target `papilo-core` which is the static library.
@@ -606,3 +609,30 @@ install(TARGETS papilo papilo-core ${CLUSOL_TARGET} EXPORT papilo-targets ARCHIV
 # Install the papilo-targets.
 install(EXPORT papilo-targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/papilo)
 
+# Enable CPack for packaging TGZ
+# CPack Configuration for libpapilo
+# Package only libpapilo shared library and header
+
+# General CPack settings
+set(CPACK_PACKAGE_NAME "libpapilo")
+set(CPACK_PACKAGE_VENDOR "Jij Inc.")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "PaPILO Presolve Library - C API")
+set(CPACK_PACKAGE_DESCRIPTION "libpapilo provides PaPILO (Parallel Presolve for Integer and Linear Optimization) as a presolve-only shared library with a C API")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PAPILO_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PAPILO_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PAPILO_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION "${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}-jij.${LIBPAPILO_JIJ_PATCH_VERSION}")
+
+# Package only libpapilo components
+set(CPACK_COMPONENTS_ALL libpapilo)
+set(CPACK_COMPONENT_LIBPAPILO_DISPLAY_NAME "libpapilo")
+set(CPACK_COMPONENT_LIBPAPILO_DESCRIPTION "PaPILO presolve library with C API")
+set(CPACK_COMPONENT_LIBPAPILO_REQUIRED TRUE)
+
+# TGZ and TBZ2 archives
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+
+# Do not add prefix to the installation path, e.g. `usr/loca/`
+set(CPACK_PACKAGING_INSTALL_PREFIX "")
+
+include(CPack)

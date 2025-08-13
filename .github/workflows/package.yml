@@ -1,0 +1,67 @@
+name: Package
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: Linux
+          - os: macos-latest
+            platform: Darwin
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-test-environment
+
+      - name: Configure CMake
+        run: cmake --preset default
+
+      - name: Build libpapilo
+        run: cmake --build --preset default --target libpapilo
+
+      - name: Create package
+        run: cpack --preset tgz
+
+      - name: Upload package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-package-${{ matrix.platform }}
+          path: build/packages/*.tar.gz
+          retention-days: 30
+
+  publish:
+    permissions:
+      contents: write
+    if: github.event_name == 'release'
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: packages
+
+      - name: Add packages to GitHub Release
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        with:
+          files: packages/**/*.tar.gz
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

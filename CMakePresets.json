@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 6,
   "configurePresets": [
     {
       "name": "default",
@@ -48,6 +48,18 @@
       "output": {
         "outputOnFailure": true
       }
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "tgz",
+      "displayName": "TGZ Archive (Release Build)",
+      "description": "Create tar.gz archive for libpapilo",
+      "configurePreset": "default",
+      "generators": [
+        "TGZ"
+      ],
+      "packageDirectory": "${sourceDir}/build/packages"
     }
   ]
 }
