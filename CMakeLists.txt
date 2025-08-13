@@ -632,19 +632,7 @@ set(CPACK_COMPONENT_LIBPAPILO_REQUIRED TRUE)
 # TGZ and TBZ2 archives
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
-# Set installation directories
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-
-# Source package settings (exclude unnecessary files)
-set(CPACK_SOURCE_IGNORE_FILES
-    "/\\.git/"
-    "/build.*/"
-    "/\\.gitignore"
-    "/\\.github/"
-    "\\.swp$"
-    "\\.#"
-    "/#"
-    "~$"
-)
+# Do not add prefix to the installation path, e.g. `usr/loca/`
+set(CPACK_PACKAGING_INSTALL_PREFIX "")
 
 include(CPack)
