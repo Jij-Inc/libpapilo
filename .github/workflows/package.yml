@@ -83,15 +83,14 @@ jobs:
           # Show package information
           dpkg -I *.deb
           
-          # Install the package (this will also install dependencies)
+          # Install the package (this will also install dependencies and run ldconfig automatically)
           apt-get install -y ./*.deb
           
           # Verify the library is installed
           ls -la /usr/lib/libpapilo.so*
           ls -la /usr/include/libpapilo.h
           
-          # Test that the library can be loaded
-          ldconfig
+          # Test that the library can be loaded (ldconfig was run by postinst script)
           ldd /usr/lib/libpapilo.so
           
           # Create a simple test program
