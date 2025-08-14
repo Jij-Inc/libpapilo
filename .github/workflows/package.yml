@@ -9,13 +9,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-tgz:
     permissions:
       contents: read
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     env:
       SCCACHE_GHA_ENABLED: "true"
 
@@ -35,33 +32,89 @@ jobs:
       - name: Create TGZ package
         run: cpack --preset tgz
 
-      - name: Create DEB package (Linux only)
-        if: runner.os == 'Linux'
+      - name: Upload TGZ package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-tgz-macOS
+          path: build/packages/*.tar.gz
+          retention-days: 30
+
+  build-deb:
+    permissions:
+      contents: read
+    runs-on: ubuntu-22.04
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-test-environment
+
+      - name: Configure CMake
+        run: cmake --preset default
+
+      - name: Build libpapilo
+        run: cmake --build --preset default --target libpapilo
+
+      - name: Create DEB package
         run: |
           sudo apt update
           # Install library packages explicitly for CPACK_DEBIAN_PACKAGE_SHLIBDEPS
           sudo apt install -y libtbb-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
           cpack --preset deb
 
-      - name: Upload TGZ package as artifact
+      - name: Upload DEB package as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: libpapilo-package-${{ runner.os }}
-          path: build/packages/*.tar.gz
-          retention-days: 30
-
-      - name: Upload DEB package as artifact (Linux only)
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: libpapilo-deb-package
+          name: libpapilo-deb
           path: build/packages/*.deb
           retention-days: 30
 
+  build-rpm:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_34_x86_64
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fix git ownership
+        run: git config --global --add safe.directory ${{ github.workspace }}
+
+      - name: Setup sccache with GitHub Actions cache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Install system dependencies
+        run: dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel bzip2-devel xz-devel libzstd-devel zlib-devel
+
+      - name: Configure CMake
+        run: cmake --preset default
+
+      - name: Build libpapilo
+        run: cmake --build --preset default --target libpapilo
+
+      - name: Create RPM package
+        run: cpack --preset rpm
+
+      - name: Upload RPM package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-rpm
+          path: build/packages/*.rpm
+          retention-days: 30
+
   test-deb:
-    needs: build
+    needs: build-deb
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         version: ["24.04", "22.04"]
     container: ubuntu:${{ matrix.version }}
@@ -72,7 +125,7 @@ jobs:
       - name: Download DEB package
         uses: actions/download-artifact@v4
         with:
-          name: libpapilo-deb-package
+          name: libpapilo-deb
           path: .
 
       - name: Test apt install of DEB package
@@ -91,11 +144,39 @@ jobs:
           gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
           ./linktest
 
+  test-rpm:
+    needs: build-rpm
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_34_x86_64
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download RPM package
+        uses: actions/download-artifact@v4
+        with:
+          name: libpapilo-rpm
+          path: .
+
+      - name: Test dnf install of RPM package
+        run: dnf install -y ./*.rpm
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GCC for testing
+        run: dnf install -y gcc
+
+      - name: Run tests
+        run: |
+          gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
+          ./linktest
+
   publish:
     permissions:
       contents: write
     if: github.event_name == 'release'
-    needs: [build, test-deb]
+    needs: [build-tgz, build-deb, build-rpm, test-deb, test-rpm]
     runs-on: ubuntu-latest
 
     steps:
@@ -110,6 +191,7 @@ jobs:
           files: |
             packages/**/*.tar.gz
             packages/**/*.deb
+            packages/**/*.rpm
           tag_name: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

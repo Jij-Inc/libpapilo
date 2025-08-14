@@ -658,11 +658,31 @@ else()
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
-# For TGZ packages: Do not add prefix to the installation path
-set(CPACK_PACKAGING_INSTALL_PREFIX "")
+# RPM package settings
+set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
+set(CPACK_RPM_PACKAGE_URL "https://github.com/Jij-Inc/libpapilo")
+set(CPACK_RPM_PACKAGE_DESCRIPTION "libpapilo provides PaPILO (Parallel Presolve for Integer and Linear Optimization) as a presolve-only shared library with a C API")
 
-# For DEB packages: Use standard Linux paths
-if(CPACK_GENERATOR MATCHES "DEB")
+# Use component-based installation for RPM packages as well
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+
+# Set the component-specific package name for libpapilo
+set(CPACK_RPM_LIBPAPILO_PACKAGE_NAME "libpapilo")
+
+# Generate package dependency information for RPM
+set(CPACK_RPM_PACKAGE_AUTOREQ ON)
+set(CPACK_RPM_PACKAGE_AUTOPROV ON)
+
+# Architecture: Use detected architecture directly for RPM
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+
+# Set installation prefix based on generator
+# TGZ packages: No prefix (for portable installations)
+if(CPACK_GENERATOR MATCHES "TGZ")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+# DEB and RPM packages: Use standard Linux paths
+elseif(CPACK_GENERATOR MATCHES "DEB|RPM")
   set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 endif()
 
