@@ -15,12 +15,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            platform: Linux
-          - os: macos-latest
-            platform: Darwin
+        os: [ubuntu-22.04, macos-latest]
     runs-on: ${{ matrix.os }}
     env:
       SCCACHE_GHA_ENABLED: "true"
@@ -48,7 +43,7 @@ jobs:
       - name: Upload TGZ package as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: libpapilo-package-${{ matrix.platform }}
+          name: libpapilo-package-${{ runner.os }}
           path: build/packages/*.tar.gz
           retention-days: 30
 
@@ -63,7 +58,10 @@ jobs:
   test-deb:
     needs: build
     runs-on: ubuntu-latest
-    container: ubuntu:24.04
+    strategy:
+      matrix:
+        version: ["24.04", "22.04"]
+    container: ubuntu:${{ matrix.version }}
     permissions:
       contents: read
 
