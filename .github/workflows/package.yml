@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - cpack-rpm # For testing RPM packaging
   release:
     types: [published]
   workflow_dispatch:
