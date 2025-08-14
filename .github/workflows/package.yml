@@ -75,22 +75,10 @@ jobs:
         run: git config --global --add safe.directory /__w/libpapilo/libpapilo
 
       - name: Install system dependencies
-        run: dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel
-
-      - name: Setup TBB environment
-        run: |
-          # Check TBB installation
-          rpm -ql tbb-devel | head -10
-          # Set TBB paths for CMake
-          export TBB_DIR=/usr
-          export TBB_ROOT=/usr
-          export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:$PKG_CONFIG_PATH
-          echo "TBB_DIR=/usr" >> $GITHUB_ENV
-          echo "TBB_ROOT=/usr" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/usr/lib64/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+        run: dnf install -y cmake ninja-build rpm-build boost-devel
 
       - name: Configure CMake
-        run: cmake --preset default
+        run: cmake --preset default -DTBB=off
 
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
