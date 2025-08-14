@@ -77,6 +77,17 @@ jobs:
           apt update
           apt install -y ./*.deb
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GCC for testing
+        run: apt install -y gcc
+
+      - name: Run tests
+        run: |
+          gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
+          ./linktest
+
   publish:
     permissions:
       contents: write
