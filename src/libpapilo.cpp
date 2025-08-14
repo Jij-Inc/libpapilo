@@ -22,6 +22,7 @@
 
 #include "libpapilo.h"
 
+#include "papilo/CMakeConfig.hpp"
 #include "papilo/core/Presolve.hpp"
 #include "papilo/core/PresolveOptions.hpp"
 #include "papilo/core/Problem.hpp"
@@ -394,6 +395,16 @@ convert_postsolve_status( PostsolveStatus status )
 
 extern "C"
 {
+
+   const char*
+   libpapilo_version()
+   {
+      static char version_string[64];
+      snprintf( version_string, sizeof( version_string ), "%d.%d.%d-jij.%d",
+                PAPILO_VERSION_MAJOR, PAPILO_VERSION_MINOR,
+                PAPILO_VERSION_PATCH, LIBPAPILO_JIJ_PATCH_VERSION );
+      return version_string;
+   }
 
    libpapilo_problem_builder_t*
    libpapilo_problem_builder_create()

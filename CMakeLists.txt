@@ -126,6 +126,7 @@ endif()
 find_program(SCCACHE sccache)
 if(SCCACHE)
    message(STATUS "Using sccache: ${SCCACHE}")
+   set(CMAKE_C_COMPILER_LAUNCHER ${SCCACHE})
    set(CMAKE_CXX_COMPILER_LAUNCHER ${SCCACHE})
 else()
    message(STATUS "sccache not found, not using sccache")
@@ -632,7 +633,37 @@ set(CPACK_COMPONENT_LIBPAPILO_REQUIRED TRUE)
 # TGZ and TBZ2 archives
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
-# Do not add prefix to the installation path, e.g. `usr/loca/`
+# Debian package settings
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jij Inc. <support@j-ij.com>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/Jij-Inc/libpapilo")
+
+# Generate package dependency information
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
+# Use component-based installation for DEB packages as well
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+
+# Set the component-specific package name for libpapilo
+set(CPACK_DEBIAN_LIBPAPILO_PACKAGE_NAME "libpapilo")
+
+# Architecture: Translate auto-detected architecture to Debian package architecture
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "arm64")
+else()
+  # Default to the detected architecture
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
+# For TGZ packages: Do not add prefix to the installation path
 set(CPACK_PACKAGING_INSTALL_PREFIX "")
+
+# For DEB packages: Use standard Linux paths
+if(CPACK_GENERATOR MATCHES "DEB")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+endif()
 
 include(CPack)

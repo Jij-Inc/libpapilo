@@ -4,6 +4,9 @@ description: "Setup common environment for testing jobs"
 runs:
   using: "composite"
   steps:
+    - name: Setup sccache with GitHub Actions cache
+      uses: mozilla-actions/sccache-action@v0.0.9
+
     - name: Install Task
       uses: arduino/setup-task@v2
       with:
@@ -15,7 +18,7 @@ runs:
       uses: awalsh128/cache-apt-pkgs-action@v1
       with:
         packages: >-
-          cmake ninja-build libtbb-dev
+          cmake ninja-build libtbb-dev file
           libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
         version: 1.0
 

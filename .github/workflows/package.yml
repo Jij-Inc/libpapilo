@@ -14,13 +14,10 @@ jobs:
       contents: read
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        include:
-          - os: ubuntu-latest
-            platform: Linux
-          - os: macos-latest
-            platform: Darwin
+        os: [ubuntu-22.04, macos-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      SCCACHE_GHA_ENABLED: "true"
 
     steps:
       - name: Checkout code
@@ -35,21 +32,70 @@ jobs:
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
 
-      - name: Create package
+      - name: Create TGZ package
         run: cpack --preset tgz
 
-      - name: Upload package as artifact
+      - name: Create DEB package (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          # Install library packages explicitly for CPACK_DEBIAN_PACKAGE_SHLIBDEPS
+          sudo apt install -y libtbb-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
+          cpack --preset deb
+
+      - name: Upload TGZ package as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: libpapilo-package-${{ matrix.platform }}
+          name: libpapilo-package-${{ runner.os }}
           path: build/packages/*.tar.gz
           retention-days: 30
+
+      - name: Upload DEB package as artifact (Linux only)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-deb-package
+          path: build/packages/*.deb
+          retention-days: 30
+
+  test-deb:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ["24.04", "22.04"]
+    container: ubuntu:${{ matrix.version }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download DEB package
+        uses: actions/download-artifact@v4
+        with:
+          name: libpapilo-deb-package
+          path: .
+
+      - name: Test apt install of DEB package
+        run: |
+          apt update
+          apt install -y ./*.deb
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GCC for testing
+        run: apt install -y gcc
+
+      - name: Run tests
+        run: |
+          gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
+          ./linktest
 
   publish:
     permissions:
       contents: write
     if: github.event_name == 'release'
-    needs: [build]
+    needs: [build, test-deb]
     runs-on: ubuntu-latest
 
     steps:
@@ -61,7 +107,9 @@ jobs:
       - name: Add packages to GitHub Release
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          files: packages/**/*.tar.gz
+          files: |
+            packages/**/*.tar.gz
+            packages/**/*.deb
           tag_name: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

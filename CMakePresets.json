@@ -60,6 +60,16 @@
         "TGZ"
       ],
       "packageDirectory": "${sourceDir}/build/packages"
+    },
+    {
+      "name": "deb",
+      "displayName": "Debian Package (Release Build)",
+      "description": "Create Debian package for libpapilo",
+      "configurePreset": "default",
+      "generators": [
+        "DEB"
+      ],
+      "packageDirectory": "${sourceDir}/build/packages"
     }
   ]
 }

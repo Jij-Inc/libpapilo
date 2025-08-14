@@ -160,6 +160,15 @@ extern "C"
    /** Opaque pointer for papilo::Postsolve<double> */
    typedef struct libpapilo_postsolve_t libpapilo_postsolve_t;
 
+   /**
+    * Get the version string of the libpapilo library.
+    *
+    * @return A constant string containing the version information
+    */
+   LIBPAPILO_EXPORT
+   const char*
+   libpapilo_version();
+
    LIBPAPILO_EXPORT
    libpapilo_problem_builder_t*
    libpapilo_problem_builder_create();
