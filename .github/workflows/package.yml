@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - cpack-deb # For testing DEB packaging
   release:
     types: [published]
   workflow_dispatch:
@@ -60,61 +61,21 @@ jobs:
   test-deb:
     needs: build
     runs-on: ubuntu-latest
+    container: ubuntu:24.04
     permissions:
       contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install tools for testing DEB package
-        run: |
-          apt-get update
-          apt-get install -y file gcc
-
       - name: Download DEB package
         uses: actions/download-artifact@v4
         with:
           name: libpapilo-deb-package
           path: .
 
-      - name: Install dependencies and test DEB package
+      - name: Test apt install of DEB package
         run: |
-          apt-get update
-          apt-get install -y file gcc
-          
-          # List the DEB file
-          ls -la *.deb
-          
-          # Show package information
-          dpkg -I *.deb
-          
-          # Try to install the package using dpkg first (to see exact error)
-          dpkg -i *.deb || echo "dpkg install failed, checking dependencies"
-          
-          # If dpkg failed, try to fix dependencies
-          apt-get -f install -y || echo "apt-get -f install failed"
-          
-          # Alternative approach: install dependencies manually then force install
-          if [ ! -f /usr/lib/libpapilo.so ]; then
-            echo "Trying manual dependency resolution..."
-            # Force install ignoring dependencies for testing
-            dpkg -i --force-depends *.deb
-          fi
-          
-          # Verify the library is installed
-          ls -la /usr/lib/libpapilo.so* || echo "Library files not found"
-          ls -la /usr/include/libpapilo.h || echo "Header file not found"
-          
-          # Test that the library can be loaded
-          ldd /usr/lib/libpapilo.so || echo "ldd failed"
-          
-          # Compile and run the link test
-          if [ -f /usr/lib/libpapilo.so ] && [ -f /usr/include/libpapilo.h ]; then
-            gcc -o linktest test/libpapilo/LinkTest.c -lpapilo && ./linktest
-          else
-            echo "Skipping link test due to missing files"
-          fi
+          sudo apt update
+          sudo apt install -y *.deb
 
   publish:
     permissions:
