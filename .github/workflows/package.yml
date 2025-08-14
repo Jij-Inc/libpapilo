@@ -38,7 +38,11 @@ jobs:
 
       - name: Create DEB package (Linux only)
         if: runner.os == 'Linux'
-        run: cpack --preset deb
+        run: |
+          apt update
+          # Install library packages explicitly for CPACK_DEBIAN_PACKAGE_SHLIBDEPS
+          apt install -y libtbb-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
+          cpack --preset deb
 
       - name: Upload TGZ package as artifact
         uses: actions/upload-artifact@v4
