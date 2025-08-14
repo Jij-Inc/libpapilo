@@ -162,7 +162,7 @@ extern "C"
 
    /**
     * Get the version string of the libpapilo library.
-    * 
+    *
     * @return A constant string containing the version information
     */
    LIBPAPILO_EXPORT

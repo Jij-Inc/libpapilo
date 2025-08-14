@@ -7,7 +7,7 @@ tasks:
     desc: Format only libpapilo codes
     cmds:
       - clang-format --version
-      - clang-format -i src/libpapilo.* test/libpapilo/*.cpp
+      - clang-format -i src/libpapilo.* test/libpapilo/*.{cpp,c}
 
   build:all:
     cmds:
