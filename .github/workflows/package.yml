@@ -76,9 +76,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel
-          # Install additional Boost components
-          dnf install -y boost-iostreams boost-program-options boost-serialization
+          dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel bzip2-devel xz-devel libzstd-devel zlib-devel
 
       - name: Configure CMake
         run: cmake --preset default
