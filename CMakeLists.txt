@@ -658,9 +658,6 @@ else()
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
-# For TGZ packages: Do not add prefix to the installation path
-set(CPACK_PACKAGING_INSTALL_PREFIX "")
-
 # RPM package settings
 set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
@@ -677,23 +674,15 @@ set(CPACK_RPM_LIBPAPILO_PACKAGE_NAME "libpapilo")
 set(CPACK_RPM_PACKAGE_AUTOREQ ON)
 set(CPACK_RPM_PACKAGE_AUTOPROV ON)
 
-# Architecture: Translate auto-detected architecture to RPM package architecture
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-  set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-  set(CPACK_RPM_PACKAGE_ARCHITECTURE "aarch64")
-else()
-  # Default to the detected architecture
-  set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
-endif()
+# Architecture: Use detected architecture directly for RPM
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 
-# For DEB packages: Use standard Linux paths
-if(CPACK_GENERATOR MATCHES "DEB")
-  set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
-endif()
-
-# For RPM packages: Use standard Linux paths
-if(CPACK_GENERATOR MATCHES "RPM")
+# Set installation prefix based on generator
+# TGZ packages: No prefix (for portable installations)
+if(CPACK_GENERATOR MATCHES "TGZ")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+# DEB and RPM packages: Use standard Linux paths
+elseif(CPACK_GENERATOR MATCHES "DEB|RPM")
   set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 endif()
 
