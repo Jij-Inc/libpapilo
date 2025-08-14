@@ -75,7 +75,7 @@ jobs:
       - name: Test apt install of DEB package
         run: |
           apt update
-          apt install -y *.deb
+          apt install -y ./*.deb
 
   publish:
     permissions:
