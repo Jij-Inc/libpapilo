@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64
+    container: quay.io/pypa/manylinux_2_34_x86_64
     env:
       SCCACHE_GHA_ENABLED: "true"
 
@@ -75,10 +75,13 @@ jobs:
         run: git config --global --add safe.directory /__w/libpapilo/libpapilo
 
       - name: Install system dependencies
-        run: dnf install -y cmake ninja-build rpm-build boost-devel
+        run: |
+          dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel
+          # Install additional Boost components
+          dnf install -y boost-iostreams boost-program-options boost-serialization
 
       - name: Configure CMake
-        run: cmake --preset default -DTBB=off
+        run: cmake --preset default
 
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
@@ -130,7 +133,7 @@ jobs:
   test-rpm:
     needs: build-rpm
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64
+    container: quay.io/pypa/manylinux_2_34_x86_64
     permissions:
       contents: read
 
