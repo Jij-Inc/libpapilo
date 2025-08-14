@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/manylinux_2_28_x86_64
     env:
       SCCACHE_GHA_ENABLED: "true"
 
@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install system dependencies
-        run: yum install -y cmake ninja-build rpm-build tbb-devel boost-devel
+        run: dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel
 
       - name: Setup sccache with GitHub Actions cache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -129,7 +129,7 @@ jobs:
   test-rpm:
     needs: build-rpm
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/manylinux_2_28_x86_64
     permissions:
       contents: read
 
@@ -140,15 +140,15 @@ jobs:
           name: libpapilo-rpm
           path: .
 
-      - name: Test yum install of RPM package
+      - name: Test dnf install of RPM package
         run: |
-          yum install -y ./*.rpm
+          dnf install -y ./*.rpm
 
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install GCC for testing
-        run: yum install -y gcc
+        run: dnf install -y gcc
 
       - name: Run tests
         run: |
