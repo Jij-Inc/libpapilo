@@ -10,13 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-tgz:
     permissions:
       contents: read
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     env:
       SCCACHE_GHA_ENABLED: "true"
 
@@ -36,23 +33,41 @@ jobs:
       - name: Create TGZ package
         run: cpack --preset tgz
 
-      - name: Create DEB package (Linux only)
-        if: runner.os == 'Linux'
+      - name: Upload TGZ package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-tgz-macOS
+          path: build/packages/*.tar.gz
+          retention-days: 30
+
+  build-deb:
+    permissions:
+      contents: read
+    runs-on: ubuntu-22.04
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-test-environment
+
+      - name: Configure CMake
+        run: cmake --preset default
+
+      - name: Build libpapilo
+        run: cmake --build --preset default --target libpapilo
+
+      - name: Create DEB package
         run: |
           sudo apt update
           # Install library packages explicitly for CPACK_DEBIAN_PACKAGE_SHLIBDEPS
           sudo apt install -y libtbb-dev libboost-dev libboost-iostreams-dev libboost-program-options-dev libboost-serialization-dev
           cpack --preset deb
 
-      - name: Upload TGZ package as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: libpapilo-tgz-${{ runner.os }}
-          path: build/packages/*.tar.gz
-          retention-days: 30
-
-      - name: Upload DEB package as artifact (Linux only)
-        if: runner.os == 'Linux'
+      - name: Upload DEB package as artifact
         uses: actions/upload-artifact@v4
         with:
           name: libpapilo-deb
@@ -95,7 +110,7 @@ jobs:
           retention-days: 30
 
   test-deb:
-    needs: build
+    needs: build-deb
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -164,7 +179,7 @@ jobs:
     permissions:
       contents: write
     if: github.event_name == 'release'
-    needs: [build, build-rpm, test-deb, test-rpm]
+    needs: [build-tgz, build-deb, build-rpm, test-deb, test-rpm]
     runs-on: ubuntu-latest
 
     steps:
