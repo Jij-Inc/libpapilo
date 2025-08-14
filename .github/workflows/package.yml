@@ -22,6 +22,8 @@ jobs:
           - os: macos-latest
             platform: Darwin
     runs-on: ${{ matrix.os }}
+    env:
+      SCCACHE_GHA_ENABLED: "true"
 
     steps:
       - name: Checkout code
