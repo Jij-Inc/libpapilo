@@ -647,8 +647,15 @@ set(CPACK_DEB_COMPONENT_INSTALL ON)
 # Set the component-specific package name for libpapilo
 set(CPACK_DEBIAN_LIBPAPILO_PACKAGE_NAME "libpapilo")
 
-# Architecture: auto-detect
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+# Architecture: Translate auto-detected architecture to Debian package architecture
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "arm64")
+else()
+  # Default to the detected architecture
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
 
 # For TGZ packages: Do not add prefix to the installation path
 set(CPACK_PACKAGING_INSTALL_PREFIX "")
