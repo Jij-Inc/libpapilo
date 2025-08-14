@@ -46,7 +46,7 @@ jobs:
       - name: Upload TGZ package as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: libpapilo-package-${{ runner.os }}
+          name: libpapilo-tgz-${{ runner.os }}
           path: build/packages/*.tar.gz
           retention-days: 30
 
@@ -54,8 +54,42 @@ jobs:
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: libpapilo-deb-package
+          name: libpapilo-deb
           path: build/packages/*.deb
+          retention-days: 30
+
+  build-rpm:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: yum install -y cmake ninja-build rpm-build tbb-devel boost-devel
+
+      - name: Setup sccache with GitHub Actions cache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Configure CMake
+        run: cmake --preset default
+
+      - name: Build libpapilo
+        run: cmake --build --preset default --target libpapilo
+
+      - name: Create RPM package
+        run: cpack --preset rpm
+
+      - name: Upload RPM package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libpapilo-rpm
+          path: build/packages/*.rpm
           retention-days: 30
 
   test-deb:
@@ -91,11 +125,40 @@ jobs:
           gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
           ./linktest
 
+  test-rpm:
+    needs: build-rpm
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download RPM package
+        uses: actions/download-artifact@v4
+        with:
+          name: libpapilo-rpm
+          path: .
+
+      - name: Test yum install of RPM package
+        run: |
+          yum install -y ./*.rpm
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install GCC for testing
+        run: yum install -y gcc
+
+      - name: Run tests
+        run: |
+          gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
+          ./linktest
+
   publish:
     permissions:
       contents: write
     if: github.event_name == 'release'
-    needs: [build, test-deb]
+    needs: [build, build-rpm, test-deb, test-rpm]
     runs-on: ubuntu-latest
 
     steps:
@@ -110,6 +173,7 @@ jobs:
           files: |
             packages/**/*.tar.gz
             packages/**/*.deb
+            packages/**/*.rpm
           tag_name: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
