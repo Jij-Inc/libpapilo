@@ -74,9 +74,6 @@ jobs:
       - name: Install system dependencies
         run: dnf install -y cmake ninja-build rpm-build tbb-devel boost-devel
 
-      - name: Setup sccache with GitHub Actions cache
-        uses: mozilla-actions/sccache-action@v0.0.9
-
       - name: Configure CMake
         run: cmake --preset default
 
