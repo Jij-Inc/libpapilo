@@ -136,12 +136,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install GCC for testing
-        run: apt install -y gcc
+      - name: Install build tools for testing
+        run: apt install -y gcc pkg-config
 
-      - name: Run tests
+      - name: Verify pkg-config installation
         run: |
-          gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
+          pkg-config --version
+          pkg-config --list-all | grep libpapilo
+          pkg-config --modversion libpapilo
+          echo "CFLAGS: $(pkg-config --cflags libpapilo)"
+          echo "LIBS: $(pkg-config --libs libpapilo)"
+
+      - name: Run tests using pkg-config
+        run: |
+          gcc test/libpapilo/LinkTest.c $(pkg-config --cflags --libs libpapilo) -o linktest
           ./linktest
 
   test-rpm:
@@ -164,12 +172,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install GCC for testing
-        run: dnf install -y gcc
+      - name: Install build tools for testing
+        run: dnf install -y gcc pkgconfig
 
-      - name: Run tests
+      - name: Verify pkg-config installation
         run: |
-          gcc test/libpapilo/LinkTest.c -lpapilo -o linktest
+          pkg-config --version
+          pkg-config --list-all | grep libpapilo
+          pkg-config --modversion libpapilo
+          echo "CFLAGS: $(pkg-config --cflags libpapilo)"
+          echo "LIBS: $(pkg-config --libs libpapilo)"
+
+      - name: Run tests using pkg-config
+        run: |
+          gcc test/libpapilo/LinkTest.c $(pkg-config --cflags --libs libpapilo) -o linktest
           ./linktest
 
   publish:
