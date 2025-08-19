@@ -8,6 +8,9 @@ set(PAPILO_VERSION_PATCH 3)
 set(LIBPAPILO_JIJ_PATCH_VERSION 1)
 set(PAPILO_API_VERSION 3)
 
+# Full version string including Jij patch version for pkg-config and CPack
+set(LIBPAPILO_FULL_VERSION "${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}-jij.${LIBPAPILO_JIJ_PATCH_VERSION}")
+
 project(papilo VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}.0)
 
 set(BOOST_MIN_VERSION 1.65)
@@ -241,6 +244,7 @@ write_basic_package_version_file(
    COMPATIBILITY SameMajorVersion
 )
 
+
 # Specific compilation flags.
 if(MSVC)
    target_compile_definitions(papilo INTERFACE BOOST_ALL_NO_LIB)
@@ -328,6 +332,11 @@ install(TARGETS libpapilo
    EXPORT papilo-targets
    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT libpapilo
    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT libpapilo
+)
+
+# Install pkg-config file
+install(FILES ${PROJECT_BINARY_DIR}/libpapilo.pc
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig COMPONENT libpapilo
 )
 
 # Create target `papilo-core` which is the static library.
@@ -622,7 +631,7 @@ set(CPACK_PACKAGE_DESCRIPTION "libpapilo provides PaPILO (Parallel Presolve for 
 set(CPACK_PACKAGE_VERSION_MAJOR ${PAPILO_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PAPILO_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PAPILO_VERSION_PATCH})
-set(CPACK_PACKAGE_VERSION "${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}-jij.${LIBPAPILO_JIJ_PATCH_VERSION}")
+set(CPACK_PACKAGE_VERSION "${LIBPAPILO_FULL_VERSION}")
 
 # Package only libpapilo components
 set(CPACK_COMPONENTS_ALL libpapilo)
@@ -677,6 +686,17 @@ set(CPACK_RPM_PACKAGE_AUTOPROV ON)
 # Architecture: Use detected architecture directly for RPM
 set(CPACK_RPM_PACKAGE_ARCHITECTURE "${CMAKE_SYSTEM_PROCESSOR}")
 
+# Set CMAKE_INSTALL_PREFIX based on platform if not already set
+if(NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  # User explicitly set CMAKE_INSTALL_PREFIX, use it as-is
+elseif(APPLE)
+  # macOS: Use Homebrew prefix
+  set(CMAKE_INSTALL_PREFIX "/opt/homebrew")
+elseif(UNIX)
+  # Linux: Use standard system prefix
+  set(CMAKE_INSTALL_PREFIX "/usr")
+endif()
+
 # Set installation prefix based on generator
 # TGZ packages: No prefix (for portable installations)
 if(CPACK_GENERATOR MATCHES "TGZ")
@@ -687,3 +707,10 @@ elseif(CPACK_GENERATOR MATCHES "DEB|RPM")
 endif()
 
 include(CPack)
+
+# Configure pkg-config file after CPack settings
+configure_file(
+   ${PROJECT_SOURCE_DIR}/libpapilo.pc.in
+   ${PROJECT_BINARY_DIR}/libpapilo.pc
+   @ONLY
+)
