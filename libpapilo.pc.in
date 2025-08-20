@@ -1,7 +1,8 @@
-prefix=@CMAKE_INSTALL_PREFIX@
-exec_prefix=${prefix}
-libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
-includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+# libpapilo.pc will be installed `lib/pkgconfig/libpapilo.pc`
+prefix=${pcfiledir}/../..
+
+libdir=${prefix}/lib
+includedir=${prefix}/include
 
 Name: @CPACK_PACKAGE_NAME@
 Description: @CPACK_PACKAGE_DESCRIPTION@
