@@ -11,17 +11,6 @@ set(PAPILO_API_VERSION 3)
 # Full version string including Jij patch version
 set(LIBPAPILO_VERSION "${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}-jij.${LIBPAPILO_JIJ_PATCH_VERSION}")
 
-# Set CMAKE_INSTALL_PREFIX based on platform if not already set
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  if(APPLE)
-    # macOS: Use Homebrew prefix
-    set(CMAKE_INSTALL_PREFIX "/opt/homebrew")
-  elseif(UNIX)
-    # Linux: Use standard system prefix
-    set(CMAKE_INSTALL_PREFIX "/usr")
-  endif()
-endif()
-
 project(papilo VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}.0)
 
 set(BOOST_MIN_VERSION 1.65)
