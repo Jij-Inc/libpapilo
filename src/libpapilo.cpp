@@ -399,11 +399,7 @@ extern "C"
    const char*
    libpapilo_version()
    {
-      static char version_string[64];
-      snprintf( version_string, sizeof( version_string ), "%d.%d.%d-jij.%d",
-                PAPILO_VERSION_MAJOR, PAPILO_VERSION_MINOR,
-                PAPILO_VERSION_PATCH, LIBPAPILO_JIJ_PATCH_VERSION );
-      return version_string;
+      return LIBPAPILO_VERSION;
    }
 
    libpapilo_problem_builder_t*
