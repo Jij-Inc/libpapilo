@@ -1,4 +1,6 @@
-# prefix will be filled by pkg-config itself. Do not hardcode it.
+# libpapilo.pc will be installed `lib/pkgconfig/libpapilo.pc`
+prefix=${pcfiledir}/../..
+
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
