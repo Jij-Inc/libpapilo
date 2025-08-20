@@ -5,7 +5,7 @@ set(PAPILO_VERSION_MINOR 4)
 set(PAPILO_VERSION_PATCH 3)
 
 # Jij-specific patch version for libpapilo packaging
-set(LIBPAPILO_JIJ_PATCH_VERSION 2)
+set(LIBPAPILO_JIJ_PATCH_VERSION 3)
 set(PAPILO_API_VERSION 3)
 
 # Full version string including Jij patch version
