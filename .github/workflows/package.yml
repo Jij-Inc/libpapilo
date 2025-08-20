@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - pkg-config # For testing purposes
   release:
     types: [published]
   workflow_dispatch:
