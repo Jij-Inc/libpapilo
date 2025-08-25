@@ -85,7 +85,7 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # Search for Boost: headers are required and the other components are needed for the binaries.
-find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS iostreams program_options serialization)
+find_package(Boost ${BOOST_MIN_VERSION} CONFIG REQUIRED COMPONENTS iostreams program_options serialization)
 # All requested components are required; if we get here they are present.
 set(PAPILO_HAVE_BOOST_IOSTREAMS 1)
 set(PAPILO_COMMAND_LINE_AVAILABLE 1)
