@@ -26,4 +26,4 @@ runs:
       shell: bash
       if: runner.os == 'macOS'
       run: |
-        brew install cmake ninja boost tbb
+        brew install cmake ninja boost@1.89 tbb
