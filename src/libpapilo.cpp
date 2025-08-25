@@ -101,7 +101,7 @@ struct libpapilo_problem_update_t
                                PostsolveStorage<double>& postsolve,
                                Statistics& stats,
                                const PresolveOptions& options,
-                               const Num<double>& num, Message& msg )
+                               const Num<double>& num, const Message& msg )
        : update( problem, postsolve, stats, options, num, msg )
    {
    }
@@ -1576,9 +1576,9 @@ extern "C"
    libpapilo_problem_update_create( libpapilo_problem_t* problem,
                                     libpapilo_postsolve_storage_t* postsolve,
                                     libpapilo_statistics_t* statistics,
-                                    libpapilo_presolve_options_t* options,
-                                    libpapilo_num_t* num,
-                                    libpapilo_message_t* message )
+                                    const libpapilo_presolve_options_t* options,
+                                    const libpapilo_num_t* num,
+                                    const libpapilo_message_t* message )
    {
       check_problem_ptr( problem );
       check_postsolve_storage_ptr( postsolve );

@@ -574,9 +574,9 @@ extern "C"
    libpapilo_problem_update_create( libpapilo_problem_t* problem,
                                     libpapilo_postsolve_storage_t* postsolve,
                                     libpapilo_statistics_t* statistics,
-                                    libpapilo_presolve_options_t* options,
-                                    libpapilo_num_t* num,
-                                    libpapilo_message_t* message );
+                                    const libpapilo_presolve_options_t* options,
+                                    const libpapilo_num_t* num,
+                                    const libpapilo_message_t* message );
 
    LIBPAPILO_EXPORT void
    libpapilo_problem_update_free( libpapilo_problem_update_t* update );
