@@ -5,7 +5,7 @@ set(PAPILO_VERSION_MINOR 4)
 set(PAPILO_VERSION_PATCH 3)
 
 # Jij-specific patch version for libpapilo packaging
-set(LIBPAPILO_JIJ_PATCH_VERSION 4)
+set(LIBPAPILO_JIJ_PATCH_VERSION 5)
 set(PAPILO_API_VERSION 3)
 
 # Full version string including Jij patch version
@@ -85,7 +85,7 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # Search for Boost: headers are required and the other components are needed for the binaries.
-find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS iostreams program_options serialization)
+find_package(Boost ${BOOST_MIN_VERSION} CONFIG REQUIRED COMPONENTS iostreams program_options serialization)
 # All requested components are required; if we get here they are present.
 set(PAPILO_HAVE_BOOST_IOSTREAMS 1)
 set(PAPILO_COMMAND_LINE_AVAILABLE 1)
