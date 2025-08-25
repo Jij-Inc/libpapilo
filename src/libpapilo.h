@@ -522,9 +522,9 @@ extern "C"
 
    /* PostsolveStorage management */
    LIBPAPILO_EXPORT libpapilo_postsolve_storage_t*
-   libpapilo_postsolve_storage_create( const libpapilo_problem_t* problem,
-                                       const libpapilo_num_t* num,
-                                       const libpapilo_presolve_options_t* options );
+   libpapilo_postsolve_storage_create(
+       const libpapilo_problem_t* problem, const libpapilo_num_t* num,
+       const libpapilo_presolve_options_t* options );
 
    LIBPAPILO_EXPORT void
    libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve );
@@ -614,7 +614,8 @@ extern "C"
                                      const libpapilo_problem_update_t* update,
                                      const libpapilo_num_t* num,
                                      libpapilo_reductions_t* reductions,
-                                     const libpapilo_timer_t* timer, int* cause );
+                                     const libpapilo_timer_t* timer,
+                                     int* cause );
 
    /* SimpleSubstitution Presolver API */
    LIBPAPILO_EXPORT libpapilo_simple_substitution_t*
@@ -626,7 +627,8 @@ extern "C"
 
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_simple_substitution_execute(
-       libpapilo_simple_substitution_t* presolver, const libpapilo_problem_t* problem,
+       libpapilo_simple_substitution_t* presolver,
+       const libpapilo_problem_t* problem,
        const libpapilo_problem_update_t* update, const libpapilo_num_t* num,
        libpapilo_reductions_t* reductions, const libpapilo_timer_t* timer,
        int* cause );

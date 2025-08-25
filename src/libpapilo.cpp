@@ -1446,9 +1446,9 @@ extern "C"
    /* PostsolveStorage management implementation */
 
    libpapilo_postsolve_storage_t*
-   libpapilo_postsolve_storage_create( const libpapilo_problem_t* problem,
-                                       const libpapilo_num_t* num,
-                                       const libpapilo_presolve_options_t* options )
+   libpapilo_postsolve_storage_create(
+       const libpapilo_problem_t* problem, const libpapilo_num_t* num,
+       const libpapilo_presolve_options_t* options )
    {
       check_problem_ptr( problem );
       check_num_ptr( num );
@@ -1699,7 +1699,8 @@ extern "C"
                                      const libpapilo_problem_update_t* update,
                                      const libpapilo_num_t* num,
                                      libpapilo_reductions_t* reductions,
-                                     const libpapilo_timer_t* timer, int* cause )
+                                     const libpapilo_timer_t* timer,
+                                     int* cause )
    {
       check_singleton_cols_ptr( presolver );
       check_problem_ptr( problem );
@@ -1739,7 +1740,8 @@ extern "C"
 
    libpapilo_presolve_status_t
    libpapilo_simple_substitution_execute(
-       libpapilo_simple_substitution_t* presolver, const libpapilo_problem_t* problem,
+       libpapilo_simple_substitution_t* presolver,
+       const libpapilo_problem_t* problem,
        const libpapilo_problem_update_t* update, const libpapilo_num_t* num,
        libpapilo_reductions_t* reductions, const libpapilo_timer_t* timer,
        int* cause )
