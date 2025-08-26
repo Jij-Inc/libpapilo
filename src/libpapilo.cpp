@@ -1570,6 +1570,36 @@ extern "C"
       delete message;
    }
 
+   void
+   libpapilo_message_set_verbosity( libpapilo_message_t* message, int level )
+   {
+      check_message_ptr( message );
+
+      if( level < 0 )
+         level = 0;
+      if( level > 4 )
+         level = 4;
+
+      message->message.setVerbosityLevel(
+          static_cast<papilo::VerbosityLevel>( level ) );
+   }
+
+   int
+   libpapilo_message_get_verbosity( const libpapilo_message_t* message )
+   {
+      check_message_ptr( message );
+      return static_cast<int>( message->message.getVerbosityLevel() );
+   }
+
+   void
+   libpapilo_message_set_trace_callback( libpapilo_message_t* message,
+                                         libpapilo_trace_callback callback,
+                                         void* usr )
+   {
+      check_message_ptr( message );
+      message->message.setOutputCallback( callback, usr );
+   }
+
    /* ProblemUpdate Control API Implementation */
 
    libpapilo_problem_update_t*

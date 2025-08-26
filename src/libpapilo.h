@@ -569,6 +569,22 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_message_free( libpapilo_message_t* message );
 
+   /* Message control API */
+   typedef void ( *libpapilo_trace_callback )( int level, const char* data,
+                                               size_t size, void* usr );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_set_verbosity( libpapilo_message_t* message,
+                                    int level );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_message_get_verbosity( const libpapilo_message_t* message );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_set_trace_callback( libpapilo_message_t* message,
+                                         libpapilo_trace_callback callback,
+                                         void* usr );
+
    /* ProblemUpdate Control API */
    LIBPAPILO_EXPORT libpapilo_problem_update_t*
    libpapilo_problem_update_create( libpapilo_problem_t* problem,
