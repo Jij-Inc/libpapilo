@@ -585,6 +585,32 @@ extern "C"
                                          libpapilo_trace_callback callback,
                                          void* usr );
 
+   /* Convenience sinks and formatting */
+   /* Returns 0 on success, non-zero on failure to open file */
+   LIBPAPILO_EXPORT int
+   libpapilo_message_set_trace_file( libpapilo_message_t* message,
+                                     const char* path, int append );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_route_errors_to_stderr( libpapilo_message_t* message,
+                                             int enable );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_set_prefix( libpapilo_message_t* message,
+                                 const char* prefix );
+
+   /* If enable != 0, timestamps are enabled with given strftime-format */
+   LIBPAPILO_EXPORT void
+   libpapilo_message_enable_timestamps( libpapilo_message_t* message,
+                                        int enable, const char* fmt );
+
+#ifdef LIBPAPILO_ENABLE_TEST_HOOKS
+   /* Test-only hook: emit a message through the Message pipeline */
+   LIBPAPILO_EXPORT void
+   libpapilo_message_emit( libpapilo_message_t* message, int level,
+                           const char* text );
+#endif
+
    /* ProblemUpdate Control API */
    LIBPAPILO_EXPORT libpapilo_problem_update_t*
    libpapilo_problem_update_create( libpapilo_problem_t* problem,

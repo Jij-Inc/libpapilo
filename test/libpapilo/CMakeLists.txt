@@ -7,6 +7,7 @@ set(LIBPAPILO_TESTS
     ProblemUpdateTest.cpp
     PresolveTest.cpp
     PostsolveTest.cpp
+    MessageTest.cpp
     # Add more test files as needed
 )
 
@@ -16,7 +17,8 @@ add_executable(libpapilo_unit_test ${LIBPAPILO_TESTS} ${CMAKE_SOURCE_DIR}/src/pa
 target_link_libraries(libpapilo_unit_test libpapilo)
 target_compile_definitions(libpapilo_unit_test PRIVATE
     LIBPAPILO_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
-    LIBPAPILO_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}")
+    LIBPAPILO_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}"
+    $<$<CONFIG:Debug>:LIBPAPILO_ENABLE_TEST_HOOKS>)
 
 set(GEN_PS_NEG ${CMAKE_CURRENT_BINARY_DIR}/dual_fix_neg_inf.postsolve)
 set(GEN_PS_POS ${CMAKE_CURRENT_BINARY_DIR}/dual_fix_pos_inf.postsolve)
@@ -77,6 +79,9 @@ set(LIBPAPILO_TEST_NAMES
     # PostsolveTest.cpp
     "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf"
     "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf"
+    "message-set-get-verbosity"
+    "message-callback-prefix-timestamp"
+    "message-file-and-stderr-routing"
 )
 
 # Register test targets for each test file
