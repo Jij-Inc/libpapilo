@@ -48,13 +48,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <sstream>
-#include <iomanip>
-#include <ctime>
-
-static void
-libpapilo_message_write_wrapper( int level, const char* data, size_t size,
-                                 void* usr );
 
 using namespace papilo;
 
@@ -152,14 +145,6 @@ struct libpapilo_message_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    Message message;
-   // Stage 2: formatting and sinks
-   FILE* file = nullptr;
-   bool route_err_to_stderr = false;
-   std::string prefix;
-   bool timestamps_enabled = false;
-   std::string timestamps_format = "%Y-%m-%d %H:%M:%S";
-   libpapilo_trace_callback user_callback = nullptr;
-   void* user_usr = nullptr;
 };
 
 struct libpapilo_presolve_t
@@ -1583,12 +1568,6 @@ extern "C"
    libpapilo_message_free( libpapilo_message_t* message )
    {
       check_message_ptr( message );
-      if( message->file != nullptr )
-      {
-         std::fflush( message->file );
-         std::fclose( message->file );
-         message->file = nullptr;
-      }
       delete message;
    }
 
@@ -1619,69 +1598,7 @@ extern "C"
                                          void* usr )
    {
       check_message_ptr( message );
-      message->user_callback = callback;
-      message->user_usr = usr;
-      // Always install our wrapper to allow composition with sinks
-      message->message.setOutputCallback( libpapilo_message_write_wrapper,
-                                          message );
-   }
-
-   static inline void
-   install_wrapper_if_needed( libpapilo_message_t* message )
-   {
-      // No direct way to inspect the current callback; always set ours
-      message->message.setOutputCallback( libpapilo_message_write_wrapper,
-                                          message );
-   }
-
-   int
-   libpapilo_message_set_trace_file( libpapilo_message_t* message,
-                                     const char* path, int append )
-   {
-      check_message_ptr( message );
-      if( message->file != nullptr )
-      {
-         std::fflush( message->file );
-         std::fclose( message->file );
-         message->file = nullptr;
-      }
-
-      const char* mode = append ? "ab" : "wb";
-      FILE* f = std::fopen( path, mode );
-      if( f == nullptr )
-         return 1;
-      message->file = f;
-      install_wrapper_if_needed( message );
-      return 0;
-   }
-
-   void
-   libpapilo_message_route_errors_to_stderr( libpapilo_message_t* message,
-                                             int enable )
-   {
-      check_message_ptr( message );
-      message->route_err_to_stderr = enable != 0;
-      install_wrapper_if_needed( message );
-   }
-
-   void
-   libpapilo_message_set_prefix( libpapilo_message_t* message,
-                                 const char* prefix )
-   {
-      check_message_ptr( message );
-      message->prefix = prefix ? prefix : "";
-      install_wrapper_if_needed( message );
-   }
-
-   void
-   libpapilo_message_enable_timestamps( libpapilo_message_t* message,
-                                        int enable, const char* fmt )
-   {
-      check_message_ptr( message );
-      message->timestamps_enabled = enable != 0;
-      if( fmt != nullptr )
-         message->timestamps_format = fmt;
-      install_wrapper_if_needed( message );
+      message->message.setOutputCallback( callback, usr );
    }
 
 #ifdef LIBPAPILO_ENABLE_TEST_HOOKS
@@ -1692,69 +1609,11 @@ extern "C"
       check_message_ptr( message );
       if( text == nullptr )
          text = "";
-      // Forward via Message::print, wrapper will compose routing/formatting
+      // Forward via Message::print
       message->message.print( static_cast<papilo::VerbosityLevel>( level ),
                               "{}", text );
    }
 #endif
-
-   static void
-   libpapilo_message_write_wrapper( int level, const char* data, size_t size,
-                                    void* usr )
-   {
-      auto* msg = reinterpret_cast<libpapilo_message_t*>( usr );
-
-      std::ostringstream oss;
-      // prefix
-      if( !msg->prefix.empty() )
-         oss << msg->prefix;
-      // timestamp
-      if( msg->timestamps_enabled )
-      {
-         std::time_t t = std::time( nullptr );
-         std::tm tm;
-#if defined(_WIN32)
-         localtime_s( &tm, &t );
-#else
-         localtime_r( &t, &tm );
-#endif
-         char buf[128];
-         if( std::strftime( buf, sizeof( buf ),
-                            msg->timestamps_format.c_str(), &tm ) )
-         {
-            oss << buf << " ";
-         }
-      }
-      // original message
-      oss.write( data, static_cast<std::streamsize>( size ) );
-      std::string out = oss.str();
-
-      bool is_error = ( level == static_cast<int>( papilo::VerbosityLevel::kError ) );
-
-      if( msg->route_err_to_stderr && is_error )
-      {
-         std::fwrite( out.data(), 1, out.size(), stderr );
-         std::fflush( stderr );
-         return;
-      }
-
-      if( msg->file != nullptr )
-      {
-         std::fwrite( out.data(), 1, out.size(), msg->file );
-         std::fflush( msg->file );
-         return;
-      }
-
-      if( msg->user_callback != nullptr )
-      {
-         msg->user_callback( level, out.c_str(), out.size(), msg->user_usr );
-         return;
-      }
-
-      // default to stdout
-      std::fwrite( out.data(), 1, out.size(), stdout );
-      std::fflush( stdout );
-   }
 
    /* ProblemUpdate Control API Implementation */
 

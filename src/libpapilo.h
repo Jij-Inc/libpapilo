@@ -574,8 +574,7 @@ extern "C"
                                                size_t size, void* usr );
 
    LIBPAPILO_EXPORT void
-   libpapilo_message_set_verbosity( libpapilo_message_t* message,
-                                    int level );
+   libpapilo_message_set_verbosity( libpapilo_message_t* message, int level );
 
    LIBPAPILO_EXPORT int
    libpapilo_message_get_verbosity( const libpapilo_message_t* message );
@@ -584,25 +583,6 @@ extern "C"
    libpapilo_message_set_trace_callback( libpapilo_message_t* message,
                                          libpapilo_trace_callback callback,
                                          void* usr );
-
-   /* Convenience sinks and formatting */
-   /* Returns 0 on success, non-zero on failure to open file */
-   LIBPAPILO_EXPORT int
-   libpapilo_message_set_trace_file( libpapilo_message_t* message,
-                                     const char* path, int append );
-
-   LIBPAPILO_EXPORT void
-   libpapilo_message_route_errors_to_stderr( libpapilo_message_t* message,
-                                             int enable );
-
-   LIBPAPILO_EXPORT void
-   libpapilo_message_set_prefix( libpapilo_message_t* message,
-                                 const char* prefix );
-
-   /* If enable != 0, timestamps are enabled with given strftime-format */
-   LIBPAPILO_EXPORT void
-   libpapilo_message_enable_timestamps( libpapilo_message_t* message,
-                                        int enable, const char* fmt );
 
 #ifdef LIBPAPILO_ENABLE_TEST_HOOKS
    /* Test-only hook: emit a message through the Message pipeline */

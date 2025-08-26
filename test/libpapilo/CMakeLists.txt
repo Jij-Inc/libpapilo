@@ -80,8 +80,7 @@ set(LIBPAPILO_TEST_NAMES
     "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf"
     "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf"
     "message-set-get-verbosity"
-    "message-callback-prefix-timestamp"
-    "message-file-and-stderr-routing"
+    "message-callback-simple"
 )
 
 # Register test targets for each test file
