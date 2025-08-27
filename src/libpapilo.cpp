@@ -1572,7 +1572,8 @@ extern "C"
    }
 
    void
-   libpapilo_message_set_verbosity( libpapilo_message_t* message, int level )
+   libpapilo_message_set_verbosity_level( libpapilo_message_t* message,
+                                          int level )
    {
       check_message_ptr( message );
 
@@ -1586,7 +1587,7 @@ extern "C"
    }
 
    int
-   libpapilo_message_get_verbosity( const libpapilo_message_t* message )
+   libpapilo_message_get_verbosity_level( const libpapilo_message_t* message )
    {
       check_message_ptr( message );
       return static_cast<int>( message->message.getVerbosityLevel() );
@@ -1601,19 +1602,16 @@ extern "C"
       message->message.setOutputCallback( callback, usr );
    }
 
-#ifdef LIBPAPILO_ENABLE_TEST_HOOKS
    void
-   libpapilo_message_emit( libpapilo_message_t* message, int level,
-                           const char* text )
+   libpapilo_message_print( libpapilo_message_t* message, int level,
+                            const char* text )
    {
       check_message_ptr( message );
       if( text == nullptr )
          text = "";
-      // Forward via Message::print
       message->message.print( static_cast<papilo::VerbosityLevel>( level ),
                               "{}", text );
    }
-#endif
 
    /* ProblemUpdate Control API Implementation */
 

@@ -322,7 +322,6 @@ add_library(libpapilo SHARED
    src/libpapilo.cpp
 )
 target_link_libraries(libpapilo papilo-core)
-target_compile_definitions(libpapilo PRIVATE $<$<CONFIG:Debug>:LIBPAPILO_ENABLE_TEST_HOOKS>)
 set_target_properties(libpapilo PROPERTIES
    OUTPUT_NAME papilo  # Avoid "liblibpapilo" by setting explicit output name to "papilo"
    PUBLIC_HEADER src/libpapilo.h

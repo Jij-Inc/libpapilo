@@ -39,27 +39,25 @@ TEST_CASE( "message-set-get-verbosity", "[libpapilo]" )
 {
    libpapilo_message_t* msg = libpapilo_message_create();
 
-   libpapilo_message_set_verbosity( msg, -1 );
-   REQUIRE( libpapilo_message_get_verbosity( msg ) == 0 );
+   libpapilo_message_set_verbosity_level( msg, -1 );
+   REQUIRE( libpapilo_message_get_verbosity_level( msg ) == 0 );
 
-   libpapilo_message_set_verbosity( msg, 5 );
-   REQUIRE( libpapilo_message_get_verbosity( msg ) == 4 );
+   libpapilo_message_set_verbosity_level( msg, 5 );
+   REQUIRE( libpapilo_message_get_verbosity_level( msg ) == 4 );
 
    libpapilo_message_free( msg );
 }
 
-#ifdef LIBPAPILO_ENABLE_TEST_HOOKS
 TEST_CASE( "message-callback-simple", "[libpapilo]" )
 {
    libpapilo_message_t* msg = libpapilo_message_create();
 
    Buffer buf;
    libpapilo_message_set_trace_callback( msg, &Buffer::cb, &buf );
-   libpapilo_message_emit( msg, 3 /* info */, "hello" );
+   libpapilo_message_print( msg, 3 /* info */, "hello" );
 
    REQUIRE( buf.lines.size() == 1 );
    REQUIRE( buf.lines[0].find( "hello" ) != std::string::npos );
 
    libpapilo_message_free( msg );
 }
-#endif

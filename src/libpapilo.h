@@ -574,22 +574,21 @@ extern "C"
                                                size_t size, void* usr );
 
    LIBPAPILO_EXPORT void
-   libpapilo_message_set_verbosity( libpapilo_message_t* message, int level );
+   libpapilo_message_set_verbosity_level( libpapilo_message_t* message,
+                                          int level );
 
    LIBPAPILO_EXPORT int
-   libpapilo_message_get_verbosity( const libpapilo_message_t* message );
+   libpapilo_message_get_verbosity_level( const libpapilo_message_t* message );
 
    LIBPAPILO_EXPORT void
    libpapilo_message_set_trace_callback( libpapilo_message_t* message,
                                          libpapilo_trace_callback callback,
                                          void* usr );
 
-#ifdef LIBPAPILO_ENABLE_TEST_HOOKS
-   /* Test-only hook: emit a message through the Message pipeline */
+   /* Print a message via Message pipeline (no formatting) */
    LIBPAPILO_EXPORT void
-   libpapilo_message_emit( libpapilo_message_t* message, int level,
-                           const char* text );
-#endif
+   libpapilo_message_print( libpapilo_message_t* message, int level,
+                            const char* text );
 
    /* ProblemUpdate Control API */
    LIBPAPILO_EXPORT libpapilo_problem_update_t*
