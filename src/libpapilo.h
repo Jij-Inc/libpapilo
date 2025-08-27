@@ -445,8 +445,6 @@ extern "C"
    libpapilo_presolve_set_options( libpapilo_presolve_t* presolve,
                                    libpapilo_presolve_options_t* options );
 
-   
-
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
                                     libpapilo_problem_t* problem );

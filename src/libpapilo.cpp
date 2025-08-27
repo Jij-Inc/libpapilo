@@ -1209,12 +1209,14 @@ extern "C"
    libpapilo_presolve_create( const libpapilo_message_t* message )
    {
       check_message_ptr( message );
-      return check_run( [&]() {
-                           auto* p = new libpapilo_presolve_t();
-                           p->presolve.message() = message->message;
-                           return p;
-                        },
-                        "Failed to create presolve object" );
+      return check_run(
+          [&]()
+          {
+             auto* p = new libpapilo_presolve_t();
+             p->presolve.message() = message->message;
+             return p;
+          },
+          "Failed to create presolve object" );
    }
 
    void
@@ -1239,8 +1241,6 @@ extern "C"
       check_presolve_options_ptr( options );
       presolve->presolve.getPresolveOptions() = options->options;
    }
-
-   
 
    libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
