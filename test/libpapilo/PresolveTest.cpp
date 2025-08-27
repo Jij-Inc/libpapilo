@@ -108,7 +108,7 @@ applyReductions( libpapilo_problem_t* problem,
        update, postpone_substitutions ? 1 : 0 );
 
    // Apply reductions using presolve
-   libpapilo_presolve_t* presolve = libpapilo_presolve_create();
+   libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
    libpapilo_presolve_add_default_presolvers( presolve );
 
    int num_rounds = 0;

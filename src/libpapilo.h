@@ -433,7 +433,7 @@ extern "C"
 
    /* Core Presolve API */
    LIBPAPILO_EXPORT libpapilo_presolve_t*
-   libpapilo_presolve_create();
+   libpapilo_presolve_create( const libpapilo_message_t* message );
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_free( libpapilo_presolve_t* presolve );
@@ -473,6 +473,7 @@ extern "C"
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
                              libpapilo_presolve_options_t* options,
+                             const libpapilo_message_t* message,
                              libpapilo_reductions_t** reductions,
                              libpapilo_postsolve_storage_t** postsolve,
                              libpapilo_statistics_t** statistics );
@@ -592,12 +593,7 @@ extern "C"
    libpapilo_message_print( libpapilo_message_t* message, int level,
                             const char* text );
 
-   /* Presolve Message control API */
-   /* Copy the given Message into Presolve's internal Message */
-   LIBPAPILO_EXPORT void
-   libpapilo_presolve_set_message( libpapilo_presolve_t* presolve,
-                                   const libpapilo_message_t* message );
-
+   /* Presolve Message control: Presolve uses Message passed at create */
 
    /* ProblemUpdate Control API */
    LIBPAPILO_EXPORT libpapilo_problem_update_t*
