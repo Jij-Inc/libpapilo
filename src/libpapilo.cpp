@@ -54,6 +54,16 @@ using namespace papilo;
 /** Magic number to check the pointer passed from user is ours */
 const uint64_t LIBPAPILO_MAGIC_NUMBER = 0x506150494C4F; // 'PaPILO'
 
+static papilo::VerbosityLevel
+to_verbosity_level( int level )
+{
+   if( level < 0 )
+      level = 0;
+   if( level > 4 )
+      level = 4;
+   return static_cast<papilo::VerbosityLevel>( level );
+}
+
 struct libpapilo_problem_builder_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
@@ -1577,13 +1587,7 @@ extern "C"
    {
       check_message_ptr( message );
 
-      if( level < 0 )
-         level = 0;
-      if( level > 4 )
-         level = 4;
-
-      message->message.setVerbosityLevel(
-          static_cast<papilo::VerbosityLevel>( level ) );
+      message->message.setVerbosityLevel( to_verbosity_level( level ) );
    }
 
    int
@@ -1609,8 +1613,7 @@ extern "C"
       check_message_ptr( message );
       if( text == nullptr )
          text = "";
-      message->message.print( static_cast<papilo::VerbosityLevel>( level ),
-                              "{}", text );
+      message->message.print( to_verbosity_level( level ), "{}", text );
    }
 
    /* ProblemUpdate Control API Implementation */
