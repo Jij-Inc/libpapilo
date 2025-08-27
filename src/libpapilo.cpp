@@ -47,11 +47,22 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <string>
 
 using namespace papilo;
 
 /** Magic number to check the pointer passed from user is ours */
 const uint64_t LIBPAPILO_MAGIC_NUMBER = 0x506150494C4F; // 'PaPILO'
+
+static papilo::VerbosityLevel
+to_verbosity_level( int level )
+{
+   if( level < 0 )
+      level = 0;
+   if( level > 4 )
+      level = 4;
+   return static_cast<papilo::VerbosityLevel>( level );
+}
 
 struct libpapilo_problem_builder_t
 {
@@ -1568,6 +1579,41 @@ extern "C"
    {
       check_message_ptr( message );
       delete message;
+   }
+
+   void
+   libpapilo_message_set_verbosity_level( libpapilo_message_t* message,
+                                          int level )
+   {
+      check_message_ptr( message );
+
+      message->message.setVerbosityLevel( to_verbosity_level( level ) );
+   }
+
+   int
+   libpapilo_message_get_verbosity_level( const libpapilo_message_t* message )
+   {
+      check_message_ptr( message );
+      return static_cast<int>( message->message.getVerbosityLevel() );
+   }
+
+   void
+   libpapilo_message_set_output_callback( libpapilo_message_t* message,
+                                          libpapilo_trace_callback callback,
+                                          void* usr )
+   {
+      check_message_ptr( message );
+      message->message.setOutputCallback( callback, usr );
+   }
+
+   void
+   libpapilo_message_print( libpapilo_message_t* message, int level,
+                            const char* text )
+   {
+      check_message_ptr( message );
+      if( text == nullptr )
+         text = "";
+      message->message.print( to_verbosity_level( level ), "{}", text );
    }
 
    /* ProblemUpdate Control API Implementation */

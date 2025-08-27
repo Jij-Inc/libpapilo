@@ -7,6 +7,7 @@ set(LIBPAPILO_TESTS
     ProblemUpdateTest.cpp
     PresolveTest.cpp
     PostsolveTest.cpp
+    MessageTest.cpp
     # Add more test files as needed
 )
 
@@ -77,6 +78,8 @@ set(LIBPAPILO_TEST_NAMES
     # PostsolveTest.cpp
     "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf"
     "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf"
+    "message-set-get-verbosity"
+    "message-callback-simple"
 )
 
 # Register test targets for each test file

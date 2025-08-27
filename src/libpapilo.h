@@ -569,6 +569,27 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_message_free( libpapilo_message_t* message );
 
+   /* Message control API */
+   typedef void ( *libpapilo_trace_callback )( int level, const char* data,
+                                               size_t size, void* usr );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_set_verbosity_level( libpapilo_message_t* message,
+                                          int level );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_message_get_verbosity_level( const libpapilo_message_t* message );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_message_set_output_callback( libpapilo_message_t* message,
+                                          libpapilo_trace_callback callback,
+                                          void* usr );
+
+   /* Print a message via Message pipeline (no formatting) */
+   LIBPAPILO_EXPORT void
+   libpapilo_message_print( libpapilo_message_t* message, int level,
+                            const char* text );
+
    /* ProblemUpdate Control API */
    LIBPAPILO_EXPORT libpapilo_problem_update_t*
    libpapilo_problem_update_create( libpapilo_problem_t* problem,
