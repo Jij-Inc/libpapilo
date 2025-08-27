@@ -1235,6 +1235,17 @@ extern "C"
       presolve->presolve.getPresolveOptions() = options->options;
    }
 
+   void
+   libpapilo_presolve_set_message( libpapilo_presolve_t* presolve,
+                                   const libpapilo_message_t* message )
+   {
+      check_presolve_ptr( presolve );
+      check_message_ptr( message );
+      presolve->presolve.message() = message->message;
+   }
+
+   
+
    libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
                                     libpapilo_problem_t* problem )

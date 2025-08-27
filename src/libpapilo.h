@@ -445,6 +445,8 @@ extern "C"
    libpapilo_presolve_set_options( libpapilo_presolve_t* presolve,
                                    libpapilo_presolve_options_t* options );
 
+   
+
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
                                     libpapilo_problem_t* problem );
@@ -589,6 +591,13 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_message_print( libpapilo_message_t* message, int level,
                             const char* text );
+
+   /* Presolve Message control API */
+   /* Copy the given Message into Presolve's internal Message */
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_set_message( libpapilo_presolve_t* presolve,
+                                   const libpapilo_message_t* message );
+
 
    /* ProblemUpdate Control API */
    LIBPAPILO_EXPORT libpapilo_problem_update_t*
