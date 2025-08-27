@@ -1206,10 +1206,17 @@ extern "C"
    /* Core Presolve API Implementation */
 
    libpapilo_presolve_t*
-   libpapilo_presolve_create()
+   libpapilo_presolve_create( const libpapilo_message_t* message )
    {
-      return check_run( []() { return new libpapilo_presolve_t(); },
-                        "Failed to create presolve object" );
+      check_message_ptr( message );
+      return check_run(
+          [&]()
+          {
+             auto* p = new libpapilo_presolve_t();
+             p->presolve.message() = message->message;
+             return p;
+          },
+          "Failed to create presolve object" );
    }
 
    void
@@ -1280,12 +1287,14 @@ extern "C"
    libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
                              libpapilo_presolve_options_t* options,
+                             const libpapilo_message_t* message,
                              libpapilo_reductions_t** reductions_out,
                              libpapilo_postsolve_storage_t** postsolve_out,
                              libpapilo_statistics_t** statistics_out )
    {
       check_problem_ptr( problem );
       check_presolve_options_ptr( options );
+      check_message_ptr( message );
       custom_assert( reductions_out != nullptr,
                      "reductions_out pointer is null" );
       custom_assert( postsolve_out != nullptr,
@@ -1297,7 +1306,7 @@ extern "C"
           [&]()
           {
              // Create presolve object
-             auto* presolve = libpapilo_presolve_create();
+             auto* presolve = libpapilo_presolve_create( message );
              libpapilo_presolve_add_default_presolvers( presolve );
              libpapilo_presolve_set_options( presolve, options );
 
