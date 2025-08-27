@@ -1594,9 +1594,9 @@ extern "C"
    }
 
    void
-   libpapilo_message_set_trace_callback( libpapilo_message_t* message,
-                                         libpapilo_trace_callback callback,
-                                         void* usr )
+   libpapilo_message_set_output_callback( libpapilo_message_t* message,
+                                          libpapilo_trace_callback callback,
+                                          void* usr )
    {
       check_message_ptr( message );
       message->message.setOutputCallback( callback, usr );

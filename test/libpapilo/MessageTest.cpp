@@ -53,7 +53,7 @@ TEST_CASE( "message-callback-simple", "[libpapilo]" )
    libpapilo_message_t* msg = libpapilo_message_create();
 
    Buffer buf;
-   libpapilo_message_set_trace_callback( msg, &Buffer::cb, &buf );
+   libpapilo_message_set_output_callback( msg, &Buffer::cb, &buf );
    libpapilo_message_print( msg, 3 /* info */, "hello" );
 
    REQUIRE( buf.lines.size() == 1 );

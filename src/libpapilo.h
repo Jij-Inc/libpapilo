@@ -581,9 +581,9 @@ extern "C"
    libpapilo_message_get_verbosity_level( const libpapilo_message_t* message );
 
    LIBPAPILO_EXPORT void
-   libpapilo_message_set_trace_callback( libpapilo_message_t* message,
-                                         libpapilo_trace_callback callback,
-                                         void* usr );
+   libpapilo_message_set_output_callback( libpapilo_message_t* message,
+                                          libpapilo_trace_callback callback,
+                                          void* usr );
 
    /* Print a message via Message pipeline (no formatting) */
    LIBPAPILO_EXPORT void
