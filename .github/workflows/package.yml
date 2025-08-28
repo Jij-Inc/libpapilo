@@ -211,3 +211,22 @@ jobs:
           tag_name: ${{ github.event.release.tag_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  homebrew-tap-bump-up:
+    if: github.event_name == 'release'
+    needs: [publish]
+    runs-on: macos-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Update formula in tap
+        uses: dawidd6/action-homebrew-bump-formula@v5
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_PAT }}
+          tap: Jij-Inc/homebrew-tap
+          formula: libpapilo
+          user_name: Jij Bot
+          user_email: ci@jij-inc.com
+          no_fork: true
