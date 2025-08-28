@@ -227,3 +227,49 @@ TEST_CASE( "trivial-presolve-singleton-row-pt-2", "[libpapilo]" )
    libpapilo_num_free( num );
    libpapilo_problem_free( problem );
 }
+
+TEST_CASE( "problem-update-owns-num-and-message", "[libpapilo]" )
+{
+   // Create problem
+   libpapilo_problem_t* problem = setupProblemPresolveSingletonRow();
+
+   // Create required objects
+   libpapilo_num_t* num = libpapilo_num_create();
+   libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
+   libpapilo_presolve_options_set_dualreds( options, 0 );
+   libpapilo_statistics_t* statistics = libpapilo_statistics_create();
+   libpapilo_postsolve_storage_t* postsolve =
+       libpapilo_postsolve_storage_create( problem, num, options );
+   libpapilo_message_t* message = libpapilo_message_create();
+
+   // Create ProblemUpdate
+   libpapilo_problem_update_t* update = libpapilo_problem_update_create(
+       problem, postsolve, statistics, options, num, message );
+
+   // Immediately free original num and message to verify that update holds
+   // its own copies and remains fully functional.
+   libpapilo_message_free( message );
+   libpapilo_num_free( num );
+
+   // Execute trivial presolve; should work without accessing freed objects
+   libpapilo_presolve_status_t status =
+       libpapilo_problem_update_trivial_presolve( update );
+
+   // Check that presolve succeeded (not infeasible or unbounded)
+   REQUIRE( ( status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED ||
+              status == LIBPAPILO_PRESOLVE_STATUS_REDUCED ) );
+
+   // Check results
+   int size;
+   const double* upper_bounds =
+       libpapilo_problem_get_upper_bounds( problem, &size );
+   REQUIRE( upper_bounds[2] == 1.0 );
+   REQUIRE( libpapilo_problem_is_row_redundant( problem, 1 ) == 1 );
+
+   // Clean up remaining objects
+   libpapilo_problem_update_free( update );
+   libpapilo_postsolve_storage_free( postsolve );
+   libpapilo_statistics_free( statistics );
+   libpapilo_presolve_options_free( options );
+   libpapilo_problem_free( problem );
+}

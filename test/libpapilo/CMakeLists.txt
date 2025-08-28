@@ -68,6 +68,7 @@ set(LIBPAPILO_TEST_NAMES
     # ProblemUpdateTest.cpp
     "trivial-presolve-singleton-row"
     "trivial-presolve-singleton-row-pt-2"
+    "problem-update-owns-num-and-message"
     
     # PresolveTest.cpp
     "replacing-variables-is-postponed-by-flag"
