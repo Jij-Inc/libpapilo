@@ -1347,14 +1347,14 @@ extern "C"
    }
 
    int
-   libpapilo_reductions_get_size( libpapilo_reductions_t* reductions )
+   libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions )
    {
       check_reductions_ptr( reductions );
       return static_cast<int>( reductions->reductions.size() );
    }
 
    libpapilo_reduction_info_t
-   libpapilo_reductions_get_info( libpapilo_reductions_t* reductions,
+   libpapilo_reductions_get_info( const libpapilo_reductions_t* reductions,
                                   int index )
    {
       check_reductions_ptr( reductions );
@@ -1697,7 +1697,7 @@ extern "C"
 
    int
    libpapilo_problem_update_get_singleton_cols_count(
-       libpapilo_problem_update_t* update )
+       const libpapilo_problem_update_t* update )
    {
       check_problem_update_ptr( update );
 
@@ -1712,7 +1712,8 @@ extern "C"
    }
 
    libpapilo_reductions_t*
-   libpapilo_problem_update_get_reductions( libpapilo_problem_update_t* update )
+   libpapilo_problem_update_get_reductions(
+       const libpapilo_problem_update_t* update )
    {
       check_problem_update_ptr( update );
       // Note: ProblemUpdate doesn't store reductions directly.

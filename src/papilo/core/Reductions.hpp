@@ -364,7 +364,7 @@ class Reductions
    }
 
    unsigned int
-   size()
+   size() const
    {
       return reductions.size();
    }
@@ -406,6 +406,12 @@ class Reductions
    Vec<Transaction> transactions;
 
  public:
+   const Reduction<REAL>&
+   getReduction( int i ) const
+   {
+      return reductions[i];
+   }
+
    Reduction<REAL>&
    getReduction( int i )
    {
