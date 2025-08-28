@@ -481,10 +481,10 @@ extern "C"
    libpapilo_reductions_create();
 
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_size( libpapilo_reductions_t* reductions );
+   libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT libpapilo_reduction_info_t
-   libpapilo_reductions_get_info( libpapilo_reductions_t* reductions,
+   libpapilo_reductions_get_info( const libpapilo_reductions_t* reductions,
                                   int index );
 
    LIBPAPILO_EXPORT void
@@ -615,11 +615,11 @@ extern "C"
 
    LIBPAPILO_EXPORT int
    libpapilo_problem_update_get_singleton_cols_count(
-       libpapilo_problem_update_t* update );
+       const libpapilo_problem_update_t* update );
 
    LIBPAPILO_EXPORT libpapilo_reductions_t*
    libpapilo_problem_update_get_reductions(
-       libpapilo_problem_update_t* update );
+       const libpapilo_problem_update_t* update );
 
    LIBPAPILO_EXPORT void
    libpapilo_problem_update_set_postpone_substitutions(
