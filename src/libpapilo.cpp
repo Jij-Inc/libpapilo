@@ -105,15 +105,20 @@ struct libpapilo_postsolve_storage_t
 struct libpapilo_problem_update_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   // Keep owned copies so C users don't have to manage lifetimes
+   Message owned_message;
+   Num<double> owned_num;
    ProblemUpdate<double> update;
 
-   // Constructor to properly initialize ProblemUpdate with references
+   // Constructor initializes owned copies, then binds references in
+   // ProblemUpdate
    libpapilo_problem_update_t( Problem<double>& problem,
                                PostsolveStorage<double>& postsolve,
                                Statistics& stats,
                                const PresolveOptions& options,
                                const Num<double>& num, const Message& msg )
-       : update( problem, postsolve, stats, options, num, msg )
+       : owned_message( msg ), owned_num( num ),
+         update( problem, postsolve, stats, options, owned_num, owned_message )
    {
    }
 };
