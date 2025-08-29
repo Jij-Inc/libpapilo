@@ -519,7 +519,8 @@ extern "C"
    libpapilo_reductions_get_transaction_nlocks(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the number of added coefficients in a transaction. Returns -1 on error. */
+   /** Get the number of added coefficients in a transaction. Returns -1 on
+    * error. */
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_transaction_naddcoeffs(
        const libpapilo_reductions_t* reductions, int transaction_index );
@@ -566,7 +567,8 @@ extern "C"
 
    /* PostsolveStorage getter API */
 
-   /** Get the original number of columns before presolving. Returns 0 on error. */
+   /** Get the original number of columns before presolving. Returns 0 on error.
+    */
    LIBPAPILO_EXPORT unsigned int
    libpapilo_postsolve_storage_get_n_cols_original(
        const libpapilo_postsolve_storage_t* postsolve );
@@ -608,7 +610,7 @@ extern "C"
    libpapilo_postsolve_storage_get_num_values(
        const libpapilo_postsolve_storage_t* postsolve );
 
-   /** Get the original problem. Returns NULL on error. 
+   /** Get the original problem. Returns NULL on error.
     * Valid as long as postsolve storage exists. */
    LIBPAPILO_EXPORT const libpapilo_problem_t*
    libpapilo_postsolve_storage_get_original_problem(
@@ -672,7 +674,8 @@ extern "C"
    libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
        const libpapilo_statistics_t* statistics );
 
-   /** Get single coefficient changes (excludes substitutions/deletions). Returns -1 on error. */
+   /** Get single coefficient changes (excludes substitutions/deletions).
+    * Returns -1 on error. */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_single_matrix_coefficient_changes(
        const libpapilo_statistics_t* statistics );
