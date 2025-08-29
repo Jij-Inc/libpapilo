@@ -86,7 +86,20 @@ struct libpapilo_statistics_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    Statistics statistics;
+
+   // Per-presolver statistics
+   struct PresolverStat
+   {
+      std::string name;
+      int ncalls = 0;
+      int nsuccessful = 0;
+      int ntransactions = 0;
+      int napplied = 0;
+      double exectime = 0.0;
+   };
+   std::vector<PresolverStat> presolver_stats;
 };
+;
 
 struct libpapilo_postsolve_storage_t
 {
@@ -1325,6 +1338,29 @@ extern "C"
              auto* reductions = new libpapilo_reductions_t();
              auto* stats = new libpapilo_statistics_t();
 
+             // Copy overall statistics
+             stats->statistics = presolve->presolve.getStatistics();
+
+             // Copy per-presolver statistics
+             stats->presolver_stats.clear();
+             const auto& presolvers = presolve->presolve.getPresolvers();
+             const auto& presolverStats =
+                 presolve->presolve.getPresolverStats();
+
+             size_t numPresolvers =
+                 std::min( presolvers.size(), presolverStats.size() );
+             for( size_t i = 0; i < numPresolvers; ++i )
+             {
+                libpapilo_statistics_t::PresolverStat stat;
+                stat.name = presolvers[i]->getName();
+                stat.ncalls = presolvers[i]->getNCalls();
+                stat.nsuccessful = presolvers[i]->getNSuccess();
+                stat.ntransactions = presolverStats[i].first;
+                stat.napplied = presolverStats[i].second;
+                stat.exectime = presolvers[i]->getExecTime();
+                stats->presolver_stats.push_back( stat );
+             }
+
              // Set output parameters
              *reductions_out = reductions;
              *postsolve_out = postsolve_storage;
@@ -1869,6 +1905,122 @@ extern "C"
              return statistics->statistics.single_matrix_coefficient_changes;
           },
           "Failed to get single_matrix_coefficient_changes" );
+   }
+
+   /* Per-presolver Statistics API Implementation */
+   int
+   libpapilo_statistics_get_num_presolvers(
+       const libpapilo_statistics_t* statistics )
+   {
+      return check_run(
+          [&]()
+          {
+             check_statistics_ptr( statistics );
+             return static_cast<int>( statistics->presolver_stats.size() );
+          },
+          "Failed to get number of presolvers" );
+   }
+
+   const char*
+   libpapilo_statistics_get_presolver_name(
+       const libpapilo_statistics_t* statistics, int presolver_index )
+   {
+      return check_run(
+          [&]() -> const char*
+          {
+             check_statistics_ptr( statistics );
+             if( presolver_index < 0 ||
+                 presolver_index >=
+                     static_cast<int>( statistics->presolver_stats.size() ) )
+                throw std::out_of_range( "Presolver index out of range" );
+             return statistics->presolver_stats[presolver_index].name.c_str();
+          },
+          "Failed to get presolver name" );
+   }
+
+   int
+   libpapilo_statistics_get_presolver_ncalls(
+       const libpapilo_statistics_t* statistics, int presolver_index )
+   {
+      return check_run(
+          [&]()
+          {
+             check_statistics_ptr( statistics );
+             if( presolver_index < 0 ||
+                 presolver_index >=
+                     static_cast<int>( statistics->presolver_stats.size() ) )
+                throw std::out_of_range( "Presolver index out of range" );
+             return statistics->presolver_stats[presolver_index].ncalls;
+          },
+          "Failed to get presolver ncalls" );
+   }
+
+   int
+   libpapilo_statistics_get_presolver_nsuccessful(
+       const libpapilo_statistics_t* statistics, int presolver_index )
+   {
+      return check_run(
+          [&]()
+          {
+             check_statistics_ptr( statistics );
+             if( presolver_index < 0 ||
+                 presolver_index >=
+                     static_cast<int>( statistics->presolver_stats.size() ) )
+                throw std::out_of_range( "Presolver index out of range" );
+             return statistics->presolver_stats[presolver_index].nsuccessful;
+          },
+          "Failed to get presolver nsuccessful" );
+   }
+
+   int
+   libpapilo_statistics_get_presolver_ntransactions(
+       const libpapilo_statistics_t* statistics, int presolver_index )
+   {
+      return check_run(
+          [&]()
+          {
+             check_statistics_ptr( statistics );
+             if( presolver_index < 0 ||
+                 presolver_index >=
+                     static_cast<int>( statistics->presolver_stats.size() ) )
+                throw std::out_of_range( "Presolver index out of range" );
+             return statistics->presolver_stats[presolver_index].ntransactions;
+          },
+          "Failed to get presolver ntransactions" );
+   }
+
+   int
+   libpapilo_statistics_get_presolver_napplied(
+       const libpapilo_statistics_t* statistics, int presolver_index )
+   {
+      return check_run(
+          [&]()
+          {
+             check_statistics_ptr( statistics );
+             if( presolver_index < 0 ||
+                 presolver_index >=
+                     static_cast<int>( statistics->presolver_stats.size() ) )
+                throw std::out_of_range( "Presolver index out of range" );
+             return statistics->presolver_stats[presolver_index].napplied;
+          },
+          "Failed to get presolver napplied" );
+   }
+
+   double
+   libpapilo_statistics_get_presolver_exectime(
+       const libpapilo_statistics_t* statistics, int presolver_index )
+   {
+      return check_run(
+          [&]()
+          {
+             check_statistics_ptr( statistics );
+             if( presolver_index < 0 ||
+                 presolver_index >=
+                     static_cast<int>( statistics->presolver_stats.size() ) )
+                throw std::out_of_range( "Presolver index out of range" );
+             return statistics->presolver_stats[presolver_index].exectime;
+          },
+          "Failed to get presolver exectime" );
    }
 
    /* Problem Modification API Implementation */
