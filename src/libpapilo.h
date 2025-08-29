@@ -498,22 +498,42 @@ extern "C"
    libpapilo_reductions_free( libpapilo_reductions_t* reductions );
 
    /* Reductions getter API */
+   
+   /** Get the number of reduction transactions stored in the reductions object.
+    * @param reductions Pointer to the reductions object
+    * @return Number of transactions, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_num_transactions(
        const libpapilo_reductions_t* reductions );
 
+   /** Get the start index of a specific transaction in the reductions array.
+    * @param reductions Pointer to the reductions object
+    * @param transaction_index Index of the transaction (0 to num_transactions-1)
+    * @return Start index of the transaction, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_transaction_start(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
+   /** Get the end index of a specific transaction in the reductions array.
+    * @param reductions Pointer to the reductions object
+    * @param transaction_index Index of the transaction (0 to num_transactions-1)
+    * @return End index of the transaction, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_transaction_end(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
+   /** Get the number of locks in a specific transaction.
+    * @param reductions Pointer to the reductions object
+    * @param transaction_index Index of the transaction (0 to num_transactions-1)
+    * @return Number of locks in the transaction, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_transaction_nlocks(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
+   /** Get the number of added coefficients in a specific transaction.
+    * @param reductions Pointer to the reductions object
+    * @param transaction_index Index of the transaction (0 to num_transactions-1)
+    * @return Number of added coefficients in the transaction, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_reductions_get_transaction_naddcoeffs(
        const libpapilo_reductions_t* reductions, int transaction_index );
@@ -559,38 +579,71 @@ extern "C"
    libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve );
 
    /* PostsolveStorage getter API */
+   
+   /** Get the original number of columns in the problem before presolving.
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Original number of columns, or 0 on error */
    LIBPAPILO_EXPORT unsigned int
    libpapilo_postsolve_storage_get_n_cols_original(
        const libpapilo_postsolve_storage_t* postsolve );
 
+   /** Get the original number of rows in the problem before presolving.
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Original number of rows, or 0 on error */
    LIBPAPILO_EXPORT unsigned int
    libpapilo_postsolve_storage_get_n_rows_original(
        const libpapilo_postsolve_storage_t* postsolve );
 
+   /** Get the mapping from reduced column indices to original column indices.
+    * @param postsolve Pointer to the postsolve storage object
+    * @param size If not NULL, will be set to the size of the returned array
+    * @return Pointer to the column mapping array, or NULL on error.
+    *         The array contains original column indices indexed by reduced column indices. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_orig_col_mapping(
        const libpapilo_postsolve_storage_t* postsolve, int* size );
 
+   /** Get the mapping from reduced row indices to original row indices.
+    * @param postsolve Pointer to the postsolve storage object
+    * @param size If not NULL, will be set to the size of the returned array
+    * @return Pointer to the row mapping array, or NULL on error.
+    *         The array contains original row indices indexed by reduced row indices. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_orig_row_mapping(
        const libpapilo_postsolve_storage_t* postsolve, int* size );
 
+   /** Get the postsolve type (primal or full).
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Postsolve type, or LIBPAPILO_POSTSOLVE_TYPE_PRIMAL on error */
    LIBPAPILO_EXPORT libpapilo_postsolve_type_t
    libpapilo_postsolve_storage_get_postsolve_type(
        const libpapilo_postsolve_storage_t* postsolve );
 
+   /** Get the number of reduction types stored in the postsolve data.
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Number of reduction types, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_postsolve_storage_get_num_types(
        const libpapilo_postsolve_storage_t* postsolve );
 
+   /** Get the number of indices stored in the postsolve data.
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Number of indices, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_postsolve_storage_get_num_indices(
        const libpapilo_postsolve_storage_t* postsolve );
 
+   /** Get the number of values stored in the postsolve data.
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Number of values, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_postsolve_storage_get_num_values(
        const libpapilo_postsolve_storage_t* postsolve );
 
+   /** Get a pointer to the original problem stored in the postsolve storage.
+    * @param postsolve Pointer to the postsolve storage object
+    * @return Pointer to the original problem, or NULL on error.
+    *         The returned pointer is valid as long as the postsolve storage object exists. */
    LIBPAPILO_EXPORT const libpapilo_problem_t*
    libpapilo_postsolve_storage_get_original_problem(
        const libpapilo_postsolve_storage_t* postsolve );
@@ -603,45 +656,80 @@ extern "C"
    libpapilo_statistics_free( libpapilo_statistics_t* statistics );
 
    /* Statistics getter API */
+   
+   /** Get the total presolve execution time in seconds.
+    * @param statistics Pointer to the statistics object
+    * @return Presolve time in seconds, or -1.0 on error */
    LIBPAPILO_EXPORT double
    libpapilo_statistics_get_presolvetime(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of transformations applied during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of transformations applied, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ntsxapplied(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of transformation conflicts encountered during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of transformation conflicts, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ntsxconflicts(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of bound changes made during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of bound changes, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_nboundchgs(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of side changes made during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of side changes, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_nsidechgs(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of coefficient changes made during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of coefficient changes, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ncoefchgs(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of presolve rounds performed.
+    * @param statistics Pointer to the statistics object
+    * @return Number of presolve rounds, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics );
 
+   /** Get the number of columns deleted during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of deleted columns, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ndeletedcols(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of rows deleted during presolving.
+    * @param statistics Pointer to the statistics object
+    * @return Number of deleted rows, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ndeletedrows(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of consecutive rounds with only bound changes.
+    * @param statistics Pointer to the statistics object
+    * @return Number of consecutive bound-only rounds, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
        const libpapilo_statistics_t* statistics );
 
+   /** Get the number of single matrix coefficient changes.
+    * Variable substitutions and constraint deletions are excluded.
+    * @param statistics Pointer to the statistics object
+    * @return Number of single coefficient changes, or -1 on error */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_single_matrix_coefficient_changes(
        const libpapilo_statistics_t* statistics );
