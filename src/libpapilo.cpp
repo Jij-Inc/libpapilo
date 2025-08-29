@@ -1376,6 +1376,64 @@ extern "C"
       delete reductions;
    }
 
+   /* Reductions getter API Implementation */
+   int
+   libpapilo_reductions_get_num_transactions( const libpapilo_reductions_t* reductions )
+   {
+      return check_run( [&]() {
+         check_reductions_ptr( reductions );
+         return static_cast<int>( reductions->reductions.getTransactions().size() );
+      }, "Failed to get number of transactions" );
+   }
+
+   int
+   libpapilo_reductions_get_transaction_start( const libpapilo_reductions_t* reductions, int transaction_index )
+   {
+      return check_run( [&]() {
+         check_reductions_ptr( reductions );
+         const auto& transactions = reductions->reductions.getTransactions();
+         if( transaction_index < 0 || transaction_index >= static_cast<int>( transactions.size() ) )
+            throw std::out_of_range( "Transaction index out of range" );
+         return transactions[transaction_index].start;
+      }, "Failed to get transaction start" );
+   }
+
+   int
+   libpapilo_reductions_get_transaction_end( const libpapilo_reductions_t* reductions, int transaction_index )
+   {
+      return check_run( [&]() {
+         check_reductions_ptr( reductions );
+         const auto& transactions = reductions->reductions.getTransactions();
+         if( transaction_index < 0 || transaction_index >= static_cast<int>( transactions.size() ) )
+            throw std::out_of_range( "Transaction index out of range" );
+         return transactions[transaction_index].end;
+      }, "Failed to get transaction end" );
+   }
+
+   int
+   libpapilo_reductions_get_transaction_nlocks( const libpapilo_reductions_t* reductions, int transaction_index )
+   {
+      return check_run( [&]() {
+         check_reductions_ptr( reductions );
+         const auto& transactions = reductions->reductions.getTransactions();
+         if( transaction_index < 0 || transaction_index >= static_cast<int>( transactions.size() ) )
+            throw std::out_of_range( "Transaction index out of range" );
+         return transactions[transaction_index].nlocks;
+      }, "Failed to get transaction nlocks" );
+   }
+
+   int
+   libpapilo_reductions_get_transaction_naddcoeffs( const libpapilo_reductions_t* reductions, int transaction_index )
+   {
+      return check_run( [&]() {
+         check_reductions_ptr( reductions );
+         const auto& transactions = reductions->reductions.getTransactions();
+         if( transaction_index < 0 || transaction_index >= static_cast<int>( transactions.size() ) )
+            throw std::out_of_range( "Transaction index out of range" );
+         return transactions[transaction_index].naddcoeffs;
+      }, "Failed to get transaction naddcoeffs" );
+   }
+
    /* Reductions manipulation API Implementation */
 
    void
@@ -1496,6 +1554,95 @@ extern "C"
       delete postsolve;
    }
 
+   /* PostsolveStorage getter API Implementation */
+   unsigned int
+   libpapilo_postsolve_storage_get_n_cols_original( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         return postsolve->postsolve.nColsOriginal;
+      }, "Failed to get original number of columns" );
+   }
+
+   unsigned int
+   libpapilo_postsolve_storage_get_n_rows_original( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         return postsolve->postsolve.nRowsOriginal;
+      }, "Failed to get original number of rows" );
+   }
+
+   const int*
+   libpapilo_postsolve_storage_get_orig_col_mapping( const libpapilo_postsolve_storage_t* postsolve, int* size )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         if( size != nullptr )
+            *size = static_cast<int>( postsolve->postsolve.origcol_mapping.size() );
+         return postsolve->postsolve.origcol_mapping.data();
+      }, "Failed to get original column mapping" );
+   }
+
+   const int*
+   libpapilo_postsolve_storage_get_orig_row_mapping( const libpapilo_postsolve_storage_t* postsolve, int* size )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         if( size != nullptr )
+            *size = static_cast<int>( postsolve->postsolve.origrow_mapping.size() );
+         return postsolve->postsolve.origrow_mapping.data();
+      }, "Failed to get original row mapping" );
+   }
+
+   libpapilo_postsolve_type_t
+   libpapilo_postsolve_storage_get_postsolve_type( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         return static_cast<libpapilo_postsolve_type_t>( postsolve->postsolve.postsolveType );
+      }, "Failed to get postsolve type" );
+   }
+
+   int
+   libpapilo_postsolve_storage_get_num_types( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         return static_cast<int>( postsolve->postsolve.types.size() );
+      }, "Failed to get number of types" );
+   }
+
+   int
+   libpapilo_postsolve_storage_get_num_indices( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         return static_cast<int>( postsolve->postsolve.indices.size() );
+      }, "Failed to get number of indices" );
+   }
+
+   int
+   libpapilo_postsolve_storage_get_num_values( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() {
+         check_postsolve_storage_ptr( postsolve );
+         return static_cast<int>( postsolve->postsolve.values.size() );
+      }, "Failed to get number of values" );
+   }
+
+   const libpapilo_problem_t*
+   libpapilo_postsolve_storage_get_original_problem( const libpapilo_postsolve_storage_t* postsolve )
+   {
+      return check_run( [&]() -> const libpapilo_problem_t* {
+         check_postsolve_storage_ptr( postsolve );
+         // Return pointer to the internal problem wrapped as libpapilo_problem_t
+         // This is safe as long as the postsolve storage is alive
+         return reinterpret_cast<const libpapilo_problem_t*>( &postsolve->postsolve.problem );
+      }, "Failed to get original problem" );
+   }
+
+   /* Statistics API Implementation */
    libpapilo_statistics_t*
    libpapilo_statistics_create()
    {
@@ -1508,6 +1655,106 @@ extern "C"
    {
       check_statistics_ptr( statistics );
       delete statistics;
+   }
+
+   /* Statistics getter API Implementation */
+   double
+   libpapilo_statistics_get_presolvetime( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.presolvetime;
+      }, "Failed to get presolve time" );
+   }
+
+   int
+   libpapilo_statistics_get_ntsxapplied( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.ntsxapplied;
+      }, "Failed to get ntsxapplied" );
+   }
+
+   int
+   libpapilo_statistics_get_ntsxconflicts( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.ntsxconflicts;
+      }, "Failed to get ntsxconflicts" );
+   }
+
+   int
+   libpapilo_statistics_get_nboundchgs( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.nboundchgs;
+      }, "Failed to get nboundchgs" );
+   }
+
+   int
+   libpapilo_statistics_get_nsidechgs( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.nsidechgs;
+      }, "Failed to get nsidechgs" );
+   }
+
+   int
+   libpapilo_statistics_get_ncoefchgs( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.ncoefchgs;
+      }, "Failed to get ncoefchgs" );
+   }
+
+   int
+   libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.nrounds;
+      }, "Failed to get nrounds" );
+   }
+
+   int
+   libpapilo_statistics_get_ndeletedcols( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.ndeletedcols;
+      }, "Failed to get ndeletedcols" );
+   }
+
+   int
+   libpapilo_statistics_get_ndeletedrows( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.ndeletedrows;
+      }, "Failed to get ndeletedrows" );
+   }
+
+   int
+   libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.consecutive_rounds_of_only_boundchanges;
+      }, "Failed to get consecutive_rounds_of_only_boundchanges" );
+   }
+
+   int
+   libpapilo_statistics_get_single_matrix_coefficient_changes( const libpapilo_statistics_t* statistics )
+   {
+      return check_run( [&]() {
+         check_statistics_ptr( statistics );
+         return statistics->statistics.single_matrix_coefficient_changes;
+      }, "Failed to get single_matrix_coefficient_changes" );
    }
 
    /* Problem Modification API Implementation */

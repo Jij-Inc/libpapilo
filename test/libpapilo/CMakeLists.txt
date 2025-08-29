@@ -8,6 +8,7 @@ set(LIBPAPILO_TESTS
     PresolveTest.cpp
     PostsolveTest.cpp
     MessageTest.cpp
+    GetterAPIsTest.cpp
     # Add more test files as needed
 )
 

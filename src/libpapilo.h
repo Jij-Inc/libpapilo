@@ -101,6 +101,13 @@ extern "C"
     * Note: Negative values are used to maintain compatibility with the
     * underlying C++ implementation where these values distinguish reduction
     * types from row/column indices in the internal data structures. */
+   /* Postsolve type enum for choosing postsolve strategy */
+   typedef enum
+   {
+      LIBPAPILO_POSTSOLVE_TYPE_PRIMAL = 0,
+      LIBPAPILO_POSTSOLVE_TYPE_FULL = 1
+   } libpapilo_postsolve_type_t;
+
    typedef enum
    {
       LIBPAPILO_ROW_REDUCTION_NONE = -1,
@@ -490,6 +497,22 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_reductions_free( libpapilo_reductions_t* reductions );
 
+   /* Reductions getter API */
+   LIBPAPILO_EXPORT int
+   libpapilo_reductions_get_num_transactions( const libpapilo_reductions_t* reductions );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_reductions_get_transaction_start( const libpapilo_reductions_t* reductions, int transaction_index );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_reductions_get_transaction_end( const libpapilo_reductions_t* reductions, int transaction_index );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_reductions_get_transaction_nlocks( const libpapilo_reductions_t* reductions, int transaction_index );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_reductions_get_transaction_naddcoeffs( const libpapilo_reductions_t* reductions, int transaction_index );
+
    /* Reductions manipulation API */
    LIBPAPILO_EXPORT void
    libpapilo_reductions_replace_col( libpapilo_reductions_t* reductions,
@@ -530,12 +553,74 @@ extern "C"
    LIBPAPILO_EXPORT void
    libpapilo_postsolve_storage_free( libpapilo_postsolve_storage_t* postsolve );
 
+   /* PostsolveStorage getter API */
+   LIBPAPILO_EXPORT unsigned int
+   libpapilo_postsolve_storage_get_n_cols_original( const libpapilo_postsolve_storage_t* postsolve );
+
+   LIBPAPILO_EXPORT unsigned int
+   libpapilo_postsolve_storage_get_n_rows_original( const libpapilo_postsolve_storage_t* postsolve );
+
+   LIBPAPILO_EXPORT const int*
+   libpapilo_postsolve_storage_get_orig_col_mapping( const libpapilo_postsolve_storage_t* postsolve, int* size );
+
+   LIBPAPILO_EXPORT const int*
+   libpapilo_postsolve_storage_get_orig_row_mapping( const libpapilo_postsolve_storage_t* postsolve, int* size );
+
+   LIBPAPILO_EXPORT libpapilo_postsolve_type_t
+   libpapilo_postsolve_storage_get_postsolve_type( const libpapilo_postsolve_storage_t* postsolve );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_postsolve_storage_get_num_types( const libpapilo_postsolve_storage_t* postsolve );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_postsolve_storage_get_num_indices( const libpapilo_postsolve_storage_t* postsolve );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_postsolve_storage_get_num_values( const libpapilo_postsolve_storage_t* postsolve );
+
+   LIBPAPILO_EXPORT const libpapilo_problem_t*
+   libpapilo_postsolve_storage_get_original_problem( const libpapilo_postsolve_storage_t* postsolve );
+
    /* Statistics access API */
    LIBPAPILO_EXPORT libpapilo_statistics_t*
    libpapilo_statistics_create();
 
    LIBPAPILO_EXPORT void
    libpapilo_statistics_free( libpapilo_statistics_t* statistics );
+
+   /* Statistics getter API */
+   LIBPAPILO_EXPORT double
+   libpapilo_statistics_get_presolvetime( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_ntsxapplied( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_ntsxconflicts( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_nboundchgs( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_nsidechgs( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_ncoefchgs( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_ndeletedcols( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_ndeletedrows( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges( const libpapilo_statistics_t* statistics );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_statistics_get_single_matrix_coefficient_changes( const libpapilo_statistics_t* statistics );
 
    /* Problem Modification API */
    LIBPAPILO_EXPORT void
