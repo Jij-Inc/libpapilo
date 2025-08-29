@@ -214,6 +214,9 @@ jobs:
 
   next_version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     needs: [publish]
     steps:
       - name: Checkout
