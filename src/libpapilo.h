@@ -499,19 +499,24 @@ extern "C"
 
    /* Reductions getter API */
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_num_transactions( const libpapilo_reductions_t* reductions );
+   libpapilo_reductions_get_num_transactions(
+       const libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_transaction_start( const libpapilo_reductions_t* reductions, int transaction_index );
+   libpapilo_reductions_get_transaction_start(
+       const libpapilo_reductions_t* reductions, int transaction_index );
 
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_transaction_end( const libpapilo_reductions_t* reductions, int transaction_index );
+   libpapilo_reductions_get_transaction_end(
+       const libpapilo_reductions_t* reductions, int transaction_index );
 
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_transaction_nlocks( const libpapilo_reductions_t* reductions, int transaction_index );
+   libpapilo_reductions_get_transaction_nlocks(
+       const libpapilo_reductions_t* reductions, int transaction_index );
 
    LIBPAPILO_EXPORT int
-   libpapilo_reductions_get_transaction_naddcoeffs( const libpapilo_reductions_t* reductions, int transaction_index );
+   libpapilo_reductions_get_transaction_naddcoeffs(
+       const libpapilo_reductions_t* reductions, int transaction_index );
 
    /* Reductions manipulation API */
    LIBPAPILO_EXPORT void
@@ -555,31 +560,40 @@ extern "C"
 
    /* PostsolveStorage getter API */
    LIBPAPILO_EXPORT unsigned int
-   libpapilo_postsolve_storage_get_n_cols_original( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_n_cols_original(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    LIBPAPILO_EXPORT unsigned int
-   libpapilo_postsolve_storage_get_n_rows_original( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_n_rows_original(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    LIBPAPILO_EXPORT const int*
-   libpapilo_postsolve_storage_get_orig_col_mapping( const libpapilo_postsolve_storage_t* postsolve, int* size );
+   libpapilo_postsolve_storage_get_orig_col_mapping(
+       const libpapilo_postsolve_storage_t* postsolve, int* size );
 
    LIBPAPILO_EXPORT const int*
-   libpapilo_postsolve_storage_get_orig_row_mapping( const libpapilo_postsolve_storage_t* postsolve, int* size );
+   libpapilo_postsolve_storage_get_orig_row_mapping(
+       const libpapilo_postsolve_storage_t* postsolve, int* size );
 
    LIBPAPILO_EXPORT libpapilo_postsolve_type_t
-   libpapilo_postsolve_storage_get_postsolve_type( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_postsolve_type(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    LIBPAPILO_EXPORT int
-   libpapilo_postsolve_storage_get_num_types( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_num_types(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    LIBPAPILO_EXPORT int
-   libpapilo_postsolve_storage_get_num_indices( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_num_indices(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    LIBPAPILO_EXPORT int
-   libpapilo_postsolve_storage_get_num_values( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_num_values(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    LIBPAPILO_EXPORT const libpapilo_problem_t*
-   libpapilo_postsolve_storage_get_original_problem( const libpapilo_postsolve_storage_t* postsolve );
+   libpapilo_postsolve_storage_get_original_problem(
+       const libpapilo_postsolve_storage_t* postsolve );
 
    /* Statistics access API */
    LIBPAPILO_EXPORT libpapilo_statistics_t*
@@ -590,37 +604,47 @@ extern "C"
 
    /* Statistics getter API */
    LIBPAPILO_EXPORT double
-   libpapilo_statistics_get_presolvetime( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_presolvetime(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_ntsxapplied( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_ntsxapplied(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_ntsxconflicts( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_ntsxconflicts(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_nboundchgs( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_nboundchgs(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_nsidechgs( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_nsidechgs(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_ncoefchgs( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_ncoefchgs(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_ndeletedcols( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_ndeletedcols(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_ndeletedrows( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_ndeletedrows(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
+       const libpapilo_statistics_t* statistics );
 
    LIBPAPILO_EXPORT int
-   libpapilo_statistics_get_single_matrix_coefficient_changes( const libpapilo_statistics_t* statistics );
+   libpapilo_statistics_get_single_matrix_coefficient_changes(
+       const libpapilo_statistics_t* statistics );
 
    /* Problem Modification API */
    LIBPAPILO_EXPORT void

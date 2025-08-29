@@ -42,8 +42,10 @@ TEST_CASE( "Statistics getters", "[libpapilo]" )
       REQUIRE( libpapilo_statistics_get_nrounds( stats ) == 0 );
       REQUIRE( libpapilo_statistics_get_ndeletedcols( stats ) == 0 );
       REQUIRE( libpapilo_statistics_get_ndeletedrows( stats ) == 0 );
-      REQUIRE( libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges( stats ) == 0 );
-      REQUIRE( libpapilo_statistics_get_single_matrix_coefficient_changes( stats ) == 0 );
+      REQUIRE( libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
+                   stats ) == 0 );
+      REQUIRE( libpapilo_statistics_get_single_matrix_coefficient_changes(
+                   stats ) == 0 );
 
       libpapilo_statistics_free( stats );
    }
@@ -69,10 +71,13 @@ TEST_CASE( "Reductions getters", "[libpapilo]" )
       REQUIRE( libpapilo_reductions_get_num_transactions( reductions ) == 1 );
 
       // Test transaction getters
-      int transaction_start = libpapilo_reductions_get_transaction_start( reductions, 0 );
-      int transaction_end = libpapilo_reductions_get_transaction_end( reductions, 0 );
+      int transaction_start =
+          libpapilo_reductions_get_transaction_start( reductions, 0 );
+      int transaction_end =
+          libpapilo_reductions_get_transaction_end( reductions, 0 );
       int nlocks = libpapilo_reductions_get_transaction_nlocks( reductions, 0 );
-      int naddcoeffs = libpapilo_reductions_get_transaction_naddcoeffs( reductions, 0 );
+      int naddcoeffs =
+          libpapilo_reductions_get_transaction_naddcoeffs( reductions, 0 );
 
       REQUIRE( transaction_start == 0 );
       REQUIRE( transaction_end == 0 );
@@ -100,7 +105,7 @@ TEST_CASE( "PostsolveStorage getters", "[libpapilo]" )
       libpapilo_problem_builder_set_col_ub( builder, 0, 10.0 );
       libpapilo_problem_builder_set_col_lb( builder, 1, 0.0 );
       libpapilo_problem_builder_set_col_ub( builder, 1, 10.0 );
-      
+
       libpapilo_problem_builder_set_obj( builder, 0, 1.0 );
       libpapilo_problem_builder_set_obj( builder, 1, 2.0 );
 
@@ -117,7 +122,8 @@ TEST_CASE( "PostsolveStorage getters", "[libpapilo]" )
 
       // Create num and options
       libpapilo_num_t* num = libpapilo_num_create();
-      libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
+      libpapilo_presolve_options_t* options =
+          libpapilo_presolve_options_create();
 
       // Create postsolve storage
       libpapilo_postsolve_storage_t* postsolve =
@@ -125,25 +131,30 @@ TEST_CASE( "PostsolveStorage getters", "[libpapilo]" )
       REQUIRE( postsolve != nullptr );
 
       // Test getters
-      REQUIRE( libpapilo_postsolve_storage_get_n_cols_original( postsolve ) == 2 );
-      REQUIRE( libpapilo_postsolve_storage_get_n_rows_original( postsolve ) == 1 );
+      REQUIRE( libpapilo_postsolve_storage_get_n_cols_original( postsolve ) ==
+               2 );
+      REQUIRE( libpapilo_postsolve_storage_get_n_rows_original( postsolve ) ==
+               1 );
 
       // Test mapping getters
       int col_size = 0;
-      const int* col_mapping = libpapilo_postsolve_storage_get_orig_col_mapping( postsolve, &col_size );
+      const int* col_mapping = libpapilo_postsolve_storage_get_orig_col_mapping(
+          postsolve, &col_size );
       REQUIRE( col_mapping != nullptr );
       REQUIRE( col_size == 2 );
       REQUIRE( col_mapping[0] == 0 );
       REQUIRE( col_mapping[1] == 1 );
 
       int row_size = 0;
-      const int* row_mapping = libpapilo_postsolve_storage_get_orig_row_mapping( postsolve, &row_size );
+      const int* row_mapping = libpapilo_postsolve_storage_get_orig_row_mapping(
+          postsolve, &row_size );
       REQUIRE( row_mapping != nullptr );
       REQUIRE( row_size == 1 );
       REQUIRE( row_mapping[0] == 0 );
 
       // Test postsolve type
-      libpapilo_postsolve_type_t type = libpapilo_postsolve_storage_get_postsolve_type( postsolve );
+      libpapilo_postsolve_type_t type =
+          libpapilo_postsolve_storage_get_postsolve_type( postsolve );
       REQUIRE( type == LIBPAPILO_POSTSOLVE_TYPE_PRIMAL );
 
       // Test arrays sizes (initially should be 0 or small)
@@ -152,7 +163,8 @@ TEST_CASE( "PostsolveStorage getters", "[libpapilo]" )
       REQUIRE( libpapilo_postsolve_storage_get_num_values( postsolve ) >= 0 );
 
       // Test original problem getter
-      const libpapilo_problem_t* orig_problem = libpapilo_postsolve_storage_get_original_problem( postsolve );
+      const libpapilo_problem_t* orig_problem =
+          libpapilo_postsolve_storage_get_original_problem( postsolve );
       REQUIRE( orig_problem != nullptr );
       REQUIRE( libpapilo_problem_get_ncols( orig_problem ) == 2 );
       REQUIRE( libpapilo_problem_get_nrows( orig_problem ) == 1 );
