@@ -16,4 +16,5 @@ new_version=$((current_version + 1))
 echo "Incrementing LIBPAPILO_JIJ_PATCH_VERSION from $current_version to $new_version"
 
 # Update LIBPAPILO_JIJ_PATCH_VERSION
-sed -i '' "s/^set(LIBPAPILO_JIJ_PATCH_VERSION .*/set(LIBPAPILO_JIJ_PATCH_VERSION $new_version)/" "$cmakefile"
+perl -pi -e "s/^set\(LIBPAPILO_JIJ_PATCH_VERSION .*/set(LIBPAPILO_JIJ_PATCH_VERSION $new_version)/" "$cmakefile"
+
