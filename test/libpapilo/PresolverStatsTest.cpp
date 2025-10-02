@@ -2,7 +2,6 @@
 /*                                                                           */
 /* This file is part of the library libpapilo, a fork of PaPILO from ZIB     */
 /*                                                                           */
-/* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /* Copyright (C) 2025      Jij-Inc.                                          */
 /*                                                                           */
 /* This program is free software: you can redistribute it and/or modify      */
