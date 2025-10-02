@@ -260,6 +260,20 @@ class Presolve
       return stats;
    }
 
+   /// access the presolvers vector
+   const Vec<std::unique_ptr<PresolveMethod<REAL>>>&
+   getPresolvers() const
+   {
+      return presolvers;
+   }
+
+   /// access the presolver statistics
+   const Vec<std::pair<int, int>>&
+   getPresolverStats() const
+   {
+      return presolverStats;
+   }
+
    std::pair<int, int>
    applyReductions( int p, const Reductions<REAL>& reductions_,
                     ProblemUpdate<REAL>& probUpdate );

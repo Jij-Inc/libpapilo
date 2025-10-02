@@ -8,6 +8,8 @@ set(LIBPAPILO_TESTS
     PresolveTest.cpp
     PostsolveTest.cpp
     MessageTest.cpp
+    GetterAPIsTest.cpp
+    PresolverStatsTest.cpp
     # Add more test files as needed
 )
 
@@ -81,6 +83,10 @@ set(LIBPAPILO_TEST_NAMES
     "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf"
     "message-set-get-verbosity"
     "message-callback-simple"
+    
+    # PresolverStatsTest.cpp
+    "per-presolver-statistics-are-tracked-correctly"
+    "per-presolver-statistics-match-overall-statistics"
 )
 
 # Register test targets for each test file
