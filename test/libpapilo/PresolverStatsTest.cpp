@@ -21,7 +21,6 @@
 
 #include "libpapilo.h"
 #include "papilo/external/catch/catch_amalgamated.hpp"
-#include <cstdio>
 #include <cstring>
 
 // Helper function to create a simple test problem
@@ -201,6 +200,11 @@ TEST_CASE( "per-presolver-statistics-match-overall-statistics",
 
    auto status = libpapilo_presolve_apply(
        problem, options, message, &reductions, &postsolve, &statistics );
+
+   // Check that presolve ran successfully
+   REQUIRE( status != LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE );
+   REQUIRE( status != LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED );
+   REQUIRE( status != LIBPAPILO_PRESOLVE_STATUS_UNBOUNDED_OR_INFEASIBLE );
 
    REQUIRE( statistics != nullptr );
 

@@ -99,7 +99,6 @@ struct libpapilo_statistics_t
    };
    std::vector<PresolverStat> presolver_stats;
 };
-;
 
 struct libpapilo_postsolve_storage_t
 {
