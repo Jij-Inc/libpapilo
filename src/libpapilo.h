@@ -630,12 +630,12 @@ extern "C"
    libpapilo_statistics_get_presolvetime(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of transformations applied. Returns -1 on error. */
+   /** Get number of transactions applied. Returns -1 on error. */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ntsxapplied(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of transformation conflicts. Returns -1 on error. */
+   /** Get number of transaction conflicts. Returns -1 on error. */
    LIBPAPILO_EXPORT int
    libpapilo_statistics_get_ntsxconflicts(
        const libpapilo_statistics_t* statistics );
