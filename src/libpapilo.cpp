@@ -1730,6 +1730,68 @@ extern "C"
           "Failed to get number of values" );
    }
 
+   const libpapilo_postsolve_reduction_type_t*
+   libpapilo_postsolve_storage_get_types(
+       const libpapilo_postsolve_storage_t* postsolve, int* size )
+   {
+      return check_run(
+          [&]()
+          {
+             check_postsolve_storage_ptr( postsolve );
+             if( size != nullptr )
+                *size = static_cast<int>( postsolve->postsolve.types.size() );
+             return reinterpret_cast<
+                 const libpapilo_postsolve_reduction_type_t*>(
+                 postsolve->postsolve.types.data() );
+          },
+          "Failed to get reduction types" );
+   }
+
+   const int*
+   libpapilo_postsolve_storage_get_indices(
+       const libpapilo_postsolve_storage_t* postsolve, int* size )
+   {
+      return check_run(
+          [&]()
+          {
+             check_postsolve_storage_ptr( postsolve );
+             if( size != nullptr )
+                *size = static_cast<int>( postsolve->postsolve.indices.size() );
+             return postsolve->postsolve.indices.data();
+          },
+          "Failed to get reduction indices" );
+   }
+
+   const double*
+   libpapilo_postsolve_storage_get_values(
+       const libpapilo_postsolve_storage_t* postsolve, int* size )
+   {
+      return check_run(
+          [&]()
+          {
+             check_postsolve_storage_ptr( postsolve );
+             if( size != nullptr )
+                *size = static_cast<int>( postsolve->postsolve.values.size() );
+             return postsolve->postsolve.values.data();
+          },
+          "Failed to get reduction values" );
+   }
+
+   const int*
+   libpapilo_postsolve_storage_get_start(
+       const libpapilo_postsolve_storage_t* postsolve, int* size )
+   {
+      return check_run(
+          [&]()
+          {
+             check_postsolve_storage_ptr( postsolve );
+             if( size != nullptr )
+                *size = static_cast<int>( postsolve->postsolve.start.size() );
+             return postsolve->postsolve.start.data();
+          },
+          "Failed to get reduction start offsets" );
+   }
+
    const libpapilo_problem_t*
    libpapilo_postsolve_storage_get_original_problem(
        const libpapilo_postsolve_storage_t* postsolve )
