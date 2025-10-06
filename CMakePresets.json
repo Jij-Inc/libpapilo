@@ -22,6 +22,16 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "local-install",
+      "displayName": "Local Install Config",
+      "description": "Build configuration with local installation",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build/local-install",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/local_install"
+      }
     }
   ],
   "buildPresets": [
@@ -32,6 +42,10 @@
     {
       "name": "debug",
       "configurePreset": "debug"
+    },
+    {
+      "name": "local-install",
+      "configurePreset": "local-install"
     }
   ],
   "testPresets": [
