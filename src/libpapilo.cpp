@@ -932,7 +932,7 @@ extern "C"
 
    const double*
    libpapilo_problem_get_objective_coefficients(
-       const libpapilo_problem_t* problem, int* size )
+       const libpapilo_problem_t* problem, size_t* size )
    {
       check_problem_ptr( problem );
       const auto& obj = problem->problem.getObjective();
@@ -950,7 +950,7 @@ extern "C"
 
    const double*
    libpapilo_problem_get_lower_bounds( const libpapilo_problem_t* problem,
-                                       int* size )
+                                       size_t* size )
    {
       check_problem_ptr( problem );
       const auto& bounds = problem->problem.getLowerBounds();
@@ -961,7 +961,7 @@ extern "C"
 
    const double*
    libpapilo_problem_get_upper_bounds( const libpapilo_problem_t* problem,
-                                       int* size )
+                                       size_t* size )
    {
       check_problem_ptr( problem );
       const auto& bounds = problem->problem.getUpperBounds();
@@ -972,7 +972,7 @@ extern "C"
 
    const double*
    libpapilo_problem_get_row_lhs( const libpapilo_problem_t* problem,
-                                  int* size )
+                                  size_t* size )
    {
       check_problem_ptr( problem );
       const auto& lhs =
@@ -984,7 +984,7 @@ extern "C"
 
    const double*
    libpapilo_problem_get_row_rhs( const libpapilo_problem_t* problem,
-                                  int* size )
+                                  size_t* size )
    {
       check_problem_ptr( problem );
       const auto& rhs =
@@ -996,7 +996,7 @@ extern "C"
 
    const int*
    libpapilo_problem_get_row_sizes( const libpapilo_problem_t* problem,
-                                    int* size )
+                                    size_t* size )
    {
       check_problem_ptr( problem );
       const auto& sizes = problem->problem.getRowSizes();
@@ -1007,7 +1007,7 @@ extern "C"
 
    const int*
    libpapilo_problem_get_col_sizes( const libpapilo_problem_t* problem,
-                                    int* size )
+                                    size_t* size )
    {
       check_problem_ptr( problem );
       const auto& sizes = problem->problem.getColSizes();
@@ -1121,36 +1121,36 @@ extern "C"
 
    double*
    libpapilo_problem_get_objective_coefficients_mutable(
-       libpapilo_problem_t* problem, int* size )
+       libpapilo_problem_t* problem, size_t* size )
    {
       check_problem_ptr( problem );
       custom_assert( size != nullptr, "size pointer is null" );
       auto& coeffs = problem->problem.getObjective().coefficients;
-      *size = static_cast<int>( coeffs.size() );
+      *size = coeffs.size();
       return coeffs.data();
    }
 
    const double*
    libpapilo_problem_get_row_left_hand_sides(
-       const libpapilo_problem_t* problem, int* size )
+       const libpapilo_problem_t* problem, size_t* size )
    {
       check_problem_ptr( problem );
       custom_assert( size != nullptr, "size pointer is null" );
       const auto& lhs =
           problem->problem.getConstraintMatrix().getLeftHandSides();
-      *size = static_cast<int>( lhs.size() );
+      *size = lhs.size();
       return lhs.data();
    }
 
    const double*
    libpapilo_problem_get_row_right_hand_sides(
-       const libpapilo_problem_t* problem, int* size )
+       const libpapilo_problem_t* problem, size_t* size )
    {
       check_problem_ptr( problem );
       custom_assert( size != nullptr, "size pointer is null" );
       const auto& rhs =
           problem->problem.getConstraintMatrix().getRightHandSides();
-      *size = static_cast<int>( rhs.size() );
+      *size = rhs.size();
       return rhs.data();
    }
 
@@ -1647,15 +1647,14 @@ extern "C"
 
    const int*
    libpapilo_postsolve_storage_get_orig_col_mapping(
-       const libpapilo_postsolve_storage_t* postsolve, int* size )
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size )
    {
       return check_run(
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
              if( size != nullptr )
-                *size = static_cast<int>(
-                    postsolve->postsolve.origcol_mapping.size() );
+                *size = postsolve->postsolve.origcol_mapping.size();
              return postsolve->postsolve.origcol_mapping.data();
           },
           "Failed to get original column mapping" );
@@ -1663,15 +1662,14 @@ extern "C"
 
    const int*
    libpapilo_postsolve_storage_get_orig_row_mapping(
-       const libpapilo_postsolve_storage_t* postsolve, int* size )
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size )
    {
       return check_run(
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
              if( size != nullptr )
-                *size = static_cast<int>(
-                    postsolve->postsolve.origrow_mapping.size() );
+                *size = postsolve->postsolve.origrow_mapping.size();
              return postsolve->postsolve.origrow_mapping.data();
           },
           "Failed to get original row mapping" );
@@ -1691,7 +1689,7 @@ extern "C"
           "Failed to get postsolve type" );
    }
 
-   int
+   size_t
    libpapilo_postsolve_storage_get_num_types(
        const libpapilo_postsolve_storage_t* postsolve )
    {
@@ -1699,12 +1697,12 @@ extern "C"
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
-             return static_cast<int>( postsolve->postsolve.types.size() );
+             return postsolve->postsolve.types.size();
           },
           "Failed to get number of types" );
    }
 
-   int
+   size_t
    libpapilo_postsolve_storage_get_num_indices(
        const libpapilo_postsolve_storage_t* postsolve )
    {
@@ -1712,12 +1710,12 @@ extern "C"
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
-             return static_cast<int>( postsolve->postsolve.indices.size() );
+             return postsolve->postsolve.indices.size();
           },
           "Failed to get number of indices" );
    }
 
-   int
+   size_t
    libpapilo_postsolve_storage_get_num_values(
        const libpapilo_postsolve_storage_t* postsolve )
    {
@@ -1725,21 +1723,21 @@ extern "C"
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
-             return static_cast<int>( postsolve->postsolve.values.size() );
+             return postsolve->postsolve.values.size();
           },
           "Failed to get number of values" );
    }
 
    const libpapilo_postsolve_reduction_type_t*
    libpapilo_postsolve_storage_get_types(
-       const libpapilo_postsolve_storage_t* postsolve, int* size )
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size )
    {
       return check_run(
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
              if( size != nullptr )
-                *size = static_cast<int>( postsolve->postsolve.types.size() );
+                *size = postsolve->postsolve.types.size();
              return reinterpret_cast<
                  const libpapilo_postsolve_reduction_type_t*>(
                  postsolve->postsolve.types.data() );
@@ -1749,14 +1747,14 @@ extern "C"
 
    const int*
    libpapilo_postsolve_storage_get_indices(
-       const libpapilo_postsolve_storage_t* postsolve, int* size )
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size )
    {
       return check_run(
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
              if( size != nullptr )
-                *size = static_cast<int>( postsolve->postsolve.indices.size() );
+                *size = postsolve->postsolve.indices.size();
              return postsolve->postsolve.indices.data();
           },
           "Failed to get reduction indices" );
@@ -1764,14 +1762,14 @@ extern "C"
 
    const double*
    libpapilo_postsolve_storage_get_values(
-       const libpapilo_postsolve_storage_t* postsolve, int* size )
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size )
    {
       return check_run(
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
              if( size != nullptr )
-                *size = static_cast<int>( postsolve->postsolve.values.size() );
+                *size = postsolve->postsolve.values.size();
              return postsolve->postsolve.values.data();
           },
           "Failed to get reduction values" );
@@ -1779,14 +1777,14 @@ extern "C"
 
    const int*
    libpapilo_postsolve_storage_get_start(
-       const libpapilo_postsolve_storage_t* postsolve, int* size )
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size )
    {
       return check_run(
           [&]()
           {
              check_postsolve_storage_ptr( postsolve );
              if( size != nullptr )
-                *size = static_cast<int>( postsolve->postsolve.start.size() );
+                *size = postsolve->postsolve.start.size();
              return postsolve->postsolve.start.data();
           },
           "Failed to get reduction start offsets" );
@@ -2418,23 +2416,22 @@ extern "C"
 
    const double*
    libpapilo_solution_get_primal( const libpapilo_solution_t* solution,
-                                  int* size )
+                                  size_t* size )
    {
       check_solution_ptr( solution );
       custom_assert( size != nullptr, "size pointer is null" );
 
-      *size = static_cast<int>( solution->solution.primal.size() );
+      *size = solution->solution.primal.size();
       return solution->solution.primal.data();
    }
 
    void
    libpapilo_solution_set_primal( libpapilo_solution_t* solution,
-                                  const double* values, int size )
+                                  const double* values, size_t size )
    {
       check_solution_ptr( solution );
       custom_assert( values != nullptr || size == 0,
                      "values pointer is null for non-zero size" );
-      custom_assert( size >= 0, "size cannot be negative" );
 
       solution->solution.primal.clear();
       solution->solution.primal.reserve( size );

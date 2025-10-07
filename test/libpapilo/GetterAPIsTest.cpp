@@ -136,7 +136,7 @@ TEST_CASE( "PostsolveStorage getters", "[libpapilo]" )
                1 );
 
       // Test mapping getters
-      int col_size = 0;
+      size_t col_size = 0;
       const int* col_mapping = libpapilo_postsolve_storage_get_orig_col_mapping(
           postsolve, &col_size );
       REQUIRE( col_mapping != nullptr );
@@ -144,7 +144,7 @@ TEST_CASE( "PostsolveStorage getters", "[libpapilo]" )
       REQUIRE( col_mapping[0] == 0 );
       REQUIRE( col_mapping[1] == 1 );
 
-      int row_size = 0;
+      size_t row_size = 0;
       const int* row_mapping = libpapilo_postsolve_storage_get_orig_row_mapping(
           postsolve, &row_size );
       REQUIRE( row_mapping != nullptr );

@@ -160,7 +160,7 @@ TEST_CASE( "trivial-presolve-singleton-row", "[libpapilo]" )
               status == LIBPAPILO_PRESOLVE_STATUS_REDUCED ) );
 
    // Check results
-   int size;
+   size_t size;
    const double* upper_bounds =
        libpapilo_problem_get_upper_bounds( problem, &size );
    REQUIRE( upper_bounds[2] == 1.0 );
@@ -204,7 +204,7 @@ TEST_CASE( "trivial-presolve-singleton-row-pt-2", "[libpapilo]" )
               status == LIBPAPILO_PRESOLVE_STATUS_REDUCED ) );
 
    // Check results
-   int size;
+   size_t size;
    const double* upper_bounds =
        libpapilo_problem_get_upper_bounds( problem, &size );
    const double* lower_bounds =
@@ -260,7 +260,7 @@ TEST_CASE( "problem-update-owns-num-and-message", "[libpapilo]" )
               status == LIBPAPILO_PRESOLVE_STATUS_REDUCED ) );
 
    // Check results
-   int size;
+   size_t size;
    const double* upper_bounds =
        libpapilo_problem_get_upper_bounds( problem, &size );
    REQUIRE( upper_bounds[2] == 1.0 );

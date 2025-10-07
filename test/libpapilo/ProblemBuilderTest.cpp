@@ -102,7 +102,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       // Test new getter APIs
 
       // Test objective coefficients and offset
-      int obj_size;
+      size_t obj_size;
       const double* obj_coeffs =
           libpapilo_problem_get_objective_coefficients( problem, &obj_size );
       REQUIRE( obj_size == 3 );
@@ -112,7 +112,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( libpapilo_problem_get_objective_offset( problem ) == 5.0 );
 
       // Test variable bounds
-      int lb_size, ub_size;
+      size_t lb_size, ub_size;
       const double* lower_bounds =
           libpapilo_problem_get_lower_bounds( problem, &lb_size );
       const double* upper_bounds =
@@ -129,7 +129,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( ( std::isinf( upper_bounds[2] ) && upper_bounds[2] > 0 ) );
 
       // Test constraint bounds
-      int lhs_size, rhs_size;
+      size_t lhs_size, rhs_size;
       const double* lhs = libpapilo_problem_get_row_lhs( problem, &lhs_size );
       const double* rhs = libpapilo_problem_get_row_rhs( problem, &rhs_size );
       REQUIRE( lhs_size == 2 );
@@ -141,7 +141,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( rhs[1] == 10.0 );
 
       // Test row and column sizes
-      int row_sizes_len, col_sizes_len;
+      size_t row_sizes_len, col_sizes_len;
       const int* row_sizes =
           libpapilo_problem_get_row_sizes( problem, &row_sizes_len );
       const int* col_sizes =
@@ -270,7 +270,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( libpapilo_problem_get_nnz( problem ) == 5 );
 
       // Test objective coefficients from batch operation
-      int obj_size;
+      size_t obj_size;
       const double* retrieved_obj_coeffs =
           libpapilo_problem_get_objective_coefficients( problem, &obj_size );
       REQUIRE( obj_size == 3 );
@@ -279,7 +279,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( retrieved_obj_coeffs[2] == 3.0 );
 
       // Test bounds from batch operation
-      int lb_size, ub_size;
+      size_t lb_size, ub_size;
       const double* lower_bounds =
           libpapilo_problem_get_lower_bounds( problem, &lb_size );
       const double* upper_bounds =
@@ -296,7 +296,7 @@ TEST_CASE( "problem-builder", "[libpapilo]" )
       REQUIRE( ( std::isinf( upper_bounds[2] ) && upper_bounds[2] > 0 ) );
 
       // Test constraint bounds from batch operation
-      int lhs_size, rhs_size;
+      size_t lhs_size, rhs_size;
       const double* lhs = libpapilo_problem_get_row_lhs( problem, &lhs_size );
       const double* rhs = libpapilo_problem_get_row_rhs( problem, &rhs_size );
       REQUIRE( lhs_size == 2 );

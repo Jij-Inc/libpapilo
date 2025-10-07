@@ -416,7 +416,7 @@ extern "C"
    /* Objective getters */
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_objective_coefficients(
-       const libpapilo_problem_t* problem, int* size );
+       const libpapilo_problem_t* problem, size_t* size );
 
    LIBPAPILO_EXPORT double
    libpapilo_problem_get_objective_offset( const libpapilo_problem_t* problem );
@@ -424,28 +424,28 @@ extern "C"
    /* Bounds getters */
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_lower_bounds( const libpapilo_problem_t* problem,
-                                       int* size );
+                                       size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_upper_bounds( const libpapilo_problem_t* problem,
-                                       int* size );
+                                       size_t* size );
 
    /* Constraint matrix getters */
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_lhs( const libpapilo_problem_t* problem,
-                                  int* size );
+                                  size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_rhs( const libpapilo_problem_t* problem,
-                                  int* size );
+                                  size_t* size );
 
    LIBPAPILO_EXPORT const int*
    libpapilo_problem_get_row_sizes( const libpapilo_problem_t* problem,
-                                    int* size );
+                                    size_t* size );
 
    LIBPAPILO_EXPORT const int*
    libpapilo_problem_get_col_sizes( const libpapilo_problem_t* problem,
-                                    int* size );
+                                    size_t* size );
 
    /* Sparse matrix entry getters */
    LIBPAPILO_EXPORT int
@@ -491,15 +491,15 @@ extern "C"
    /* Additional Problem query APIs */
    LIBPAPILO_EXPORT double*
    libpapilo_problem_get_objective_coefficients_mutable(
-       libpapilo_problem_t* problem, int* size );
+       libpapilo_problem_t* problem, size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_left_hand_sides(
-       const libpapilo_problem_t* problem, int* size );
+       const libpapilo_problem_t* problem, size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_right_hand_sides(
-       const libpapilo_problem_t* problem, int* size );
+       const libpapilo_problem_t* problem, size_t* size );
 
    /* Phase 2: Presolve API */
 
@@ -680,13 +680,13 @@ extern "C"
     * size: if not NULL, set to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_orig_col_mapping(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get row mapping array: reduced_row_index -> original_row_index.
     * size: if not NULL, set to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_orig_row_mapping(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the postsolve type (primal or full). */
    LIBPAPILO_EXPORT libpapilo_postsolve_type_t
@@ -694,17 +694,17 @@ extern "C"
        const libpapilo_postsolve_storage_t* postsolve );
 
    /** Get the number of reduction types. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_postsolve_storage_get_num_types(
        const libpapilo_postsolve_storage_t* postsolve );
 
    /** Get the number of indices. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_postsolve_storage_get_num_indices(
        const libpapilo_postsolve_storage_t* postsolve );
 
    /** Get the number of values. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_postsolve_storage_get_num_values(
        const libpapilo_postsolve_storage_t* postsolve );
 
@@ -712,25 +712,25 @@ extern "C"
     * Returns NULL on error. */
    LIBPAPILO_EXPORT const libpapilo_postsolve_reduction_type_t*
    libpapilo_postsolve_storage_get_types(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the indices array backing the reductions log. size: if not NULL, set
     * to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_indices(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the values array backing the reductions log. size: if not NULL, set
     * to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const double*
    libpapilo_postsolve_storage_get_values(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the start array (size == number of reductions + 1). size: if not
     * NULL, set to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_start(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the original problem. Returns NULL on error.
     * Valid as long as postsolve storage exists. */
@@ -973,11 +973,11 @@ extern "C"
 
    LIBPAPILO_EXPORT const double*
    libpapilo_solution_get_primal( const libpapilo_solution_t* solution,
-                                  int* size );
+                                  size_t* size );
 
    LIBPAPILO_EXPORT void
    libpapilo_solution_set_primal( libpapilo_solution_t* solution,
-                                  const double* values, int size );
+                                  const double* values, size_t size );
 
    /* Postsolve Engine API */
    LIBPAPILO_EXPORT libpapilo_postsolve_t*
