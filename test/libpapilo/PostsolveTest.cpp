@@ -44,7 +44,7 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-neg-inf",
 
    REQUIRE( status == LIBPAPILO_POSTSOLVE_STATUS_OK );
 
-   int size;
+   size_t size;
    const double* values =
        libpapilo_solution_get_primal( original_solution, &size );
    REQUIRE( size == 3 );
@@ -82,7 +82,7 @@ TEST_CASE( "finding-the-right-value-in-postsolve-for-a-column-fixed-pos-inf",
 
    REQUIRE( status == LIBPAPILO_POSTSOLVE_STATUS_OK );
 
-   int size;
+   size_t size;
    const double* values =
        libpapilo_solution_get_primal( original_solution, &size );
    REQUIRE( size == 4 );

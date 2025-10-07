@@ -23,3 +23,10 @@ tasks:
     cmds:
       - cmake --build --preset debug --target libpapilo_unit_test
       - ctest --preset debug --tests-regex libpapilo
+
+  local-install:
+    desc: Build and install to local_install directory
+    cmds:
+      - cmake --preset local-install
+      - cmake --build --preset local-install
+      - cmake --install build/local-install

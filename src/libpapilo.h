@@ -43,6 +43,11 @@ extern "C"
 #endif
 
    /* Flag definitions for column and row properties */
+   /**
+    * C representation of PaPILO's `papilo::ReductionType` enum.  The numeric
+    * values match the C++ counterparts so the arrays returned by
+    * `libpapilo_postsolve_storage_get_types()` can be interpreted directly.
+    */
    typedef enum
    {
       LIBPAPILO_COLFLAG_LB_INF = 1 << 0,
@@ -107,6 +112,66 @@ extern "C"
       LIBPAPILO_POSTSOLVE_TYPE_PRIMAL = 0,
       LIBPAPILO_POSTSOLVE_TYPE_FULL = 1
    } libpapilo_postsolve_type_t;
+
+   /**
+    * C representation of PaPILO's `papilo::ReductionType` enum.  The values
+    * appear in the `types` array returned by
+    * `libpapilo_postsolve_storage_get_types()` and determine how the
+    * corresponding slices from the `indices` / `values` arrays are interpreted
+    * during postsolve.  For a reduction at position `i`, consult `start[i] ..
+    * start[i + 1]` to obtain the payload.  Unless noted otherwise,
+    * `indices[start[i]]` stores the original row/column index (after applying
+    * `orig*_mapping`).
+    */
+   typedef enum
+   {
+      /** A column was fixed to a scalar value. Payload: [orig_col], value. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_FIXED_COL = 0,
+      /** Column eliminated via substitution (primal only). Payload encodes the
+       * sparse equation defining the eliminated variable and its RHS. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_SUBSTITUTED_COL = 1,
+      /** Two parallel columns merged. Payload carries both column ids, scaling
+       * factor, and original bounds to disaggregate during undo. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_PARALLEL_COL = 2,
+      /** Column substitution including dual/basis information for full
+         postsolve. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_SUBSTITUTED_COL_WITH_DUAL = 3,
+      /** Variable bound tightened. Payload: [orig_col], flag for lower/upper,
+       * former bound, and infinity marker. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_VAR_BOUND_CHANGE = 4,
+      /** Column fixed while an infinite bound was active. Payload references
+       * the supporting rows/coefficients required to recover primal and dual
+       * values. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_FIXED_INF_COL = 5,
+      /** Redundant row removed. Payload: [orig_row]; dual postsolve sets its
+       * dual to zero. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_REDUNDANT_ROW = 7,
+      /** Row bound tightened. Payload: [orig_row], bound side, previous value,
+         flag. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_ROW_BOUND_CHANGE = 8,
+      /** Records the dependency between two rows when a bound change was forced
+       * by another constraint. Payload references both row indices and the
+       * scaling factor used. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_REASON_FOR_ROW_BOUND_CHANGE_FORCED_BY_ROW =
+          9,
+      /** Row bound change propagated from another row. Payload combines row
+       * ids, direction, and stored bounds so dual feasibility can be restored.
+       */
+      LIBPAPILO_POSTSOLVE_REDUCTION_ROW_BOUND_CHANGE_FORCED_BY_ROW = 10,
+      /** Complete row snapshot (bounds, flags, sparse entries). Payload lists
+       * metadata followed by (orig_col, coefficient) pairs. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_SAVE_ROW = 11,
+      /** Cached bounds/objective data used by reduced-bounds restoration. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_REDUCED_BOUNDS_COST = 12,
+      /** Column dual value saved for full postsolve. Payload: [orig_col], dual.
+       */
+      LIBPAPILO_POSTSOLVE_REDUCTION_COLUMN_DUAL_VALUE = 13,
+      /** Row dual value saved for full postsolve. Payload: [orig_row], dual. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_ROW_DUAL_VALUE = 14,
+      /** Single matrix coefficient modification. Payload: [orig_row, orig_col],
+       * new value. */
+      LIBPAPILO_POSTSOLVE_REDUCTION_COEFFICIENT_CHANGE = 15
+   } libpapilo_postsolve_reduction_type_t;
 
    typedef enum
    {
@@ -351,7 +416,7 @@ extern "C"
    /* Objective getters */
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_objective_coefficients(
-       const libpapilo_problem_t* problem, int* size );
+       const libpapilo_problem_t* problem, size_t* size );
 
    LIBPAPILO_EXPORT double
    libpapilo_problem_get_objective_offset( const libpapilo_problem_t* problem );
@@ -359,28 +424,28 @@ extern "C"
    /* Bounds getters */
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_lower_bounds( const libpapilo_problem_t* problem,
-                                       int* size );
+                                       size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_upper_bounds( const libpapilo_problem_t* problem,
-                                       int* size );
+                                       size_t* size );
 
    /* Constraint matrix getters */
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_lhs( const libpapilo_problem_t* problem,
-                                  int* size );
+                                  size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_rhs( const libpapilo_problem_t* problem,
-                                  int* size );
+                                  size_t* size );
 
    LIBPAPILO_EXPORT const int*
    libpapilo_problem_get_row_sizes( const libpapilo_problem_t* problem,
-                                    int* size );
+                                    size_t* size );
 
    LIBPAPILO_EXPORT const int*
    libpapilo_problem_get_col_sizes( const libpapilo_problem_t* problem,
-                                    int* size );
+                                    size_t* size );
 
    /* Sparse matrix entry getters */
    LIBPAPILO_EXPORT int
@@ -426,15 +491,15 @@ extern "C"
    /* Additional Problem query APIs */
    LIBPAPILO_EXPORT double*
    libpapilo_problem_get_objective_coefficients_mutable(
-       libpapilo_problem_t* problem, int* size );
+       libpapilo_problem_t* problem, size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_left_hand_sides(
-       const libpapilo_problem_t* problem, int* size );
+       const libpapilo_problem_t* problem, size_t* size );
 
    LIBPAPILO_EXPORT const double*
    libpapilo_problem_get_row_right_hand_sides(
-       const libpapilo_problem_t* problem, int* size );
+       const libpapilo_problem_t* problem, size_t* size );
 
    /* Phase 2: Presolve API */
 
@@ -487,7 +552,7 @@ extern "C"
    LIBPAPILO_EXPORT libpapilo_reductions_t*
    libpapilo_reductions_create();
 
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT libpapilo_reduction_info_t
@@ -499,29 +564,28 @@ extern "C"
 
    /* Reductions getter API */
 
-   /** Get the number of reduction transactions. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of reduction transactions. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_num_transactions(
        const libpapilo_reductions_t* reductions );
 
-   /** Get the start index of a transaction. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the start index of a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_start(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the end index of a transaction. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the end index of a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_end(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the number of locks in a transaction. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of locks in a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_nlocks(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the number of added coefficients in a transaction. Returns -1 on
-    * error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of added coefficients in a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_naddcoeffs(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
@@ -567,6 +631,39 @@ extern "C"
 
    /* PostsolveStorage getter API */
 
+   /**
+    * The PaPILO presolve engine records every transformation in a compact,
+    * append-only log stored inside `PostsolveStorage`.  The information
+    * required to undo a presolve session is split across:
+    *   - `types`:  vector of `libpapilo_postsolve_reduction_type_t` entries
+    * describing which reduction was applied.  The entries are ordered
+    * chronologically.
+    *   - `start`: prefix-array with length `types.size() + 1` marking subranges
+    * inside `indices`/`values` that belong to a single reduction.  For
+    * reduction `i`, the payload lives in the half-open interval `[start[i],
+    * start[i + 1])`.
+    *   - `indices`/`values`: heterogeneous payload describing the context for
+    * each reduction.  The exact layout depends on the reduction type; for
+    * example, `kFixedCol` stores the original column index followed by the
+    * fixed value, while `kSaveRow` preserves the row bounds, flags, and sparse
+    * coefficients.
+    *   - `origcol_mapping`/`origrow_mapping`: mapping from remaining (reduced)
+    * indices back to the original model after presolve.
+    *
+    * A postsolve implementation can therefore walk the log in reverse order:
+    *   1. Determine the reduction kind via `types[i]` (see
+    *      `libpapilo_postsolve_reduction_type_t`).
+    *   2. Obtain the payload slice via `indices[start[i] .. start[i + 1])` and
+    * the corresponding `values` slice.
+    *   3. Apply the documented inverse transformation to reintroduce deleted
+    * rows or variables, or to recover bounds and dual information.  The PaPILO
+    * reference implementation performs this logic inside `Postsolve::undo`.
+    *
+    * The helper getters below expose raw pointers to the underlying arrays. The
+    * returned memory is owned by the `PostsolveStorage` object and remains
+    * valid until the storage is freed.
+    */
+
    /** Get the original number of columns before presolving. Returns 0 on error.
     */
    LIBPAPILO_EXPORT unsigned int
@@ -582,13 +679,13 @@ extern "C"
     * size: if not NULL, set to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_orig_col_mapping(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get row mapping array: reduced_row_index -> original_row_index.
     * size: if not NULL, set to array size. Returns NULL on error. */
    LIBPAPILO_EXPORT const int*
    libpapilo_postsolve_storage_get_orig_row_mapping(
-       const libpapilo_postsolve_storage_t* postsolve, int* size );
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the postsolve type (primal or full). */
    LIBPAPILO_EXPORT libpapilo_postsolve_type_t
@@ -596,19 +693,43 @@ extern "C"
        const libpapilo_postsolve_storage_t* postsolve );
 
    /** Get the number of reduction types. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_postsolve_storage_get_num_types(
        const libpapilo_postsolve_storage_t* postsolve );
 
    /** Get the number of indices. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_postsolve_storage_get_num_indices(
        const libpapilo_postsolve_storage_t* postsolve );
 
    /** Get the number of values. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_postsolve_storage_get_num_values(
        const libpapilo_postsolve_storage_t* postsolve );
+
+   /** Get the reduction type array. size: if not NULL, set to array size.
+    * Returns NULL on error. */
+   LIBPAPILO_EXPORT const libpapilo_postsolve_reduction_type_t*
+   libpapilo_postsolve_storage_get_types(
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
+
+   /** Get the indices array backing the reductions log. size: if not NULL, set
+    * to array size. Returns NULL on error. */
+   LIBPAPILO_EXPORT const int*
+   libpapilo_postsolve_storage_get_indices(
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
+
+   /** Get the values array backing the reductions log. size: if not NULL, set
+    * to array size. Returns NULL on error. */
+   LIBPAPILO_EXPORT const double*
+   libpapilo_postsolve_storage_get_values(
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
+
+   /** Get the start array (size == number of reductions + 1). size: if not
+    * NULL, set to array size. Returns NULL on error. */
+   LIBPAPILO_EXPORT const int*
+   libpapilo_postsolve_storage_get_start(
+       const libpapilo_postsolve_storage_t* postsolve, size_t* size );
 
    /** Get the original problem. Returns NULL on error.
     * Valid as long as postsolve storage exists. */
@@ -630,60 +751,59 @@ extern "C"
    libpapilo_statistics_get_presolvetime(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of transformations applied. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of transactions applied. Returns -1 on error. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ntsxapplied(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of transformation conflicts. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of transaction conflicts. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ntsxconflicts(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of bound changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of bound changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_nboundchgs(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of side changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of side changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_nsidechgs(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of coefficient changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of coefficient changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ncoefchgs(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of presolve rounds. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of presolve rounds. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics );
 
-   /** Get number of deleted columns. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of deleted columns. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ndeletedcols(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of deleted rows. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of deleted rows. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ndeletedrows(
        const libpapilo_statistics_t* statistics );
 
-   /** Get consecutive rounds with only bound changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get consecutive rounds with only bound changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
        const libpapilo_statistics_t* statistics );
 
-   /** Get single coefficient changes (excludes substitutions/deletions).
-    * Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get single coefficient changes (excludes substitutions/deletions). */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_single_matrix_coefficient_changes(
        const libpapilo_statistics_t* statistics );
 
    /* Per-presolver Statistics API */
 
-   /** Get the number of presolvers. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of presolvers. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_num_presolvers(
        const libpapilo_statistics_t* statistics );
 
@@ -693,26 +813,23 @@ extern "C"
    libpapilo_statistics_get_presolver_name(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the number of calls for a presolver. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of calls for a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_ncalls(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the number of successful calls for a presolver. Returns -1 on error.
-    */
-   LIBPAPILO_EXPORT int
+   /** Get the number of successful calls for a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_nsuccessful(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the total number of transactions generated by a presolver. Returns -1
-    * on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the total number of transactions generated by a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_ntransactions(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the number of applied transactions for a presolver. Returns -1 on
-    * error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of applied transactions for a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_napplied(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
@@ -798,7 +915,7 @@ extern "C"
    libpapilo_problem_update_trivial_presolve(
        libpapilo_problem_update_t* update );
 
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_problem_update_get_singleton_cols_count(
        const libpapilo_problem_update_t* update );
 
@@ -851,11 +968,11 @@ extern "C"
 
    LIBPAPILO_EXPORT const double*
    libpapilo_solution_get_primal( const libpapilo_solution_t* solution,
-                                  int* size );
+                                  size_t* size );
 
    LIBPAPILO_EXPORT void
    libpapilo_solution_set_primal( libpapilo_solution_t* solution,
-                                  const double* values, int size );
+                                  const double* values, size_t size );
 
    /* Postsolve Engine API */
    LIBPAPILO_EXPORT libpapilo_postsolve_t*

@@ -101,9 +101,9 @@ TEST_CASE( "per-presolver-statistics-are-tracked-correctly",
    REQUIRE( statistics != nullptr );
 
    // Get overall statistics
-   int nrounds = libpapilo_statistics_get_nrounds( statistics );
-   int ndeletedcols = libpapilo_statistics_get_ndeletedcols( statistics );
-   int ndeletedrows = libpapilo_statistics_get_ndeletedrows( statistics );
+   size_t nrounds = libpapilo_statistics_get_nrounds( statistics );
+   size_t ndeletedcols = libpapilo_statistics_get_ndeletedcols( statistics );
+   size_t ndeletedrows = libpapilo_statistics_get_ndeletedrows( statistics );
    double presolvetime = libpapilo_statistics_get_presolvetime( statistics );
 
    INFO( "Presolve rounds: " << nrounds );
@@ -112,25 +112,27 @@ TEST_CASE( "per-presolver-statistics-are-tracked-correctly",
    INFO( "Presolve time: " << presolvetime << " seconds" );
 
    // Get per-presolver statistics
-   int num_presolvers = libpapilo_statistics_get_num_presolvers( statistics );
+   size_t num_presolvers =
+       libpapilo_statistics_get_num_presolvers( statistics );
    REQUIRE( num_presolvers > 0 );
    INFO( "Number of presolvers: " << num_presolvers );
 
    // Track if any presolver was successful
    bool any_successful = false;
-   int total_transactions = 0;
+   size_t total_transactions = 0;
    int total_applied = 0;
 
-   for( int i = 0; i < num_presolvers; ++i )
+   for( size_t i = 0; i < num_presolvers; ++i )
    {
       const char* name =
           libpapilo_statistics_get_presolver_name( statistics, i );
-      int ncalls = libpapilo_statistics_get_presolver_ncalls( statistics, i );
-      int nsuccessful =
+      size_t ncalls =
+          libpapilo_statistics_get_presolver_ncalls( statistics, i );
+      size_t nsuccessful =
           libpapilo_statistics_get_presolver_nsuccessful( statistics, i );
-      int ntransactions =
+      size_t ntransactions =
           libpapilo_statistics_get_presolver_ntransactions( statistics, i );
-      int napplied =
+      size_t napplied =
           libpapilo_statistics_get_presolver_napplied( statistics, i );
       double exectime =
           libpapilo_statistics_get_presolver_exectime( statistics, i );
@@ -209,15 +211,16 @@ TEST_CASE( "per-presolver-statistics-match-overall-statistics",
    REQUIRE( statistics != nullptr );
 
    // Get overall statistics
-   int overall_applied = libpapilo_statistics_get_ntsxapplied( statistics );
+   size_t overall_applied = libpapilo_statistics_get_ntsxapplied( statistics );
 
    // Sum up per-presolver applied transactions
-   int num_presolvers = libpapilo_statistics_get_num_presolvers( statistics );
-   int sum_applied = 0;
+   size_t num_presolvers =
+       libpapilo_statistics_get_num_presolvers( statistics );
+   size_t sum_applied = 0;
 
-   for( int i = 0; i < num_presolvers; ++i )
+   for( size_t i = 0; i < num_presolvers; ++i )
    {
-      int napplied =
+      size_t napplied =
           libpapilo_statistics_get_presolver_napplied( statistics, i );
       sum_applied += napplied;
    }

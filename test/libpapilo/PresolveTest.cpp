@@ -185,7 +185,7 @@ TEST_CASE( "happy-path-replace-variable", "[libpapilo]" )
    REQUIRE( result.second == 2 );
 
    // Check objective coefficients
-   int size;
+   size_t size;
    double* obj_coeffs =
        libpapilo_problem_get_objective_coefficients_mutable( problem, &size );
    REQUIRE( size == 4 );
@@ -260,7 +260,7 @@ TEST_CASE( "happy-path-substitute-matrix-coefficient-into-objective",
    applyReductions( problem, reductions, false );
 
    // Check objective coefficients
-   int size;
+   size_t size;
    double* obj_coeffs =
        libpapilo_problem_get_objective_coefficients_mutable( problem, &size );
    REQUIRE( obj_coeffs[0] == 3.0 );
@@ -318,7 +318,7 @@ TEST_CASE( "happy-path-aggregate-free-column", "[libpapilo]" )
    REQUIRE( result.second == 1 );
 
    // Check objective coefficients
-   int size;
+   size_t size;
    double* obj_coeffs =
        libpapilo_problem_get_objective_coefficients_mutable( problem, &size );
    REQUIRE( obj_coeffs[0] == 3.0 );
