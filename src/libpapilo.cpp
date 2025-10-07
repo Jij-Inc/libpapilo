@@ -1220,6 +1220,22 @@ extern "C"
       options->options.dualreds = dualreds;
    }
 
+   void
+   libpapilo_presolve_options_set_threads(
+       libpapilo_presolve_options_t* options, int threads )
+   {
+      check_presolve_options_ptr( options );
+      options->options.threads = threads;
+   }
+
+   void
+   libpapilo_presolve_options_set_randomseed(
+       libpapilo_presolve_options_t* options, unsigned int randomseed )
+   {
+      check_presolve_options_ptr( options );
+      options->options.randomseed = randomseed;
+   }
+
    /* Core Presolve API Implementation */
 
    libpapilo_presolve_t*
