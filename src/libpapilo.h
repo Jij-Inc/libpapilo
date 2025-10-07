@@ -552,7 +552,7 @@ extern "C"
    LIBPAPILO_EXPORT libpapilo_reductions_t*
    libpapilo_reductions_create();
 
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT libpapilo_reduction_info_t
@@ -564,29 +564,28 @@ extern "C"
 
    /* Reductions getter API */
 
-   /** Get the number of reduction transactions. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of reduction transactions. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_num_transactions(
        const libpapilo_reductions_t* reductions );
 
-   /** Get the start index of a transaction. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the start index of a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_start(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the end index of a transaction. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the end index of a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_end(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the number of locks in a transaction. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of locks in a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_nlocks(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
-   /** Get the number of added coefficients in a transaction. Returns -1 on
-    * error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of added coefficients in a transaction. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_reductions_get_transaction_naddcoeffs(
        const libpapilo_reductions_t* reductions, int transaction_index );
 
@@ -753,59 +752,58 @@ extern "C"
        const libpapilo_statistics_t* statistics );
 
    /** Get number of transactions applied. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ntsxapplied(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of transaction conflicts. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of transaction conflicts. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ntsxconflicts(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of bound changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of bound changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_nboundchgs(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of side changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of side changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_nsidechgs(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of coefficient changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of coefficient changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ncoefchgs(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of presolve rounds. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of presolve rounds. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics );
 
-   /** Get number of deleted columns. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of deleted columns. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ndeletedcols(
        const libpapilo_statistics_t* statistics );
 
-   /** Get number of deleted rows. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get number of deleted rows. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_ndeletedrows(
        const libpapilo_statistics_t* statistics );
 
-   /** Get consecutive rounds with only bound changes. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get consecutive rounds with only bound changes. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
        const libpapilo_statistics_t* statistics );
 
-   /** Get single coefficient changes (excludes substitutions/deletions).
-    * Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get single coefficient changes (excludes substitutions/deletions). */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_single_matrix_coefficient_changes(
        const libpapilo_statistics_t* statistics );
 
    /* Per-presolver Statistics API */
 
-   /** Get the number of presolvers. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of presolvers. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_num_presolvers(
        const libpapilo_statistics_t* statistics );
 
@@ -815,26 +813,23 @@ extern "C"
    libpapilo_statistics_get_presolver_name(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the number of calls for a presolver. Returns -1 on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of calls for a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_ncalls(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the number of successful calls for a presolver. Returns -1 on error.
-    */
-   LIBPAPILO_EXPORT int
+   /** Get the number of successful calls for a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_nsuccessful(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the total number of transactions generated by a presolver. Returns -1
-    * on error. */
-   LIBPAPILO_EXPORT int
+   /** Get the total number of transactions generated by a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_ntransactions(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
-   /** Get the number of applied transactions for a presolver. Returns -1 on
-    * error. */
-   LIBPAPILO_EXPORT int
+   /** Get the number of applied transactions for a presolver. */
+   LIBPAPILO_EXPORT size_t
    libpapilo_statistics_get_presolver_napplied(
        const libpapilo_statistics_t* statistics, int presolver_index );
 
@@ -920,7 +915,7 @@ extern "C"
    libpapilo_problem_update_trivial_presolve(
        libpapilo_problem_update_t* update );
 
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT size_t
    libpapilo_problem_update_get_singleton_cols_count(
        const libpapilo_problem_update_t* update );
 

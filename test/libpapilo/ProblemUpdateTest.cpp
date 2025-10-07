@@ -214,7 +214,7 @@ TEST_CASE( "trivial-presolve-singleton-row-pt-2", "[libpapilo]" )
    REQUIRE( lower_bounds[2] == 1.0 );
    REQUIRE( libpapilo_problem_is_row_redundant( problem, 1 ) == 1 );
 
-   int singleton_cols_count =
+   size_t singleton_cols_count =
        libpapilo_problem_update_get_singleton_cols_count( update );
    REQUIRE( singleton_cols_count == 2 );
 

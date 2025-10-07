@@ -1381,11 +1381,11 @@ extern "C"
                         "Failed to create reductions object" );
    }
 
-   int
+   size_t
    libpapilo_reductions_get_size( const libpapilo_reductions_t* reductions )
    {
       check_reductions_ptr( reductions );
-      return static_cast<int>( reductions->reductions.size() );
+      return reductions->reductions.size();
    }
 
    libpapilo_reduction_info_t
@@ -1412,7 +1412,7 @@ extern "C"
    }
 
    /* Reductions getter API Implementation */
-   int
+   size_t
    libpapilo_reductions_get_num_transactions(
        const libpapilo_reductions_t* reductions )
    {
@@ -1420,13 +1420,12 @@ extern "C"
           [&]()
           {
              check_reductions_ptr( reductions );
-             return static_cast<int>(
-                 reductions->reductions.getTransactions().size() );
+             return reductions->reductions.getTransactions().size();
           },
           "Failed to get number of transactions" );
    }
 
-   int
+   size_t
    libpapilo_reductions_get_transaction_start(
        const libpapilo_reductions_t* reductions, int transaction_index )
    {
@@ -1436,15 +1435,17 @@ extern "C"
              check_reductions_ptr( reductions );
              const auto& transactions =
                  reductions->reductions.getTransactions();
-             if( transaction_index < 0 ||
-                 transaction_index >= static_cast<int>( transactions.size() ) )
-                throw std::out_of_range( "Transaction index out of range" );
-             return transactions[transaction_index].start;
+             custom_assert( transaction_index >= 0 &&
+                                transaction_index <
+                                    static_cast<int>( transactions.size() ),
+                            "Transaction index out of range" );
+             return static_cast<size_t>(
+                 transactions[transaction_index].start );
           },
           "Failed to get transaction start" );
    }
 
-   int
+   size_t
    libpapilo_reductions_get_transaction_end(
        const libpapilo_reductions_t* reductions, int transaction_index )
    {
@@ -1454,15 +1455,16 @@ extern "C"
              check_reductions_ptr( reductions );
              const auto& transactions =
                  reductions->reductions.getTransactions();
-             if( transaction_index < 0 ||
-                 transaction_index >= static_cast<int>( transactions.size() ) )
-                throw std::out_of_range( "Transaction index out of range" );
-             return transactions[transaction_index].end;
+             custom_assert( transaction_index >= 0 &&
+                                transaction_index <
+                                    static_cast<int>( transactions.size() ),
+                            "Transaction index out of range" );
+             return static_cast<size_t>( transactions[transaction_index].end );
           },
           "Failed to get transaction end" );
    }
 
-   int
+   size_t
    libpapilo_reductions_get_transaction_nlocks(
        const libpapilo_reductions_t* reductions, int transaction_index )
    {
@@ -1472,15 +1474,17 @@ extern "C"
              check_reductions_ptr( reductions );
              const auto& transactions =
                  reductions->reductions.getTransactions();
-             if( transaction_index < 0 ||
-                 transaction_index >= static_cast<int>( transactions.size() ) )
-                throw std::out_of_range( "Transaction index out of range" );
-             return transactions[transaction_index].nlocks;
+             custom_assert( transaction_index >= 0 &&
+                                transaction_index <
+                                    static_cast<int>( transactions.size() ),
+                            "Transaction index out of range" );
+             return static_cast<size_t>(
+                 transactions[transaction_index].nlocks );
           },
           "Failed to get transaction nlocks" );
    }
 
-   int
+   size_t
    libpapilo_reductions_get_transaction_naddcoeffs(
        const libpapilo_reductions_t* reductions, int transaction_index )
    {
@@ -1490,10 +1494,12 @@ extern "C"
              check_reductions_ptr( reductions );
              const auto& transactions =
                  reductions->reductions.getTransactions();
-             if( transaction_index < 0 ||
-                 transaction_index >= static_cast<int>( transactions.size() ) )
-                throw std::out_of_range( "Transaction index out of range" );
-             return transactions[transaction_index].naddcoeffs;
+             custom_assert( transaction_index >= 0 &&
+                                transaction_index <
+                                    static_cast<int>( transactions.size() ),
+                            "Transaction index out of range" );
+             return static_cast<size_t>(
+                 transactions[transaction_index].naddcoeffs );
           },
           "Failed to get transaction naddcoeffs" );
    }
@@ -1836,7 +1842,7 @@ extern "C"
           "Failed to get presolve time" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_ntsxapplied(
        const libpapilo_statistics_t* statistics )
    {
@@ -1844,12 +1850,12 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.ntsxapplied;
+             return static_cast<size_t>( statistics->statistics.ntsxapplied );
           },
           "Failed to get ntsxapplied" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_ntsxconflicts(
        const libpapilo_statistics_t* statistics )
    {
@@ -1857,12 +1863,12 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.ntsxconflicts;
+             return static_cast<size_t>( statistics->statistics.ntsxconflicts );
           },
           "Failed to get ntsxconflicts" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_nboundchgs(
        const libpapilo_statistics_t* statistics )
    {
@@ -1870,12 +1876,12 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.nboundchgs;
+             return static_cast<size_t>( statistics->statistics.nboundchgs );
           },
           "Failed to get nboundchgs" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_nsidechgs(
        const libpapilo_statistics_t* statistics )
    {
@@ -1883,12 +1889,12 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.nsidechgs;
+             return static_cast<size_t>( statistics->statistics.nsidechgs );
           },
           "Failed to get nsidechgs" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_ncoefchgs(
        const libpapilo_statistics_t* statistics )
    {
@@ -1896,24 +1902,24 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.ncoefchgs;
+             return static_cast<size_t>( statistics->statistics.ncoefchgs );
           },
           "Failed to get ncoefchgs" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_nrounds( const libpapilo_statistics_t* statistics )
    {
       return check_run(
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.nrounds;
+             return static_cast<size_t>( statistics->statistics.nrounds );
           },
           "Failed to get nrounds" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_ndeletedcols(
        const libpapilo_statistics_t* statistics )
    {
@@ -1921,12 +1927,12 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.ndeletedcols;
+             return static_cast<size_t>( statistics->statistics.ndeletedcols );
           },
           "Failed to get ndeletedcols" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_ndeletedrows(
        const libpapilo_statistics_t* statistics )
    {
@@ -1934,12 +1940,12 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.ndeletedrows;
+             return static_cast<size_t>( statistics->statistics.ndeletedrows );
           },
           "Failed to get ndeletedrows" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_consecutive_rounds_of_only_boundchanges(
        const libpapilo_statistics_t* statistics )
    {
@@ -1947,13 +1953,14 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics
-                 .consecutive_rounds_of_only_boundchanges;
+             return static_cast<size_t>(
+                 statistics->statistics
+                     .consecutive_rounds_of_only_boundchanges );
           },
           "Failed to get consecutive_rounds_of_only_boundchanges" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_single_matrix_coefficient_changes(
        const libpapilo_statistics_t* statistics )
    {
@@ -1961,13 +1968,14 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return statistics->statistics.single_matrix_coefficient_changes;
+             return static_cast<size_t>(
+                 statistics->statistics.single_matrix_coefficient_changes );
           },
           "Failed to get single_matrix_coefficient_changes" );
    }
 
    /* Per-presolver Statistics API Implementation */
-   int
+   size_t
    libpapilo_statistics_get_num_presolvers(
        const libpapilo_statistics_t* statistics )
    {
@@ -1975,7 +1983,7 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             return static_cast<int>( statistics->presolver_stats.size() );
+             return statistics->presolver_stats.size();
           },
           "Failed to get number of presolvers" );
    }
@@ -1988,16 +1996,17 @@ extern "C"
           [&]() -> const char*
           {
              check_statistics_ptr( statistics );
-             if( presolver_index < 0 ||
-                 presolver_index >=
-                     static_cast<int>( statistics->presolver_stats.size() ) )
-                throw std::out_of_range( "Presolver index out of range" );
+             custom_assert(
+                 presolver_index >= 0 &&
+                     presolver_index <
+                         static_cast<int>( statistics->presolver_stats.size() ),
+                 "Presolver index out of range" );
              return statistics->presolver_stats[presolver_index].name.c_str();
           },
           "Failed to get presolver name" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_presolver_ncalls(
        const libpapilo_statistics_t* statistics, int presolver_index )
    {
@@ -2005,16 +2014,18 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             if( presolver_index < 0 ||
-                 presolver_index >=
-                     static_cast<int>( statistics->presolver_stats.size() ) )
-                throw std::out_of_range( "Presolver index out of range" );
-             return statistics->presolver_stats[presolver_index].ncalls;
+             custom_assert(
+                 presolver_index >= 0 &&
+                     presolver_index <
+                         static_cast<int>( statistics->presolver_stats.size() ),
+                 "Presolver index out of range" );
+             return static_cast<size_t>(
+                 statistics->presolver_stats[presolver_index].ncalls );
           },
           "Failed to get presolver ncalls" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_presolver_nsuccessful(
        const libpapilo_statistics_t* statistics, int presolver_index )
    {
@@ -2022,16 +2033,18 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             if( presolver_index < 0 ||
-                 presolver_index >=
-                     static_cast<int>( statistics->presolver_stats.size() ) )
-                throw std::out_of_range( "Presolver index out of range" );
-             return statistics->presolver_stats[presolver_index].nsuccessful;
+             custom_assert(
+                 presolver_index >= 0 &&
+                     presolver_index <
+                         static_cast<int>( statistics->presolver_stats.size() ),
+                 "Presolver index out of range" );
+             return static_cast<size_t>(
+                 statistics->presolver_stats[presolver_index].nsuccessful );
           },
           "Failed to get presolver nsuccessful" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_presolver_ntransactions(
        const libpapilo_statistics_t* statistics, int presolver_index )
    {
@@ -2039,16 +2052,18 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             if( presolver_index < 0 ||
-                 presolver_index >=
-                     static_cast<int>( statistics->presolver_stats.size() ) )
-                throw std::out_of_range( "Presolver index out of range" );
-             return statistics->presolver_stats[presolver_index].ntransactions;
+             custom_assert(
+                 presolver_index >= 0 &&
+                     presolver_index <
+                         static_cast<int>( statistics->presolver_stats.size() ),
+                 "Presolver index out of range" );
+             return static_cast<size_t>(
+                 statistics->presolver_stats[presolver_index].ntransactions );
           },
           "Failed to get presolver ntransactions" );
    }
 
-   int
+   size_t
    libpapilo_statistics_get_presolver_napplied(
        const libpapilo_statistics_t* statistics, int presolver_index )
    {
@@ -2056,11 +2071,13 @@ extern "C"
           [&]()
           {
              check_statistics_ptr( statistics );
-             if( presolver_index < 0 ||
-                 presolver_index >=
-                     static_cast<int>( statistics->presolver_stats.size() ) )
-                throw std::out_of_range( "Presolver index out of range" );
-             return statistics->presolver_stats[presolver_index].napplied;
+             custom_assert(
+                 presolver_index >= 0 &&
+                     presolver_index <
+                         static_cast<int>( statistics->presolver_stats.size() ),
+                 "Presolver index out of range" );
+             return static_cast<size_t>(
+                 statistics->presolver_stats[presolver_index].napplied );
           },
           "Failed to get presolver napplied" );
    }
@@ -2267,7 +2284,7 @@ extern "C"
           "Failed to execute trivial presolve" );
    }
 
-   int
+   size_t
    libpapilo_problem_update_get_singleton_cols_count(
        const libpapilo_problem_update_t* update )
    {
@@ -2276,8 +2293,7 @@ extern "C"
       return check_run(
           // clang-format off
           [&]() {
-             return static_cast<int>(
-                 update->update.getSingletonCols().size() );
+             return update->update.getSingletonCols().size();
           },
           // clang-format on
           "Failed to get singleton columns count" );

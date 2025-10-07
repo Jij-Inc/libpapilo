@@ -70,12 +70,13 @@ TEST_CASE( "Reductions getters", "[libpapilo]" )
       REQUIRE( libpapilo_reductions_get_num_transactions( reductions ) == 1 );
 
       // Test transaction getters
-      int transaction_start =
+      size_t transaction_start =
           libpapilo_reductions_get_transaction_start( reductions, 0 );
-      int transaction_end =
+      size_t transaction_end =
           libpapilo_reductions_get_transaction_end( reductions, 0 );
-      int nlocks = libpapilo_reductions_get_transaction_nlocks( reductions, 0 );
-      int naddcoeffs =
+      size_t nlocks =
+          libpapilo_reductions_get_transaction_nlocks( reductions, 0 );
+      size_t naddcoeffs =
           libpapilo_reductions_get_transaction_naddcoeffs( reductions, 0 );
 
       REQUIRE( transaction_start == 0 );
