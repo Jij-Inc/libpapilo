@@ -122,7 +122,7 @@ TEST_CASE( "per-presolver-statistics-are-tracked-correctly",
    size_t total_transactions = 0;
    int total_applied = 0;
 
-   for( int i = 0; i < static_cast<int>( num_presolvers ); ++i )
+   for( size_t i = 0; i < num_presolvers; ++i )
    {
       const char* name =
           libpapilo_statistics_get_presolver_name( statistics, i );
@@ -218,7 +218,7 @@ TEST_CASE( "per-presolver-statistics-match-overall-statistics",
        libpapilo_statistics_get_num_presolvers( statistics );
    size_t sum_applied = 0;
 
-   for( int i = 0; i < static_cast<int>( num_presolvers ); ++i )
+   for( size_t i = 0; i < num_presolvers; ++i )
    {
       size_t napplied =
           libpapilo_statistics_get_presolver_napplied( statistics, i );

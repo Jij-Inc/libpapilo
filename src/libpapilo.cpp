@@ -2447,7 +2447,7 @@ extern "C"
    {
       check_solution_ptr( solution );
       custom_assert( values != nullptr || size == 0,
-                     "values pointer is null for non-zero size" );
+                     "values pointer is null for positive size" );
 
       solution->solution.primal.clear();
       solution->solution.primal.reserve( size );
