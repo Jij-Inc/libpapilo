@@ -29,6 +29,9 @@ jobs:
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
 
+      - name: Build papilo executable
+        run: cmake --build --preset default --target papilo-executable
+
       - name: Create TGZ package
         run: cpack --preset tgz
 
@@ -58,6 +61,9 @@ jobs:
 
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
+
+      - name: Build papilo executable
+        run: cmake --build --preset default --target papilo-executable
 
       - name: Create DEB package
         run: |
@@ -99,6 +105,9 @@ jobs:
 
       - name: Build libpapilo
         run: cmake --build --preset default --target libpapilo
+
+      - name: Build papilo executable
+        run: cmake --build --preset default --target papilo-executable
 
       - name: Create RPM package
         run: cpack --preset rpm
@@ -152,6 +161,9 @@ jobs:
           gcc test/libpapilo/LinkTest.c $(pkg-config --cflags --libs libpapilo) -o linktest
           ./linktest
 
+      - name: Verify papilo executable
+        run: papilo -h
+
   test-rpm:
     needs: build-rpm
     runs-on: ubuntu-latest
@@ -187,6 +199,9 @@ jobs:
         run: |
           gcc test/libpapilo/LinkTest.c $(pkg-config --cflags --libs libpapilo) -o linktest
           ./linktest
+
+      - name: Verify papilo executable
+        run: papilo -h
 
   publish:
     permissions:
