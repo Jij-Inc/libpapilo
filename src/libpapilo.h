@@ -539,6 +539,14 @@ extern "C"
    libpapilo_presolve_options_set_dualreds(
        libpapilo_presolve_options_t* options, int dualreds );
 
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_options_set_threads(
+       libpapilo_presolve_options_t* options, int threads );
+
+   LIBPAPILO_EXPORT void
+   libpapilo_presolve_options_set_randomseed(
+       libpapilo_presolve_options_t* options, unsigned int randomseed );
+
    /* Main presolve function */
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
