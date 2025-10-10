@@ -152,6 +152,9 @@ jobs:
           gcc test/libpapilo/LinkTest.c $(pkg-config --cflags --libs libpapilo) -o linktest
           ./linktest
 
+      - name: Verify papilo executable
+        run: papilo -h
+
   test-rpm:
     needs: build-rpm
     runs-on: ubuntu-latest
@@ -187,6 +190,9 @@ jobs:
         run: |
           gcc test/libpapilo/LinkTest.c $(pkg-config --cflags --libs libpapilo) -o linktest
           ./linktest
+
+      - name: Verify papilo executable
+        run: papilo -h
 
   publish:
     permissions:
