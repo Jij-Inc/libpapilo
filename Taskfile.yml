@@ -30,3 +30,10 @@ tasks:
       - cmake --preset local-install
       - cmake --build --preset local-install
       - cmake --install build/local-install
+
+  package:tgz:
+    desc: Create TGZ archive for macOS distribution
+    cmds:
+      - cmake --preset default
+      - cmake --build --preset default
+      - cpack --preset tgz
