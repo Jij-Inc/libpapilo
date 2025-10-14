@@ -99,6 +99,31 @@ The C API provides comprehensive access to PaPILO functionality:
 ### Testing Strategy
 Tests are written in C++ but only call the public C API functions from `libpapilo.h`. This validates the C interface while leveraging Catch2 testing framework.
 
+### Test File Correspondence
+
+The C API tests in `test/libpapilo/` faithfully reproduce selected C++ tests from `test/papilo/`:
+
+| C API Test (test/libpapilo/) | C++ Test (test/papilo/) | Test Count | Description |
+|------------------------------|-------------------------|------------|-------------|
+| **SingletonColsTest.cpp** (792 lines) | **presolve/SingletonColsTest.cpp** (571 lines) | 7 tests | SingletonCols presolver functionality |
+| **SimpleSubstitutionTest.cpp** (667 lines) | **presolve/SimpleSubstitutionTest.cpp** (509 lines) | 12 tests | SimpleSubstitution presolver with GCD checks |
+| **PresolveTest.cpp** (356 lines) | **core/PresolveTest.cpp** (332 lines) | 4 tests | High-level presolve orchestration |
+| **PostsolveTest.cpp** (101 lines) | **core/PostsolveTest.cpp** (77 lines) | 2 tests | Postsolve functionality |
+| **ProblemUpdateTest.cpp** (275 lines) | **core/ProblemUpdateTest.cpp** (142 lines) | 3 tests | ProblemUpdate operations |
+
+**Additional C API-specific tests** (no C++ equivalent):
+- **ProblemBuilderTest.cpp**: C API problem construction interface
+- **GetterAPIsTest.cpp**: C API getter functions for problem data access
+- **PresolverStatsTest.cpp**: Presolver statistics tracking
+- **MessageTest.cpp**: Message handling functionality
+- **LinkTest.c**: Pure C language linkage validation
+
+**Key differences:**
+- C API tests require explicit memory management (`_create()` / `_free()`)
+- C API uses prefixed enums (e.g., `LIBPAPILO_PRESOLVE_STATUS_REDUCED` vs `PresolveStatus::kReduced`)
+- C API tests are longer due to explicit resource management boilerplate
+- Test logic and assertions are identical to verify behavioral equivalence
+
 ## Development Workflow
 
 1. **Understanding Requirements**: Check existing C++ tests in `test/papilo/` for functionality patterns
