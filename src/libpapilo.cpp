@@ -1228,7 +1228,8 @@ extern "C"
       options->options.threads = threads;
    }
 
-   /** Set random seed for presolving (default: 0, which provides deterministic behavior) */
+   /** Set random seed for presolving (default: 0, which provides deterministic
+    * behavior) */
    void
    libpapilo_presolve_options_set_randomseed(
        libpapilo_presolve_options_t* options, unsigned int randomseed )

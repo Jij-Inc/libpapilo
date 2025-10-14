@@ -87,7 +87,8 @@ extern "C"
     * Dual reductions mode
     *
     * Controls the level of dual reductions applied during presolving.
-    * Dual reductions use dual information to eliminate variables and constraints.
+    * Dual reductions use dual information to eliminate variables and
+    * constraints.
     */
    typedef enum
    {
