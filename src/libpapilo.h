@@ -566,6 +566,7 @@ extern "C"
    libpapilo_presolve_options_set_threads(
        libpapilo_presolve_options_t* options, int threads );
 
+   /** Set random seed for presolving (default: 0, deterministic behavior) */
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_randomseed(
        libpapilo_presolve_options_t* options, unsigned int randomseed );
@@ -578,6 +579,7 @@ extern "C"
    libpapilo_presolve_options_get_threads(
        const libpapilo_presolve_options_t* options );
 
+   /** Get random seed for presolving (default: 0) */
    LIBPAPILO_EXPORT unsigned int
    libpapilo_presolve_options_get_randomseed(
        const libpapilo_presolve_options_t* options );

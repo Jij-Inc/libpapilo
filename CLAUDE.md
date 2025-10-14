@@ -58,6 +58,34 @@ For detailed mechanics, see [PRESOLVE.md](./PRESOLVE.md) and [POSTSOLVE.md](./PO
 - **Error Handling**: Pointer validation with magic numbers, exception catching with `check_run()`
 - **Resource Management**: Explicit `_create()` and `_free()` functions for all objects
 
+### Comment Style Guidelines
+
+**For libpapilo.h (C API header):**
+- Use `/** */` style comments for all documentation
+- **DO NOT** use Doxygen-specific commands like `@param`, `@return`, `@brief`, etc.
+- Keep comments simple and descriptive
+- Document default values and important behavior inline
+
+**Good examples:**
+```c
+/** Set random seed for presolving (default: 0, deterministic behavior) */
+LIBPAPILO_EXPORT void libpapilo_presolve_options_set_randomseed(...);
+
+/** Disable all dual reductions */
+LIBPAPILO_DUALREDS_DISABLE = 0,
+```
+
+**Bad examples (avoid these):**
+```c
+/**
+ * @param options Presolve options object
+ * @param randomseed Random seed value
+ * @return void
+ */
+```
+
+**Rationale:** The C API header must be compatible with rust-bindgen and other FFI tools that may not fully support Doxygen markup. Simple `/** */` comments work universally while Doxygen commands can cause parsing issues.
+
 ### API Structure
 
 The C API provides comprehensive access to PaPILO functionality:
