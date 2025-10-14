@@ -1236,6 +1236,30 @@ extern "C"
       options->options.randomseed = randomseed;
    }
 
+   libpapilo_dualreds_t
+   libpapilo_presolve_options_get_dualreds(
+       const libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      return static_cast<libpapilo_dualreds_t>( options->options.dualreds );
+   }
+
+   int
+   libpapilo_presolve_options_get_threads(
+       const libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      return options->options.threads;
+   }
+
+   unsigned int
+   libpapilo_presolve_options_get_randomseed(
+       const libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      return options->options.randomseed;
+   }
+
    /* Core Presolve API Implementation */
 
    libpapilo_presolve_t*

@@ -570,6 +570,18 @@ extern "C"
    libpapilo_presolve_options_set_randomseed(
        libpapilo_presolve_options_t* options, unsigned int randomseed );
 
+   LIBPAPILO_EXPORT libpapilo_dualreds_t
+   libpapilo_presolve_options_get_dualreds(
+       const libpapilo_presolve_options_t* options );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_presolve_options_get_threads(
+       const libpapilo_presolve_options_t* options );
+
+   LIBPAPILO_EXPORT unsigned int
+   libpapilo_presolve_options_get_randomseed(
+       const libpapilo_presolve_options_t* options );
+
    /* Main presolve function */
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
