@@ -57,6 +57,7 @@ extern "C"
       LIBPAPILO_COLFLAG_FIXED = 1 << 4
    } libpapilo_col_flags_t;
 
+   /** Row flags for constraint properties */
    typedef enum
    {
       LIBPAPILO_ROWFLAG_LHS_INF = 1 << 0,
@@ -65,7 +66,7 @@ extern "C"
       LIBPAPILO_ROWFLAG_EQUATION = 1 << 3
    } libpapilo_row_flags_t;
 
-   /* Presolve status codes */
+   /** Presolve status codes */
    typedef enum
    {
       LIBPAPILO_PRESOLVE_STATUS_UNCHANGED = 0,
@@ -75,27 +76,36 @@ extern "C"
       LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE = 4
    } libpapilo_presolve_status_t;
 
-   /* Postsolve status codes */
+   /** Postsolve status codes */
    typedef enum
    {
       LIBPAPILO_POSTSOLVE_STATUS_OK = 0,
       LIBPAPILO_POSTSOLVE_STATUS_ERROR = 1
    } libpapilo_postsolve_status_t;
 
-   /* Dual reductions mode
+   /**
+    * Dual reductions mode
+    *
     * Controls the level of dual reductions applied during presolving.
-    * Dual reductions use dual information to eliminate variables and constraints. */
+    * Dual reductions use dual information to eliminate variables and constraints.
+    */
    typedef enum
    {
-      LIBPAPILO_DUALREDS_DISABLE = 0, /**< Disable all dual reductions */
-      LIBPAPILO_DUALREDS_SAFE = 1,    /**< Allow only dual reductions that never cut off optimal solutions */
-      LIBPAPILO_DUALREDS_ALL = 2      /**< Allow all dual reductions (default) */
+      /** Disable all dual reductions */
+      LIBPAPILO_DUALREDS_DISABLE = 0,
+      /** Allow only dual reductions that never cut off optimal solutions */
+      LIBPAPILO_DUALREDS_SAFE = 1,
+      /** Allow all dual reductions (default) */
+      LIBPAPILO_DUALREDS_ALL = 2
    } libpapilo_dualreds_t;
 
-   /* Reduction type for columns
+   /**
+    * Reduction type for columns
+    *
     * Note: Negative values are used to maintain compatibility with the
     * underlying C++ implementation where these values distinguish reduction
-    * types from row/column indices in the internal data structures. */
+    * types from row/column indices in the internal data structures.
+    */
    typedef enum
    {
       LIBPAPILO_COL_REDUCTION_NONE = -1,
@@ -112,11 +122,7 @@ extern "C"
       LIBPAPILO_COL_REDUCTION_FIXED_INFINITY = -14
    } libpapilo_col_reduction_t;
 
-   /* Reduction type for rows
-    * Note: Negative values are used to maintain compatibility with the
-    * underlying C++ implementation where these values distinguish reduction
-    * types from row/column indices in the internal data structures. */
-   /* Postsolve type enum for choosing postsolve strategy */
+   /** Postsolve type enum for choosing postsolve strategy */
    typedef enum
    {
       LIBPAPILO_POSTSOLVE_TYPE_PRIMAL = 0,
@@ -183,6 +189,13 @@ extern "C"
       LIBPAPILO_POSTSOLVE_REDUCTION_COEFFICIENT_CHANGE = 15
    } libpapilo_postsolve_reduction_type_t;
 
+   /**
+    * Reduction type for rows
+    *
+    * Note: Negative values are used to maintain compatibility with the
+    * underlying C++ implementation where these values distinguish reduction
+    * types from row/column indices in the internal data structures.
+    */
    typedef enum
    {
       LIBPAPILO_ROW_REDUCTION_NONE = -1,
@@ -202,7 +215,7 @@ extern "C"
       LIBPAPILO_ROW_REDUCTION_PARALLEL_ROW = -16
    } libpapilo_row_reduction_t;
 
-   /* Reduction info structure */
+   /** Reduction info structure */
    typedef struct
    {
       int row;
