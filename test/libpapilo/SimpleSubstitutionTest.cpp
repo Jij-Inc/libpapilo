@@ -52,7 +52,7 @@ TEST_CASE( "simple-substitution-happy-path-for-2-int", "[libpapilo]" )
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -127,7 +127,7 @@ TEST_CASE( "simple-substitution-happy-path-for-int-continuous-coeff",
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -168,7 +168,7 @@ TEST_CASE( "simple-substitution-happy-path-for-2-continuous", "[libpapilo]" )
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -231,7 +231,7 @@ TEST_CASE( "simple-substitution-happy-path-for-continuous-and-integer",
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -293,7 +293,7 @@ TEST_CASE( "simple-substitution-for-2-int", "[libpapilo]" )
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -401,7 +401,7 @@ TEST_CASE(
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -445,7 +445,7 @@ TEST_CASE(
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(
@@ -492,7 +492,7 @@ check_gcd_result_with_expectation( double obj_x, double obj_y, double rhs,
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_presolve_options_t* presolveOptions =
        libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( presolveOptions, 0 );
+   libpapilo_presolve_options_set_dualreds( presolveOptions, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, presolveOptions );
    libpapilo_problem_update_t* problemUpdate = libpapilo_problem_update_create(

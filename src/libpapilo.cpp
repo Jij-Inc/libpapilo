@@ -1214,10 +1214,10 @@ extern "C"
 
    void
    libpapilo_presolve_options_set_dualreds(
-       libpapilo_presolve_options_t* options, int dualreds )
+       libpapilo_presolve_options_t* options, libpapilo_dualreds_t dualreds )
    {
       check_presolve_options_ptr( options );
-      options->options.dualreds = dualreds;
+      options->options.dualreds = static_cast<int>( dualreds );
    }
 
    void

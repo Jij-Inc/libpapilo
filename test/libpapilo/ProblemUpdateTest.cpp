@@ -141,7 +141,7 @@ TEST_CASE( "trivial-presolve-singleton-row", "[libpapilo]" )
    // Create required objects
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( options, 0 );
+   libpapilo_presolve_options_set_dualreds( options, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, options );
@@ -185,7 +185,7 @@ TEST_CASE( "trivial-presolve-singleton-row-pt-2", "[libpapilo]" )
    // Create required objects
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( options, 0 );
+   libpapilo_presolve_options_set_dualreds( options, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, options );
@@ -236,7 +236,7 @@ TEST_CASE( "problem-update-owns-num-and-message", "[libpapilo]" )
    // Create required objects
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
-   libpapilo_presolve_options_set_dualreds( options, 0 );
+   libpapilo_presolve_options_set_dualreds( options, LIBPAPILO_DUALREDS_DISABLE );
    libpapilo_statistics_t* statistics = libpapilo_statistics_create();
    libpapilo_postsolve_storage_t* postsolve =
        libpapilo_postsolve_storage_create( problem, num, options );

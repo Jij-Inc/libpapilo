@@ -82,6 +82,16 @@ extern "C"
       LIBPAPILO_POSTSOLVE_STATUS_ERROR = 1
    } libpapilo_postsolve_status_t;
 
+   /* Dual reductions mode
+    * Controls the level of dual reductions applied during presolving.
+    * Dual reductions use dual information to eliminate variables and constraints. */
+   typedef enum
+   {
+      LIBPAPILO_DUALREDS_DISABLE = 0, /**< Disable all dual reductions */
+      LIBPAPILO_DUALREDS_SAFE = 1,    /**< Allow only dual reductions that never cut off optimal solutions */
+      LIBPAPILO_DUALREDS_ALL = 2      /**< Allow all dual reductions (default) */
+   } libpapilo_dualreds_t;
+
    /* Reduction type for columns
     * Note: Negative values are used to maintain compatibility with the
     * underlying C++ implementation where these values distinguish reduction
@@ -537,7 +547,7 @@ extern "C"
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_dualreds(
-       libpapilo_presolve_options_t* options, int dualreds );
+       libpapilo_presolve_options_t* options, libpapilo_dualreds_t dualreds );
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_threads(
