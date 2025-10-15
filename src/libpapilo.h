@@ -86,18 +86,52 @@ extern "C"
    /**
     * Dual reductions mode
     *
-    * Controls the level of dual reductions applied during presolving.
-    * Dual reductions use dual information to eliminate variables and
-    * constraints.
+    * Controls the level of dual-based presolving. Dual reductions use dual
+    * information (e.g., reduced costs, dual bounds) to fix variables or
+    * remove constraints before solving.
+    *
+    * Semantics
+    * ----------
+    * - *WEAK*: Guarantees that presolving does not change the
+    *   *set of optimal solutions*. Any solution that is optimal
+    *   before presolving remains attainable after presolving.
+    * - *STRONG*: Guarantees that presolving does not change the
+    *   *optimal objective value*. The best achievable objective
+    *   value is identical before and after presolving
+    *   (at least one optimal solution remains).
+    *
+    * Usage
+    * ------
+    * - Choose *WEAK*  when downstream workflows must not lose any optimal
+    *   solution: solution enumeration, lazy constraints, Benders, no-good
+    *   accumulation, etc.
+    * - Choose *STRONG* for standard single-solution MILP runs where matching
+    *   the optimal objective value (and one attaining solution) is sufficient.
+    * - Choose *DISABLED* to switch off dual reductions entirely (e.g., safety
+    *   checks, regression comparisons, or when isolating effects of other
+    *   presolvers).
+    *
+    * Note
+    * -----
+    * This switch only governs *dual* reductions. Other presolve families
+    * are configured elsewhere.
     */
    typedef enum
    {
-      /** Disable all dual reductions */
+      /** Disable all dual reductions. */
       LIBPAPILO_DUALREDS_DISABLE = 0,
-      /** Allow only dual reductions that never cut off optimal solutions */
-      LIBPAPILO_DUALREDS_SAFE = 1,
-      /** Allow all dual reductions (default) */
-      LIBPAPILO_DUALREDS_ALL = 2
+
+      /** Weak dual reductions:
+       *  Preserving the *set of optimal solutions* (no change in which
+       * solutions are optimal).
+       */
+      LIBPAPILO_DUALREDS_WEAK = 1,
+
+      /** Strong dual reductions:
+       *  Preserving the *optimal objective value* (the best value remains the
+       * same; at least one optimal solution remains attainable).
+       */
+      LIBPAPILO_DUALREDS_STRONG = 2
    } libpapilo_dualreds_t;
 
    /**
