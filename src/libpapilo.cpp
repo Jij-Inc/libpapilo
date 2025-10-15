@@ -1295,7 +1295,7 @@ extern "C"
 
    void
    libpapilo_presolve_set_options( libpapilo_presolve_t* presolve,
-                                   libpapilo_presolve_options_t* options )
+                                   const libpapilo_presolve_options_t* options )
    {
       check_presolve_ptr( presolve );
       check_presolve_options_ptr( options );
@@ -1346,7 +1346,7 @@ extern "C"
    /* High-level presolve function for backward compatibility */
    libpapilo_presolve_status_t
    libpapilo_presolve_apply( libpapilo_problem_t* problem,
-                             libpapilo_presolve_options_t* options,
+                             const libpapilo_presolve_options_t* options,
                              const libpapilo_message_t* message,
                              libpapilo_reductions_t** reductions_out,
                              libpapilo_postsolve_storage_t** postsolve_out,
@@ -2253,7 +2253,7 @@ extern "C"
    }
 
    void
-   libpapilo_message_print( libpapilo_message_t* message, int level,
+   libpapilo_message_print( const libpapilo_message_t* message, int level,
                             const char* text )
    {
       check_message_ptr( message );
