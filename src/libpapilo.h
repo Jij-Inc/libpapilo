@@ -597,6 +597,15 @@ extern "C"
    libpapilo_presolve_options_set_dualreds(
        libpapilo_presolve_options_t* options, libpapilo_dualreds_t dualreds );
 
+   /**
+    * Set number of threads for presolving
+    *
+    * When built with Intel TBB support:
+    * - threads=0: Automatic detection (uses available hardware threads)
+    * - threads=N: Uses exactly N threads
+    *
+    * When built without TBB: Always runs single-threaded regardless of setting
+    */
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_threads(
        libpapilo_presolve_options_t* options, int threads );
@@ -610,6 +619,8 @@ extern "C"
    libpapilo_presolve_options_get_dualreds(
        const libpapilo_presolve_options_t* options );
 
+   /** Get number of threads (0 means automatic detection when built with TBB)
+    */
    LIBPAPILO_EXPORT int
    libpapilo_presolve_options_get_threads(
        const libpapilo_presolve_options_t* options );
