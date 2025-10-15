@@ -1214,10 +1214,10 @@ extern "C"
 
    void
    libpapilo_presolve_options_set_dualreds(
-       libpapilo_presolve_options_t* options, int dualreds )
+       libpapilo_presolve_options_t* options, libpapilo_dualreds_t dualreds )
    {
       check_presolve_options_ptr( options );
-      options->options.dualreds = dualreds;
+      options->options.dualreds = static_cast<int>( dualreds );
    }
 
    void
@@ -1228,12 +1228,39 @@ extern "C"
       options->options.threads = threads;
    }
 
+   /** Set random seed for presolving (default: 0, which provides deterministic
+    * behavior) */
    void
    libpapilo_presolve_options_set_randomseed(
        libpapilo_presolve_options_t* options, unsigned int randomseed )
    {
       check_presolve_options_ptr( options );
       options->options.randomseed = randomseed;
+   }
+
+   libpapilo_dualreds_t
+   libpapilo_presolve_options_get_dualreds(
+       const libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      return static_cast<libpapilo_dualreds_t>( options->options.dualreds );
+   }
+
+   int
+   libpapilo_presolve_options_get_threads(
+       const libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      return options->options.threads;
+   }
+
+   /** Get random seed for presolving (default: 0) */
+   unsigned int
+   libpapilo_presolve_options_get_randomseed(
+       const libpapilo_presolve_options_t* options )
+   {
+      check_presolve_options_ptr( options );
+      return options->options.randomseed;
    }
 
    /* Core Presolve API Implementation */

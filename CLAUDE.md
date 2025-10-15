@@ -58,6 +58,34 @@ For detailed mechanics, see [PRESOLVE.md](./PRESOLVE.md) and [POSTSOLVE.md](./PO
 - **Error Handling**: Pointer validation with magic numbers, exception catching with `check_run()`
 - **Resource Management**: Explicit `_create()` and `_free()` functions for all objects
 
+### Comment Style Guidelines
+
+**For libpapilo.h (C API header):**
+- Use `/** */` style comments for all documentation
+- **DO NOT** use Doxygen-specific commands like `@param`, `@return`, `@brief`, etc.
+- Keep comments simple and descriptive
+- Document default values and important behavior inline
+
+**Good examples:**
+```c
+/** Set random seed for presolving (default: 0, deterministic behavior) */
+LIBPAPILO_EXPORT void libpapilo_presolve_options_set_randomseed(...);
+
+/** Disable all dual reductions */
+LIBPAPILO_DUALREDS_DISABLE = 0,
+```
+
+**Bad examples (avoid these):**
+```c
+/**
+ * @param options Presolve options object
+ * @param randomseed Random seed value
+ * @return void
+ */
+```
+
+**Rationale:** The C API header must be compatible with rust-bindgen and other FFI tools that may not fully support Doxygen markup. Simple `/** */` comments work universally while Doxygen commands can cause parsing issues.
+
 ### API Structure
 
 The C API provides comprehensive access to PaPILO functionality:
@@ -70,6 +98,31 @@ The C API provides comprehensive access to PaPILO functionality:
 
 ### Testing Strategy
 Tests are written in C++ but only call the public C API functions from `libpapilo.h`. This validates the C interface while leveraging Catch2 testing framework.
+
+### Test File Correspondence
+
+The C API tests in `test/libpapilo/` faithfully reproduce selected C++ tests from `test/papilo/`:
+
+| C API Test (test/libpapilo/) | C++ Test (test/papilo/) | Test Count | Description |
+|------------------------------|-------------------------|------------|-------------|
+| **SingletonColsTest.cpp** (792 lines) | **presolve/SingletonColsTest.cpp** (571 lines) | 7 tests | SingletonCols presolver functionality |
+| **SimpleSubstitutionTest.cpp** (667 lines) | **presolve/SimpleSubstitutionTest.cpp** (509 lines) | 12 tests | SimpleSubstitution presolver with GCD checks |
+| **PresolveTest.cpp** (356 lines) | **core/PresolveTest.cpp** (332 lines) | 4 tests | High-level presolve orchestration |
+| **PostsolveTest.cpp** (101 lines) | **core/PostsolveTest.cpp** (77 lines) | 2 tests | Postsolve functionality |
+| **ProblemUpdateTest.cpp** (275 lines) | **core/ProblemUpdateTest.cpp** (142 lines) | 3 tests | ProblemUpdate operations |
+
+**Additional C API-specific tests** (no C++ equivalent):
+- **ProblemBuilderTest.cpp**: C API problem construction interface
+- **GetterAPIsTest.cpp**: C API getter functions for problem data access
+- **PresolverStatsTest.cpp**: Presolver statistics tracking
+- **MessageTest.cpp**: Message handling functionality
+- **LinkTest.c**: Pure C language linkage validation
+
+**Key differences:**
+- C API tests require explicit memory management (`_create()` / `_free()`)
+- C API uses prefixed enums (e.g., `LIBPAPILO_PRESOLVE_STATUS_REDUCED` vs `PresolveStatus::kReduced`)
+- C API tests are longer due to explicit resource management boilerplate
+- Test logic and assertions are identical to verify behavioral equivalence
 
 ## Development Workflow
 

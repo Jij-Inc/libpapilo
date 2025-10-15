@@ -57,6 +57,7 @@ extern "C"
       LIBPAPILO_COLFLAG_FIXED = 1 << 4
    } libpapilo_col_flags_t;
 
+   /** Row flags for constraint properties */
    typedef enum
    {
       LIBPAPILO_ROWFLAG_LHS_INF = 1 << 0,
@@ -65,7 +66,7 @@ extern "C"
       LIBPAPILO_ROWFLAG_EQUATION = 1 << 3
    } libpapilo_row_flags_t;
 
-   /* Presolve status codes */
+   /** Presolve status codes */
    typedef enum
    {
       LIBPAPILO_PRESOLVE_STATUS_UNCHANGED = 0,
@@ -75,17 +76,71 @@ extern "C"
       LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE = 4
    } libpapilo_presolve_status_t;
 
-   /* Postsolve status codes */
+   /** Postsolve status codes */
    typedef enum
    {
       LIBPAPILO_POSTSOLVE_STATUS_OK = 0,
       LIBPAPILO_POSTSOLVE_STATUS_ERROR = 1
    } libpapilo_postsolve_status_t;
 
-   /* Reduction type for columns
+   /**
+    * Dual reductions mode
+    *
+    * Controls the level of dual-based presolving. Dual reductions use dual
+    * information (e.g., reduced costs, dual bounds) to fix variables or
+    * remove constraints before solving.
+    *
+    * Semantics
+    * ----------
+    * - *WEAK*: Guarantees that presolving does not change the
+    *   *set of optimal solutions*. Any solution that is optimal
+    *   before presolving remains attainable after presolving.
+    * - *STRONG*: Guarantees that presolving does not change the
+    *   *optimal objective value*. The best achievable objective
+    *   value is identical before and after presolving
+    *   (at least one optimal solution remains).
+    *
+    * Usage
+    * ------
+    * - Choose *WEAK*  when downstream workflows must not lose any optimal
+    *   solution: solution enumeration, lazy constraints, Benders, no-good
+    *   accumulation, etc.
+    * - Choose *STRONG* for standard single-solution MILP runs where matching
+    *   the optimal objective value (and one attaining solution) is sufficient.
+    * - Choose *DISABLED* to switch off dual reductions entirely (e.g., safety
+    *   checks, regression comparisons, or when isolating effects of other
+    *   presolvers).
+    *
+    * Note
+    * -----
+    * This switch only governs *dual* reductions. Other presolve families
+    * are configured elsewhere.
+    */
+   typedef enum
+   {
+      /** Disable all dual reductions. */
+      LIBPAPILO_DUALREDS_DISABLE = 0,
+
+      /** Weak dual reductions:
+       *  Preserving the *set of optimal solutions* (no change in which
+       * solutions are optimal).
+       */
+      LIBPAPILO_DUALREDS_WEAK = 1,
+
+      /** Strong dual reductions:
+       *  Preserving the *optimal objective value* (the best value remains the
+       * same; at least one optimal solution remains attainable).
+       */
+      LIBPAPILO_DUALREDS_STRONG = 2
+   } libpapilo_dualreds_t;
+
+   /**
+    * Reduction type for columns
+    *
     * Note: Negative values are used to maintain compatibility with the
     * underlying C++ implementation where these values distinguish reduction
-    * types from row/column indices in the internal data structures. */
+    * types from row/column indices in the internal data structures.
+    */
    typedef enum
    {
       LIBPAPILO_COL_REDUCTION_NONE = -1,
@@ -102,11 +157,7 @@ extern "C"
       LIBPAPILO_COL_REDUCTION_FIXED_INFINITY = -14
    } libpapilo_col_reduction_t;
 
-   /* Reduction type for rows
-    * Note: Negative values are used to maintain compatibility with the
-    * underlying C++ implementation where these values distinguish reduction
-    * types from row/column indices in the internal data structures. */
-   /* Postsolve type enum for choosing postsolve strategy */
+   /** Postsolve type enum for choosing postsolve strategy */
    typedef enum
    {
       LIBPAPILO_POSTSOLVE_TYPE_PRIMAL = 0,
@@ -173,6 +224,13 @@ extern "C"
       LIBPAPILO_POSTSOLVE_REDUCTION_COEFFICIENT_CHANGE = 15
    } libpapilo_postsolve_reduction_type_t;
 
+   /**
+    * Reduction type for rows
+    *
+    * Note: Negative values are used to maintain compatibility with the
+    * underlying C++ implementation where these values distinguish reduction
+    * types from row/column indices in the internal data structures.
+    */
    typedef enum
    {
       LIBPAPILO_ROW_REDUCTION_NONE = -1,
@@ -192,7 +250,7 @@ extern "C"
       LIBPAPILO_ROW_REDUCTION_PARALLEL_ROW = -16
    } libpapilo_row_reduction_t;
 
-   /* Reduction info structure */
+   /** Reduction info structure */
    typedef struct
    {
       int row;
@@ -537,15 +595,29 @@ extern "C"
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_dualreds(
-       libpapilo_presolve_options_t* options, int dualreds );
+       libpapilo_presolve_options_t* options, libpapilo_dualreds_t dualreds );
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_threads(
        libpapilo_presolve_options_t* options, int threads );
 
+   /** Set random seed for presolving (default: 0, deterministic behavior) */
    LIBPAPILO_EXPORT void
    libpapilo_presolve_options_set_randomseed(
        libpapilo_presolve_options_t* options, unsigned int randomseed );
+
+   LIBPAPILO_EXPORT libpapilo_dualreds_t
+   libpapilo_presolve_options_get_dualreds(
+       const libpapilo_presolve_options_t* options );
+
+   LIBPAPILO_EXPORT int
+   libpapilo_presolve_options_get_threads(
+       const libpapilo_presolve_options_t* options );
+
+   /** Get random seed for presolving (default: 0) */
+   LIBPAPILO_EXPORT unsigned int
+   libpapilo_presolve_options_get_randomseed(
+       const libpapilo_presolve_options_t* options );
 
    /* Main presolve function */
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
