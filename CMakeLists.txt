@@ -1,18 +1,23 @@
 cmake_minimum_required (VERSION 3.11.0)
 
-set(PAPILO_VERSION_MAJOR 2)
-set(PAPILO_VERSION_MINOR 4)
-set(PAPILO_VERSION_PATCH 3)
+set(PAPILO_VERSION_MAJOR 3)
+set(PAPILO_VERSION_MINOR 0)
+set(PAPILO_VERSION_PATCH 0)
 
 # Jij-specific patch version for libpapilo packaging
 set(LIBPAPILO_JIJ_PATCH_VERSION 12)
-set(PAPILO_API_VERSION 3)
+set(PAPILO_API_VERSION 11)
 
 # Full version string including Jij patch version
 set(LIBPAPILO_VERSION "${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}-jij.${LIBPAPILO_JIJ_PATCH_VERSION}")
 message(STATUS "libpapilo version: ${LIBPAPILO_VERSION}")
 
 project(papilo VERSION ${PAPILO_VERSION_MAJOR}.${PAPILO_VERSION_MINOR}.${PAPILO_VERSION_PATCH}.0)
+
+# FindBoost is removed in version cmake 3.30
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
 
 set(BOOST_MIN_VERSION 1.65)
 set(CMAKE_CXX_STANDARD 14)
@@ -70,8 +75,8 @@ option(TBB "should TBB be linked if found" ON)
 option(TBB_DOWNLOAD "should TBB be downloaded" OFF)
 option(INSTALL_TBB "should the TBB library be installed" OFF)
 
-option(SOPLEX "should SoPlex LP solver be linked if found" ON)
-option(SCIP "should SCIP solver be linked if found" ON)
+option(SOPLEX "should SoPlex LP solver be linked" OFF)
+option(SCIP "should SCIP solver be linked" OFF)
 option(HIGHS "should HiGHS LP solver be linked" OFF)
 option(GLOP "should ortools solver be linked" OFF)
 option(GUROBI "should gurobi solver be linked" OFF)
@@ -203,9 +208,9 @@ if(TBB)
          find_or_download_package(
             NAME TBB
             VERSION 2018
-            URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.13.0.tar.gz
+            URL https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2022.0.0.tar.gz
             COMPONENTS tbb tbbmalloc
-            URL_HASH SHA256=3ad5dd08954b39d113dc5b3f8a8dc6dc1fd5250032b7c491eb07aed5c94133e1
+            URL_HASH SHA256=e8e89c9c345415b17b30a2db3095ba9d47647611662073f7fbf54ad48b7f3c2a
             CONFIGURE_ARGS -DTBB_TEST=OFF -DTBB_EXAMPLES=OFF -DTBB4PY_BUILD=OFF)
       else()
          # Otherwise we try to find TBB.
@@ -279,6 +284,8 @@ if(CMAKE_Fortran_COMPILER AND BLAS_FOUND)
    target_link_libraries(papilo INTERFACE clusol)
    set(PAPILO_HAVE_LUSOL 1)
    set(CLUSOL_TARGET clusol)
+   install(FILES
+       ${PROJECT_SOURCE_DIR}/src/papilo/external/lusol/LICENSE.md DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/papilo/lusol)
 else()
    set(PAPILO_HAVE_LUSOL 0)
    set(CLUSOL_TARGET "")
@@ -367,6 +374,7 @@ add_library(papilo-core STATIC
    src/papilo/presolvers/SingletonStuffing.cpp
    src/papilo/presolvers/Sparsify.cpp
    src/papilo/presolvers/SimplifyInequalities.cpp
+   src/papilo/presolvers/CliqueMerging.cpp
    ${roundingsat_source_files}
   )
 
@@ -532,6 +540,7 @@ install(FILES
    ${PROJECT_SOURCE_DIR}/src/papilo/presolvers/SingletonCols.hpp
    ${PROJECT_SOURCE_DIR}/src/papilo/presolvers/SingletonStuffing.hpp
    ${PROJECT_SOURCE_DIR}/src/papilo/presolvers/Sparsify.hpp
+   ${PROJECT_SOURCE_DIR}/src/papilo/presolvers/CliqueMerging.hpp
    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/papilo/presolvers)
 
 install(FILES
@@ -562,6 +571,15 @@ install(FILES
 install(FILES
    ${PROJECT_SOURCE_DIR}/src/papilo/external/lusol/clusol.h
    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/papilo/external/lusol)
+
+install(FILES
+   ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/papilo)
+install(FILES
+   ${PROJECT_SOURCE_DIR}/src/papilo/external/pdqsort/license.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/papilo/pdqsort)
+install(FILES
+   ${PROJECT_SOURCE_DIR}/src/papilo/external/ska/LICENSE.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/papilo/ska)
+install(FILES
+   ${PROJECT_SOURCE_DIR}/src/papilo/external/fmt/LICENSE.rst DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/papilo/fmt)
 
 # Configure the papilo-config.cmake for the build-tree:
 # We add the CMake module path from the sources.

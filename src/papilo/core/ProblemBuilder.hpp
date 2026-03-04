@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -30,10 +32,12 @@ namespace papilo
 #include "papilo/core/Problem.hpp"
 #include "papilo/misc/String.hpp"
 #include "papilo/misc/Vec.hpp"
+#include "papilo/Config.hpp"
 
 template <typename REAL>
 class ProblemBuilder
 {
+
  public:
    /// Sets the number of columns to the given value. The information of columns
    /// that already exist is kept, new columns are continuous and fixed to zero.
@@ -211,6 +215,14 @@ class ProblemBuilder
    }
 
    void
+   setColImplIntAll( Vec<uint8_t> isImplInt )
+   {
+      assert( isImplInt.size() == domains.flags.size() );
+      for( int c = 0; c < (int)isImplInt.size(); ++c )
+         setColImplInt( c, isImplInt[c] );
+   }
+
+   void
    setRowLhsInf( int row, bool isInfinite )
    {
       if( isInfinite )
@@ -372,19 +384,33 @@ class ProblemBuilder
       problem.setVariableDomains( std::move( domains ) );
       problem.setVariableNames( std::move( colnames ) );
       problem.setConstraintNames( std::move( rownames ) );
-      ConstraintMatrix<REAL>& matrix = problem.getConstraintMatrix();
-      for(int i=0; i< problem.getNRows(); i++){
-         RowFlags rowFlag = matrix.getRowFlags()[i];
-         if( !rowFlag.test( RowFlag::kRhsInf ) &&
-             !rowFlag.test( RowFlag::kLhsInf ) &&
-             matrix.getLeftHandSides()[i] == matrix.getRightHandSides()[i] )
-            matrix.getRowFlags()[i].set(RowFlag::kEquation);
-      }
-      if(problem.getNumIntegralCols() == 0)
-         problem.set_problem_type(ProblemFlag::kLinear);
+      ConstraintMatrix<REAL>& matrix = problem.getConstraintMatrix(); 
+//#ifdef PAPILO_TBB
+//      tbb::parallel_for(
+//          tbb::blocked_range<int>( 0, problem.getNRows() ),
+//          [&]( const tbb::blocked_range<int>& r )
+//          {
+//             for( int i = r.begin(); i != r.end(); ++i )
+//#else
+      for( int i = 0; i < problem.getNRows(); i++ )
+//#endif
+             {
+                RowFlags rowFlag = matrix.getRowFlags()[i];
+                if( !rowFlag.test( RowFlag::kRhsInf ) &&
+                    !rowFlag.test( RowFlag::kLhsInf ) &&
+                    matrix.getLeftHandSides()[i] ==
+                        matrix.getRightHandSides()[i] )
+                   matrix.getRowFlags()[i].set( RowFlag::kEquation );
+             }
+//#ifdef PAPILO_TBB
+//          } );
+//#endif
+      if( problem.getNumIntegralCols() == 0 )
+         problem.set_problem_type( ProblemFlag::kLinear );
 
       return problem;
    }
+
 
  private:
    MatrixBuffer<REAL> matrix_buffer;

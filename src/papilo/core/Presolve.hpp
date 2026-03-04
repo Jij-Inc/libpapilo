@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -40,6 +42,7 @@
 #include "papilo/misc/tbb.hpp"
 #endif
 #include "papilo/misc/Vec.hpp"
+#include "papilo/presolvers/CliqueMerging.hpp"
 #include "papilo/presolvers/CoefficientStrengthening.hpp"
 #include "papilo/presolvers/ConstraintPropagation.hpp"
 #include "papilo/presolvers/DominatedCols.hpp"
@@ -108,11 +111,12 @@ class Presolve
       addPresolveMethod( uptr( new DualFix<REAL>() ) );
       addPresolveMethod( uptr( new SimplifyInequalities<REAL>() ) );
       addPresolveMethod( uptr( new SimpleSubstitution<REAL>() ) );
+      addPresolveMethod( uptr( new CliqueMerging<REAL>() ) );
 
       //exhaustive presolvers
       addPresolveMethod( uptr( new ImplIntDetection<REAL>() ) );
       addPresolveMethod( uptr( new DominatedCols<REAL>() ) );
-      addPresolveMethod( uptr( new DualInfer<REAL> ) );
+      addPresolveMethod( uptr( new DualInfer<REAL>() ) );
       addPresolveMethod( uptr( new Probing<REAL>() ) );
       addPresolveMethod( uptr( new Substitution<REAL>() ) );
       addPresolveMethod( uptr( new Sparsify<REAL>() ) );
@@ -317,7 +321,7 @@ class Presolve
    finishRound( ProblemUpdate<REAL>& probUpdate );
 
    void
-   applyPostponed( ProblemUpdate<REAL>& probUpdate );
+   applyPostponed( ProblemUpdate<REAL>& probUpdate, const Timer& presolveTimer );
 
    Delegator
    determine_next_round( Problem<REAL>& problem,
@@ -326,7 +330,7 @@ class Presolve
                          const Timer& presolvetimer, bool unchanged = false );
 
    PresolveStatus
-   apply_all_presolver_reductions( ProblemUpdate<REAL>& probUpdate );
+   apply_all_presolver_reductions( ProblemUpdate<REAL>& probUpdate, const Timer& presolveTimer );
 
    void
    printRoundStats( std::string rndtype );
@@ -340,7 +344,8 @@ class Presolve
               const PostsolveStorage<REAL>& postsolveStorage ) const;
 
    bool
-   is_time_exceeded( const Timer& presolvetimer ) const;
+   is_interrupted( const Timer& presolvetimer ) const;
+
 
    bool
    are_applied_tsx_negligible( const Problem<REAL>& problem,
@@ -361,6 +366,12 @@ class Presolve
 
    Delegator
    handle_case_exceeded( Delegator& next_round );
+
+   bool
+   is_user_interrupted() const;
+
+   bool
+   is_time_exceeded( const Timer& presolvetimer ) const;
 
    PresolveStatus
    evaluate_and_apply( const Timer& timer, Problem<REAL>& problem,
@@ -443,7 +454,6 @@ Presolve<REAL>::apply( Problem<REAL>& problem, bool store_dual_postsolve )
       const Vec<int>& rowsize = constraintMatrix.getRowSizes();
 
 
-
       PresolveResult<REAL> result;
 
       result.postsolve =
@@ -484,6 +494,7 @@ Presolve<REAL>::apply( Problem<REAL>& problem, bool store_dual_postsolve )
       msg.info( "  int. columns:  {}\n", problem.getNumIntegralCols() );
       msg.info( "  cont. columns:  {}\n", problem.getNumContinuousCols() );
       msg.info( "  nonzeros: {}\n\n", problem.getConstraintMatrix().getNnz() );
+
 
       result.status = PresolveStatus::kUnchanged;
 
@@ -553,6 +564,10 @@ Presolve<REAL>::apply( Problem<REAL>& problem, bool store_dual_postsolve )
       Statistics last_rounds_stats = stats;
       do
       {
+         if (is_interrupted(timer)) {
+            round_to_evaluate = Delegator::kAbort;
+         }
+
          if( roundReduced )
          {
             if( presolveOptions.maxrounds != -1 && presolveOptions.maxrounds <= stats.nrounds )
@@ -1081,7 +1096,7 @@ Presolve<REAL>::determine_next_round( Problem<REAL>& problem,
                                       const Timer& presolvetimer,
                                       bool unchanged )
 {
-   if( is_time_exceeded( presolvetimer ) )
+   if( is_interrupted( presolvetimer ) )
       return Delegator::kAbort;
 
    Delegator next_round = increase_round_if_last_run_was_not_successfull(
@@ -1120,7 +1135,7 @@ Presolve<REAL>::evaluate_and_apply( const Timer& timer, Problem<REAL>& problem,
       // problem reductions where found by at least one presolver
       PresolveStatus status;
       if( !run_sequential )
-         status = apply_all_presolver_reductions( probUpdate );
+         status = apply_all_presolver_reductions( probUpdate, timer );
       else
          status = PresolveStatus::kReduced;
       if( is_status_infeasible_or_unbounded( status ) )
@@ -1151,7 +1166,7 @@ Presolve<REAL>::is_status_infeasible_or_unbounded(
 template <typename REAL>
 PresolveStatus
 Presolve<REAL>::apply_all_presolver_reductions(
-    ProblemUpdate<REAL>& probUpdate )
+    ProblemUpdate<REAL>& probUpdate, const Timer& presolveTimer )
 {
    probUpdate.setPostponeSubstitutions( true );
 
@@ -1159,6 +1174,9 @@ Presolve<REAL>::apply_all_presolver_reductions(
 
    for( std::size_t i = 0; i < presolvers.size(); ++i )
    {
+      if (is_interrupted(presolveTimer)) {
+         break;
+      }
       apply_reduction_of_solver( probUpdate, i );
       postponedReductionToPresolver.push_back( postponedReductions.size() );
    }
@@ -1169,7 +1187,7 @@ Presolve<REAL>::apply_all_presolver_reductions(
 
    probUpdate.flushChangedCoeffs();
 
-   applyPostponed( probUpdate );
+   applyPostponed( probUpdate, presolveTimer );
 
    return probUpdate.flush( true );
 }
@@ -1267,11 +1285,11 @@ Presolve<REAL>::applyReductions( int p, const Reductions<REAL>& reductions_,
 
 template <typename REAL>
 void
-Presolve<REAL>::applyPostponed( ProblemUpdate<REAL>& probUpdate )
+Presolve<REAL>::applyPostponed( ProblemUpdate<REAL>& probUpdate, const Timer& presolveTimer )
 {
    probUpdate.setPostponeSubstitutions( false );
 
-   for( int presolver = 0; presolver != (int) presolvers.size(); ++presolver )
+   for( int presolver = 0; presolver != (int) postponedReductionToPresolver.size() - 1; ++presolver )
    {
       int first = postponedReductionToPresolver[presolver];
       int last = postponedReductionToPresolver[presolver + 1];
@@ -1282,7 +1300,7 @@ Presolve<REAL>::applyPostponed( ProblemUpdate<REAL>& probUpdate )
       {
          const auto& ptrpair = postponedReductions[i];
 
-         ApplyResult r =
+         ApplyResult r = is_interrupted( presolveTimer ) ? ApplyResult::kRejected :
              probUpdate.applyTransaction( ptrpair.first, ptrpair.second, ArgumentType::kPrimal );
          if( r == ApplyResult::kApplied )
          {
@@ -1341,10 +1359,25 @@ Presolve<REAL>::handle_case_exceeded( Delegator& next_round )
 
 template <typename REAL>
 bool
+Presolve<REAL>::is_user_interrupted() const
+{
+   return presolveOptions.early_exit_callback &&
+          presolveOptions.early_exit_callback();
+}
+
+template <typename REAL>
+bool
 Presolve<REAL>::is_time_exceeded( const Timer& presolvetimer ) const
 {
    return presolveOptions.tlim != std::numeric_limits<double>::max() &&
           presolvetimer.getTime() >= presolveOptions.tlim;
+}
+
+template <typename REAL>
+bool
+Presolve<REAL>::is_interrupted( const Timer& presolvetimer ) const
+{
+   return is_time_exceeded( presolvetimer ) || is_user_interrupted();
 }
 
 template <typename REAL>
@@ -1376,7 +1409,6 @@ Presolve<REAL>::are_applied_tsx_negligible( const Problem<REAL>& problem,
   case Delegator::kExceeded:
       assert(false);
    }
-   
    if( roundStats.ndeletedcols == 0 && roundStats.ndeletedrows == 0 &&
        roundStats.ncoefchgs == 0 && presolveOptions.max_consecutive_rounds_of_only_bound_changes >= 0 )
    {
@@ -1502,9 +1534,11 @@ Presolve<REAL>::logStatus( ProblemUpdate<REAL>& problem_update,
       postsolve.undo( empty_sol, solution, postsolveStorage );
       const Problem<REAL>& origprob = postsolveStorage.getOriginalProblem();
       REAL origobj = origprob.computeSolObjective( solution.primal );
+      if( origprob.is_objective_negated() )
+         origobj *= -1;
       msg.info(
           "problem is solved [optimal solution found] [objective value: {} (double precision)]\n",
-          (double) origobj );
+          static_cast<double>( origobj ) );
       problem_update.getCertificateInterface()->log_solution( solution, problem.getVariableNames(), origobj );
    }
    else
