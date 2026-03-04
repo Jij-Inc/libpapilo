@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -78,6 +80,7 @@ SingletonStuffing<REAL>::execute( const Problem<REAL>& problem,
                                   const ProblemUpdate<REAL>& problemUpdate,
                                   const Num<REAL>& num, Reductions<REAL>& reductions,
                                   const Timer& timer, int& reason_of_infeasibility){
+
    const auto& domains = problem.getVariableDomains();
    const auto& lower_bounds = domains.lower_bounds;
    const auto& upper_bounds = domains.upper_bounds;
@@ -105,7 +108,7 @@ SingletonStuffing<REAL>::execute( const Problem<REAL>& problem,
                               const REAL& val, int row, bool impliedeq,
                               const REAL& side ) {
       if( !impliedeq && rowsize[row] <= 1 )
-         return;
+         return;     
 
       result = PresolveStatus::kReduced;
 
@@ -210,6 +213,15 @@ SingletonStuffing<REAL>::execute( const Problem<REAL>& problem,
 
    for( int col : singletonCols )
    {
+      if( reductions.size() >= problemUpdate.getPresolveOptions().max_reduction_seq )
+         break;
+      if( singletonCols.size() % problemUpdate.getPresolveOptions().max_reduction_seq * 1000 == 0
+         && PresolveMethod<REAL>::is_interrupted(
+              timer, problemUpdate.getPresolveOptions().tlim,
+              problemUpdate.getPresolveOptions().early_exit_callback ) )
+         break;
+
+
       assert( colsize[col] == 1 );
       assert( constMatrix.getColumnCoefficients( col ).getLength() == 1 );
 
@@ -524,7 +536,7 @@ SingletonStuffing<REAL>::execute( const Problem<REAL>& problem,
    Vec<std::pair<int, REAL>> penaltyvars;
 
    for( int row : rowsWithPenaltySingletons )
-   {
+   {     
       assert( rflags[row].test( RowFlag::kLhsInf ) ||
               rflags[row].test( RowFlag::kRhsInf ) );
       assert( !rflags[row].test( RowFlag::kLhsInf ) ||

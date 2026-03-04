@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -139,6 +141,19 @@ class Problem
             ++ncontinuous;
       }
    }
+
+   bool
+   is_objective_negated() const
+   {
+      return objective_negated;
+   }
+
+   void
+   set_objective_negated( const bool flag )
+   {
+      objective_negated = flag;
+   }
+
 
    /// set domains of variables
    void
@@ -378,6 +393,67 @@ class Problem
       return symmetries;
    }
 
+   bool
+   is_clique( const ConstraintMatrix<REAL>& matrix, int row, const Num<REAL>& num ) const
+   {
+      RowFlags rowFlag = matrix.getRowFlags()[row];
+      bool rhsClique = true;
+      bool lhsClique = true;
+      bool SOS1 = false;
+      bool equation = false;
+      if( rowFlag.test( RowFlag::kRhsInf ) )
+         rhsClique = false;
+      if( rowFlag.test( RowFlag::kLhsInf ) )
+         lhsClique = false;
+      if( !lhsClique && !rhsClique )
+         return false;
+      auto rowvec = matrix.getRowCoefficients( row );
+      if( rowvec.getLength() <= 1 || rowFlag.test( RowFlag::kRedundant ))
+         return false;
+      REAL minvalue = std::numeric_limits<REAL>::infinity();
+      REAL maxvalue = -std::numeric_limits<REAL>::infinity();
+      for( int j = 0; j < rowvec.getLength(); ++j )
+      {
+         int col = rowvec.getIndices()[j];
+         if( !variableDomains.flags[col].test( ColFlag::kIntegral ) )
+            return false;
+         REAL coeff = rowvec.getValues()[j];
+         REAL lb = variableDomains.lower_bounds[col];
+         REAL ub = variableDomains.upper_bounds[col];
+         if( !num.isEq( ub, 1 ) )
+            SOS1 = true;
+         if( rhsClique && ( ( num.isEq( 0, lb ) && num.isLT( 0, coeff ) ) ||
+                            ( num.isEq( 0, ub ) && num.isGT( 0, coeff ) ) ) )
+         {
+            lhsClique = false;
+            if( !( num.isGT( minvalue + abs( coeff ),
+                             matrix.getRightHandSides()[row] ) &&
+                   num.isLE( abs( coeff ), matrix.getRightHandSides()[row] ) ) )
+               rhsClique = false;
+            else if( num.isLT( abs( coeff ), minvalue ) )
+               minvalue = abs( coeff );
+         }
+         else if( lhsClique &&
+                  ( ( num.isEq( 0, ub ) && num.isLT( 0, coeff ) ) ||
+                    ( num.isEq( 0, lb ) && num.isGT( 0, coeff ) ) ) )
+         {
+            rhsClique = false;
+            if( !( num.isLT( maxvalue - abs( coeff ),
+                             matrix.getLeftHandSides()[row] ) &&
+                   num.isGE( -abs( coeff ), matrix.getLeftHandSides()[row] ) ) )
+               lhsClique = false;
+            else if( num.isGT( -abs( coeff ), maxvalue ) )
+               maxvalue = -abs( coeff );
+         }
+         else
+            return false;
+         if( ( !lhsClique && !rhsClique ) || SOS1 )
+            return false;
+      }
+      if( (rhsClique && num.isGT(matrix.getLeftHandSides()[row],0.0)) || (lhsClique && num.isLT(matrix.getRightHandSides()[row],0.0)) )
+         equation = true;
+      return !equation && !SOS1 ;
+   }
 
    /// substitute a variable in the objective using an equality constraint
    /// given by a row index
@@ -759,6 +835,8 @@ class Problem
    VariableDomains<REAL> variableDomains;
    int ncontinuous;
    int nintegers;
+   bool objective_negated = false;
+   VariableDomains<REAL> domains;
 
    Vec<String> variableNames;
    Vec<String> constraintNames;

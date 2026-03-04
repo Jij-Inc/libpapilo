@@ -19,8 +19,7 @@ This is a fork of [scipopt/papilo](https://github.com/scipopt/papilo) that aims 
 PaPILO, a C++14-based software package, provides parallel presolve routines for (mixed integer) linear programming problems. The routines
 are implemented using templates which allows switching to higher precision or rational arithmetic using the boost multiprecision package.
 
-Additionally to the distribution here under the LGPLv3, PaPILO is also distributed as part of the
-SCIP Optimization Suite which is available under https://scipopt.org/.
+PaPILO is part of the SCIP Optimization Suite, which is available under https://scipopt.org/.
 
 PaPILO can be used as a header-based library and also provides an executable.
 Using the executable it is possible to presolve and postsolve MILP instances based on files.
@@ -73,10 +72,15 @@ To install into your system, run `sudo make install`.
 To install PaPILO into a folder, add `-DCMAKE_INSTALL_PREFIX=/path/to/install/dir/` to the cmake call and run `make install` after the build.
 
 If you use a relative path to SCIP, then the reference point is the location of the `CMakeLists.txt`.
-If you want to build PaPILO with a provided Boost version please add one of these option to the cmake command:
+If you want to build PaPILO with a provided Boost version please specify its location:
+For CMake >= 3.30
 ```
--DBOOST_ROOT=../boost_1_72_0
--DBOOST_INCLUDEDIR=../boost_1_72_0/include
+-DBoost_DIR=PATH_TO_BOOST/lib/cmake/Boost-<BOOST_VERSION>
+```
+and for CMake < 3.30
+```
+-DBOOST_ROOT=PATH_TO_BOOST
+-DBOOST_INCLUDEDIR=PATH_TO_BOOST/include
 ```
 
 Solvers that are found in the system are automatically linked to the executable.
@@ -408,23 +412,17 @@ which is available under https://opus4.kobv.de/opus4-zib/files/6037/Presolve.pdf
 Some details on how PaPILO works internally are presented in a talk given during the SCIP workshop 2020 which has been recorded
 and is available under https://www.youtube.com/watch?v=JKAyyWXGeQM.
 
-# Licensing
+# License
 
-To avoid confusion about licensing a short note on the LGPLv3.
-This note is just an explanation and legally only the license text itself is of relevance.
-
-When PaPILO is used as a header-based library then only section 3 of LGPLv3 is relevant, and not section 4. Therefore PaPILO in that setting could be used in a software that is distributed under the terms of a different license when the conditions of section 3 are met, which are
-
-    a) Give prominent notice with each copy of the object code (refers to binary distributions of your software) that the Library (refers to PaPILO) is used in it and that the Library and its use are covered by this License (refers to the LGPLv3).
-    b) Accompany the object code with a copy of the GNU GPL and this license document.
-
-Modifications of PaPILO itself, however, must be distributed under LGPLv3.
+Since version 3.0.0, PaPILO is available under Apache License 2.0.
 
 # Contributors
 
 [Ambros Gleixner](https://www.zib.de/members/gleixner) ([@ambros-gleixner](https://github.com/ambros-gleixner)) &mdash; project head
 
 [Alexander Hoen](https://www.zib.de/members/hoen)  ([@alexhoen](https://github.com/alexhoen)) &mdash; main developer
+
+[Jacob von Holly-Ponientzietz](https://www.zib.de/members/vonholly-ponientzietz) ([@JacobvonHolly-Ponientzietz](https://github.com/JacobvonHolly-Ponientzietz)) &mdash; Clique Merging
 
 [Dominik Kamp](https://www.wm.uni-bayreuth.de/de/team/kamp_dominik/index.php)  ([@DominikKamp](https://github.com/DominikKamp)) &mdash; developer
 

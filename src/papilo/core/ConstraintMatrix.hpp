@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -545,12 +547,19 @@ class ConstraintMatrix
    /// @param equalityRHS the left hand side of the equality such that sum{
    /// a_j*x_i } = equalityRHS
    void
-   aggregate( const Num<REAL>& num, int substituted_col, SparseVectorView<REAL> equalityLHS,
-              REAL equalityRHS, const VariableDomains<REAL>& domains,
-              Vec<int>& indbuffer, Vec<REAL>& valbuffer,
-              Vec<Triplet<REAL>>& tripletbuffer, Vec<int>& changedActivities,
-              Vec<RowActivity<REAL>>& activities, Vec<int>& singletonRows,
-              Vec<int>& singletonCols, Vec<int>& emptyCols, int presolveround );
+   aggregate( const Num<REAL>& num, int substituted_col,
+              const SparseVectorView<REAL>& equalityLHS, REAL equalityRHS,
+              const VariableDomains<REAL>& domains, Vec<int>& indbuffer,
+              Vec<REAL>& valbuffer, Vec<Triplet<REAL>>& tripletbuffer,
+              Vec<int>& changedActivities, Vec<RowActivity<REAL>>& activities,
+              Vec<int>& singletonRows, Vec<int>& singletonCols,
+              Vec<int>& emptyCols, int presolveround );
+
+   bool
+   change_coefficient( const Num<REAL>& num, int row, int col, REAL val,
+       const VariableDomains<REAL>& domains, Vec<int>& indbuffer,
+       Vec<REAL>& valbuffer, Vec<int>& changedActivities,
+       Vec<RowActivity<REAL>>& activities, int presolveround );
 
    const SparseStorage<REAL>&
    getMatrixTranspose() const
@@ -1272,11 +1281,83 @@ ConstraintMatrix<REAL>::sparsify(
    return ncancel;
 }
 
+
+
+
 template <typename REAL>
+bool
+ConstraintMatrix<REAL>::change_coefficient(
+    const Num<REAL>& num, int row, int col, REAL val,
+    const VariableDomains<REAL>& domains, Vec<int>& indbuffer,
+    Vec<REAL>& valbuffer, Vec<int>& changedActivities,
+    Vec<RowActivity<REAL>>& activities, int presolveround )
+{
+   auto updateActivity = [presolveround, &changedActivities, &domains,
+                          &activities, this, num](
+                             int row, int col, REAL oldval, REAL newval ) {
+      assert( oldval != newval );
+
+      auto activityChange = [row, presolveround, &changedActivities](
+                                ActivityChange actChange,
+                                RowActivity<REAL>& activity ) {
+         if( activity.lastchange == presolveround )
+            return;
+
+         if( actChange == ActivityChange::kMin && activity.ninfmin > 1 )
+            return;
+
+         if( actChange == ActivityChange::kMax && activity.ninfmax > 1 )
+            return;
+
+         activity.lastchange = presolveround;
+         changedActivities.push_back( row );
+      };
+
+      const SparseVectorView<REAL>& rowVec = getRowCoefficients( row );
+      update_activity_after_coeffchange(
+          domains.lower_bounds[col], domains.upper_bounds[col],
+          domains.flags[col], oldval, newval, activities[row],
+          rowVec.getLength(), rowVec.getIndices(), rowVec.getValues(), domains,
+          num, activityChange );
+   };
+
+   auto mergeVal = [&]( const REAL& oldval, const REAL& newval )
+   { return newval; };
+
+   if(cons_matrix.rowranges[row].end + 1 == cons_matrix.rowranges[row+1].start)
+   {
+      //fmt::print("did not add col {} to clique {}\n", col, row);
+      return false;
+   }
+   if(cons_matrix_transp.rowranges[col].end + 1 == cons_matrix_transp.rowranges[col+1].start)
+   {
+      //fmt::print("did not add col {} to clique {}\n", col, row);
+      return false;
+   }
+
+   int newsize = cons_matrix.changeRow(
+       row, int{ 0 }, int{ 1 },
+       [&]( int k ) { return col; },
+       [&]( int k ) { return val; },
+       mergeVal, updateActivity, valbuffer, indbuffer );
+   rowsize[row] = newsize;
+   newsize = cons_matrix_transp.changeRow(
+             col, int{0}, int{1},
+             [&]( int k ) { return row; },
+             [&]( int k ) { return val; },
+             []( const REAL& oldval, const REAL& newval ) { return newval; },
+             []( int, int, REAL, REAL ) {}, valbuffer, indbuffer );
+   colsize[col] = newsize;
+   return true;
+
+}
+
+    template <typename REAL>
 void
 ConstraintMatrix<REAL>::aggregate(
-    const Num<REAL>& num, int substituted_col, SparseVectorView<REAL> equalityLHS,
-    REAL equalityRHS, const VariableDomains<REAL>& domains, Vec<int>& indbuffer,
+    const Num<REAL>& num, int substituted_col,
+    const SparseVectorView<REAL>& equalityLHS, REAL equalityRHS,
+    const VariableDomains<REAL>& domains, Vec<int>& indbuffer,
     Vec<REAL>& valbuffer, Vec<Triplet<REAL>>& tripletbuffer,
     Vec<int>& changedActivities, Vec<RowActivity<REAL>>& activities,
     Vec<int>& singletonRows, Vec<int>& singletonCols, Vec<int>& emptyCols,

@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -35,6 +37,8 @@ namespace papilo
 template <typename REAL>
 class DualInfer : public PresolveMethod<REAL>
 {
+   double minboundred = 0.001;
+
  public:
    DualInfer() : PresolveMethod<REAL>()
    {
@@ -51,7 +55,15 @@ class DualInfer : public PresolveMethod<REAL>
          this->setEnabled( false );
       return false;
    }
-   
+
+   void
+   addPresolverParams( ParameterSet& paramSet ) override
+   {
+      paramSet.addParameter( "dualinfer.minboundred",
+                             "minimum relative reduction to accept a bound change in dualinfer",
+                             minboundred, 0.0, 1.0 );
+   }
+
    bool
    is_primal_problem_bounded( const Problem<REAL>& problem, const Num<REAL>& num, int& primal_bounded )
    {
@@ -345,8 +357,8 @@ DualInfer<REAL>::execute( const Problem<REAL>& problem,
             }
          }
 
-         // reject too small bound changes
-         if( !oldboundinf && num.isFeasLE((newbound - oldbound) / (1000 * num.max(abs(oldbound), 1)), 0) )
+         // reject too small bound change
+         if( !oldboundinf && newbound <= oldbound + REAL(minboundred) * num.max(abs(oldbound), 1) )
             return;
 
          dualColFlags[dualCol].unset( ColFlag::kLbInf );
@@ -388,8 +400,8 @@ DualInfer<REAL>::execute( const Problem<REAL>& problem,
             }
          }
 
-         // reject too small bound changes
-         if( !oldboundinf && num.isFeasGE((newbound - oldbound) / (1000 * num.max(abs(oldbound), 1)), 0) )
+         // reject too small bound change
+         if( !oldboundinf && newbound >= oldbound - REAL(minboundred) * num.max(abs(oldbound), 1) )
             return;
 
          dualColFlags[dualCol].unset( ColFlag::kUbInf );

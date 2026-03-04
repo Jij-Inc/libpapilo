@@ -5,18 +5,20 @@
 /*                                                                           */
 /* Copyright (C) 2020-2025 Zuse Institute Berlin (ZIB)                       */
 /*                                                                           */
-/* This program is free software: you can redistribute it and/or modify      */
-/* it under the terms of the GNU Lesser General Public License as published  */
-/* by the Free Software Foundation, either version 3 of the License, or      */
-/* (at your option) any later version.                                       */
+/* Licensed under the Apache License, Version 2.0 (the "License");           */
+/* you may not use this file except in compliance with the License.          */
+/* You may obtain a copy of the License at                                   */
 /*                                                                           */
-/* This program is distributed in the hope that it will be useful,           */
-/* but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-/* GNU Lesser General Public License for more details.                       */
+/*     http://www.apache.org/licenses/LICENSE-2.0                            */
 /*                                                                           */
-/* You should have received a copy of the GNU Lesser General Public License  */
-/* along with this program.  If not, see <https://www.gnu.org/licenses/>.    */
+/* Unless required by applicable law or agreed to in writing, software       */
+/* distributed under the License is distributed on an "AS IS" BASIS,         */
+/* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  */
+/* See the License for the specific language governing permissions and       */
+/* limitations under the License.                                            */
+/*                                                                           */
+/* You should have received a copy of the Apache-2.0 license                 */
+/* along with PaPILO; see the file LICENSE. If not visit scipopt.org.        */
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
@@ -564,19 +566,18 @@ Postsolve<REAL>::apply_fix_infinity_variable_in_original_solution(
 {
    // calculate the feasible (minimal) value for the infinity variable
    int col = indices[first];
-   REAL bound = values[first + 1];
    int number_rows = indices[first + 1];
+   int bound_is_infinity = indices[first + 2];
+   REAL bound = values[first + 2];
    REAL solution = bound;
    int row_counter = 0;
-   int current_counter = first + 2;
+   int current_counter = first + 3;
 
    bool isNegativeInfinity = values[first] < 0;
    int* row_indices = new int[number_rows];
    REAL* col_coefficents = new REAL[number_rows];
 
-   bool is_bound_infinity = bound == REAL(std::numeric_limits<int64_t>::max());
-
-   if( number_rows == 0 && is_bound_infinity )
+   if( number_rows == 0 && bound_is_infinity )
       solution = 0;
 
    if( isNegativeInfinity )
@@ -668,16 +669,17 @@ Postsolve<REAL>::apply_fix_infinity_variable_in_original_solution(
          sum.add( -col_coefficents[k] * originalSolution.dual[row_indices[k]] );
       originalSolution.reducedCosts[col] = sum.get();
 
+
       // store the bounds of the variable
       if( isNegativeInfinity )
-         stored_bounds.set_bounds_of_variable( col, true, is_bound_infinity, 0, bound );
+         stored_bounds.set_bounds_of_variable( col, true, bound_is_infinity, 0, bound );
       else
-         stored_bounds.set_bounds_of_variable( col, is_bound_infinity, true, bound, 0 );
+         stored_bounds.set_bounds_of_variable( col, bound_is_infinity, true, bound, 0 );
 
       // set the basis depending on the status
       if( originalSolution.basisAvailabe )
       {
-         if( number_rows == 0 && is_bound_infinity )
+         if( number_rows == 0 && bound_is_infinity )
             originalSolution.varBasisStatus[col] = VarBasisStatus::ZERO;
          else if( num.isEq( solution, bound ) )
             if( isNegativeInfinity )
