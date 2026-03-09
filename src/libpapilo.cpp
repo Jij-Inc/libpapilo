@@ -1616,9 +1616,9 @@ extern "C"
                                             int col1, int col2 )
    {
       check_reductions_ptr( reductions );
-      check_run(
-          [&]() { reductions->reductions.mark_parallel_cols( col1, col2 ); },
-          "Failed to mark parallel columns in reductions" );
+      check_run( [&]()
+                 { reductions->reductions.mark_parallel_cols( col1, col2 ); },
+                 "Failed to mark parallel columns in reductions" );
    }
 
    void
