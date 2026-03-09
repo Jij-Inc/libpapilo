@@ -2398,13 +2398,18 @@ extern "C"
                  "Failed to set postpone substitutions" );
    }
 
-   void
+   libpapilo_presolve_status_t
    libpapilo_problem_update_check_changed_activities(
        libpapilo_problem_update_t* update )
    {
       check_problem_update_ptr( update );
-      check_run( [&]() { update->update.checkChangedActivities(); },
-                 "Failed to check changed activities" );
+      return check_run(
+          [&]()
+          {
+             auto status = update->update.checkChangedActivities();
+             return convert_presolve_status( status );
+          },
+          "Failed to check changed activities" );
    }
 
    /* Individual Presolver API Implementation */

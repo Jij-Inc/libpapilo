@@ -1026,7 +1026,7 @@ extern "C"
    libpapilo_problem_update_set_postpone_substitutions(
        libpapilo_problem_update_t* update, int postpone );
 
-   LIBPAPILO_EXPORT void
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_problem_update_check_changed_activities(
        libpapilo_problem_update_t* update );
 
