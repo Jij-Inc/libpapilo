@@ -10,6 +10,7 @@ set(LIBPAPILO_TESTS
     MessageTest.cpp
     GetterAPIsTest.cpp
     PresolverStatsTest.cpp
+    ParallelColTest.cpp
     # Add more test files as needed
 )
 
@@ -87,6 +88,10 @@ set(LIBPAPILO_TEST_NAMES
     # PresolverStatsTest.cpp
     "per-presolver-statistics-are-tracked-correctly"
     "per-presolver-statistics-match-overall-statistics"
+
+    # ParallelColTest.cpp
+    "mark_parallel_cols_creates_reduction"
+    "parallel_col_apply_reductions"
 )
 
 # Register test targets for each test file

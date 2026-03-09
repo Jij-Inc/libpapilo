@@ -1612,6 +1612,16 @@ extern "C"
    }
 
    void
+   libpapilo_reductions_mark_parallel_cols( libpapilo_reductions_t* reductions,
+                                            int col1, int col2 )
+   {
+      check_reductions_ptr( reductions );
+      check_run(
+          [&]() { reductions->reductions.mark_parallel_cols( col1, col2 ); },
+          "Failed to mark parallel columns in reductions" );
+   }
+
+   void
    libpapilo_reductions_begin_transaction( libpapilo_reductions_t* reductions )
    {
       check_reductions_ptr( reductions );

@@ -707,6 +707,10 @@ extern "C"
                                             int col, int row );
 
    LIBPAPILO_EXPORT void
+   libpapilo_reductions_mark_parallel_cols( libpapilo_reductions_t* reductions,
+                                            int col1, int col2 );
+
+   LIBPAPILO_EXPORT void
    libpapilo_reductions_begin_transaction( libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT void
