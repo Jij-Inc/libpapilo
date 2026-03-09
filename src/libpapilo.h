@@ -277,6 +277,9 @@ extern "C"
    /** Opaque pointer for papilo::SimpleSubstitution<double> */
    typedef struct libpapilo_simple_substitution_t
        libpapilo_simple_substitution_t;
+   /** Opaque pointer for papilo::ParallelColDetection<double> */
+   typedef struct libpapilo_parallel_col_detection_t
+       libpapilo_parallel_col_detection_t;
    /** Opaque pointer for papilo::Num<double> */
    typedef struct libpapilo_num_t libpapilo_num_t;
    /** Opaque pointer for papilo::Timer */
@@ -707,6 +710,10 @@ extern "C"
                                             int col, int row );
 
    LIBPAPILO_EXPORT void
+   libpapilo_reductions_mark_parallel_cols( libpapilo_reductions_t* reductions,
+                                            int col1, int col2 );
+
+   LIBPAPILO_EXPORT void
    libpapilo_reductions_begin_transaction( libpapilo_reductions_t* reductions );
 
    LIBPAPILO_EXPORT void
@@ -1019,6 +1026,10 @@ extern "C"
    libpapilo_problem_update_set_postpone_substitutions(
        libpapilo_problem_update_t* update, int postpone );
 
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_problem_update_check_changed_activities(
+       libpapilo_problem_update_t* update );
+
    /* Individual Presolver API */
    LIBPAPILO_EXPORT libpapilo_singleton_cols_t*
    libpapilo_singleton_cols_create();
@@ -1046,6 +1057,22 @@ extern "C"
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_simple_substitution_execute(
        libpapilo_simple_substitution_t* presolver,
+       const libpapilo_problem_t* problem,
+       const libpapilo_problem_update_t* update, const libpapilo_num_t* num,
+       libpapilo_reductions_t* reductions, const libpapilo_timer_t* timer,
+       int* cause );
+
+   /* ParallelColDetection Presolver API */
+   LIBPAPILO_EXPORT libpapilo_parallel_col_detection_t*
+   libpapilo_parallel_col_detection_create();
+
+   LIBPAPILO_EXPORT void
+   libpapilo_parallel_col_detection_free(
+       libpapilo_parallel_col_detection_t* presolver );
+
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_parallel_col_detection_execute(
+       libpapilo_parallel_col_detection_t* presolver,
        const libpapilo_problem_t* problem,
        const libpapilo_problem_update_t* update, const libpapilo_num_t* num,
        libpapilo_reductions_t* reductions, const libpapilo_timer_t* timer,

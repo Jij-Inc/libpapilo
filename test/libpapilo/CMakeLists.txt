@@ -10,6 +10,7 @@ set(LIBPAPILO_TESTS
     MessageTest.cpp
     GetterAPIsTest.cpp
     PresolverStatsTest.cpp
+    ParallelColDetectionTest.cpp
     # Add more test files as needed
 )
 
@@ -87,6 +88,18 @@ set(LIBPAPILO_TEST_NAMES
     # PresolverStatsTest.cpp
     "per-presolver-statistics-are-tracked-correctly"
     "per-presolver-statistics-match-overall-statistics"
+
+    # ParallelColDetectionTest.cpp (corresponds to test/papilo/presolve/ParallelColDetectionTest.cpp)
+    "parallel_col_detection_2_integer_columns"
+    "parallel_col_detection_objective_zero"
+    "parallel_col_detection_2_continuous_columns"
+    "parallel_col_detection_int_cont_merge_possible"
+    "parallel_col_detection_cont_int_merge_possible"
+    "parallel_col_detection_cont_int_merge_failed"
+    "parallel_col_detection_int_cont_merge_failed"
+    "parallel_col_detection_int_merge_failed_hole"
+    "parallel_col_detection_obj_not_parallel"
+    "parallel_col_detection_multiple_parallel_columns"
 )
 
 # Register test targets for each test file
