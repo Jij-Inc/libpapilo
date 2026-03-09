@@ -726,6 +726,13 @@ TEST_CASE( "parallel_col_detection_multiple_parallel_columns",
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 13 );
 
+   // Check transactions (matches C++ test)
+   REQUIRE( libpapilo_reductions_get_num_transactions( reductions ) == 2 );
+   REQUIRE( libpapilo_reductions_get_transaction_start( reductions, 0 ) == 0 );
+   REQUIRE( libpapilo_reductions_get_transaction_end( reductions, 0 ) == 10 );
+   REQUIRE( libpapilo_reductions_get_transaction_start( reductions, 1 ) == 10 );
+   REQUIRE( libpapilo_reductions_get_transaction_end( reductions, 1 ) == 13 );
+
    int smallest_cont_column = 4;
    int remaining_integer_col = 1;
    int locked_cols[] = { smallest_cont_column, 6, 2, 0, remaining_integer_col };
