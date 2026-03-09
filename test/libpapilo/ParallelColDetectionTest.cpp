@@ -33,7 +33,8 @@
 #include <cstdlib>
 
 // Setup problem with parallel columns
-// Corresponds to setupProblemWithParallelColumns in ParallelColDetectionTest.cpp
+// Corresponds to setupProblemWithParallelColumns in
+// ParallelColDetectionTest.cpp
 static libpapilo_problem_t*
 setupProblemWithParallelColumns( bool first_col_int, bool second_col_int,
                                  double factor, double ub_first_col,
@@ -98,9 +99,8 @@ TEST_CASE( "parallel_col_detection_2_integer_columns",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( true, true, 3.0, 10.0, 10.0, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       true, true, 3.0, 10.0, 10.0, 0.0, 0.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -118,9 +118,8 @@ TEST_CASE( "parallel_col_detection_2_integer_columns",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 3 );
@@ -163,9 +162,8 @@ TEST_CASE( "parallel_col_detection_objective_zero",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( true, true, 0.5, 10.0, 10.0, 0.0, 0.0,
-                                        true );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       true, true, 0.5, 10.0, 10.0, 0.0, 0.0, true );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -183,9 +181,8 @@ TEST_CASE( "parallel_col_detection_objective_zero",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 3 );
@@ -228,9 +225,8 @@ TEST_CASE( "parallel_col_detection_2_continuous_columns",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( false, false, 2.0, 10.0, 10.0, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       false, false, 2.0, 10.0, 10.0, 0.0, 0.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -248,9 +244,8 @@ TEST_CASE( "parallel_col_detection_2_continuous_columns",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 3 );
@@ -293,9 +288,8 @@ TEST_CASE( "parallel_col_detection_int_cont_merge_possible",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( true, false, 2.0, 10.0, 10.0, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       true, false, 2.0, 10.0, 10.0, 0.0, 0.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -313,9 +307,8 @@ TEST_CASE( "parallel_col_detection_int_cont_merge_possible",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 4 );
@@ -364,9 +357,8 @@ TEST_CASE( "parallel_col_detection_cont_int_merge_possible",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( false, true, 0.5, 10.0, 10.0, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       false, true, 0.5, 10.0, 10.0, 0.0, 0.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -384,9 +376,8 @@ TEST_CASE( "parallel_col_detection_cont_int_merge_possible",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 4 );
@@ -435,9 +426,8 @@ TEST_CASE( "parallel_col_detection_cont_int_merge_failed",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( false, true, 1.0, 0.9, 10.0, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       false, true, 1.0, 0.9, 10.0, 0.0, 0.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -455,9 +445,8 @@ TEST_CASE( "parallel_col_detection_cont_int_merge_failed",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED );
 
@@ -481,9 +470,8 @@ TEST_CASE( "parallel_col_detection_int_cont_merge_failed",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( true, false, 1.0, 10.0, 0.9, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       true, false, 1.0, 10.0, 0.9, 0.0, 0.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -501,9 +489,8 @@ TEST_CASE( "parallel_col_detection_int_cont_merge_failed",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED );
 
@@ -527,9 +514,8 @@ TEST_CASE( "parallel_col_detection_int_merge_failed_hole",
    double time = 0.0;
    int cause = -1;
 
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( true, true, 1.33333, 5.0, 7.0, 3.0, 5.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       true, true, 1.33333, 5.0, 7.0, 3.0, 5.0, false );
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
    libpapilo_statistics_t* stats = libpapilo_statistics_create();
@@ -547,9 +533,8 @@ TEST_CASE( "parallel_col_detection_int_merge_failed_hole",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED );
 
@@ -575,15 +560,13 @@ TEST_CASE( "parallel_col_detection_obj_not_parallel",
 
    // Create problem where columns are parallel in constraints but not in
    // objective
-   libpapilo_problem_t* problem =
-       setupProblemWithParallelColumns( true, true, 1.0, 10.0, 10.0, 0.0, 0.0,
-                                        false );
+   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
+       true, true, 1.0, 10.0, 10.0, 0.0, 0.0, false );
 
    // Modify objective to break parallelism: obj = [3, 2] instead of [1, 1]
    size_t obj_size = 0;
-   double* obj_coeffs =
-       libpapilo_problem_get_objective_coefficients_mutable( problem,
-                                                             &obj_size );
+   double* obj_coeffs = libpapilo_problem_get_objective_coefficients_mutable(
+       problem, &obj_size );
    obj_coeffs[0] = 3.0;
    obj_coeffs[1] = 2.0;
 
@@ -604,9 +587,8 @@ TEST_CASE( "parallel_col_detection_obj_not_parallel",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    // No reductions because objective coefficients break parallelism
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED );
@@ -719,9 +701,8 @@ TEST_CASE( "parallel_col_detection_multiple_parallel_columns",
    libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
    libpapilo_presolve_status_t status =
-       libpapilo_parallel_col_detection_execute( presolver, problem, update,
-                                                 num, reductions, timer,
-                                                 &cause );
+       libpapilo_parallel_col_detection_execute(
+           presolver, problem, update, num, reductions, timer, &cause );
 
    REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
    REQUIRE( libpapilo_reductions_get_size( reductions ) == 13 );

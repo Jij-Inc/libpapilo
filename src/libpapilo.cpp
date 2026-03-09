@@ -2500,9 +2500,9 @@ extern "C"
    libpapilo_parallel_col_detection_t*
    libpapilo_parallel_col_detection_create()
    {
-      return check_run(
-          []() { return new libpapilo_parallel_col_detection_t(); },
-          "Failed to create parallel col detection presolver" );
+      return check_run( []()
+                        { return new libpapilo_parallel_col_detection_t(); },
+                        "Failed to create parallel col detection presolver" );
    }
 
    void
