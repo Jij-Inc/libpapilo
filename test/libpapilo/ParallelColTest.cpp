@@ -20,13 +20,20 @@
 /*                                                                           */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/**
+ * @file ParallelColTest.cpp
+ * @brief C API tests for ParallelColDetection presolver
+ *
+ * These tests correspond to the C++ tests in:
+ *   test/papilo/presolve/ParallelColDetectionTest.cpp
+ */
+
 #include "libpapilo.h"
 #include "papilo/external/catch/catch_amalgamated.hpp"
 #include <cstdlib>
-#include <vector>
 
 // Setup problem with parallel columns
-// Based on ParallelColDetectionTest.cpp::setupProblemWithParallelColumns
+// Corresponds to setupProblemWithParallelColumns in ParallelColDetectionTest.cpp
 static libpapilo_problem_t*
 setupProblemWithParallelColumns( bool first_col_int, bool second_col_int,
                                  double factor, double ub_first_col,
@@ -84,47 +91,156 @@ setupProblemWithParallelColumns( bool first_col_int, bool second_col_int,
    return problem;
 }
 
-TEST_CASE( "mark_parallel_cols_creates_reduction", "[libpapilo][parallel_col]" )
+// Corresponds to parallel_col_detection_2_integer_columns in C++ test
+TEST_CASE( "parallel_col_detection_2_integer_columns",
+           "[libpapilo][parallel_col]" )
 {
-   // Test that mark_parallel_cols creates a reduction entry
+   double time = 0.0;
+   int cause = -1;
+
+   libpapilo_problem_t* problem =
+       setupProblemWithParallelColumns( true, true, 3.0, 10.0, 10.0, 0.0, 0.0,
+                                        false );
+   libpapilo_num_t* num = libpapilo_num_create();
+   libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
+   libpapilo_statistics_t* stats = libpapilo_statistics_create();
+   libpapilo_postsolve_storage_t* postsolve =
+       libpapilo_postsolve_storage_create( problem, num, options );
+   libpapilo_message_t* message = libpapilo_message_create();
+   libpapilo_problem_update_t* update = libpapilo_problem_update_create(
+       problem, postsolve, stats, options, num, message );
+
+   libpapilo_problem_update_check_changed_activities( update );
+
+   libpapilo_parallel_col_detection_t* presolver =
+       libpapilo_parallel_col_detection_create();
    libpapilo_reductions_t* reductions = libpapilo_reductions_create();
+   libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
-   // Begin transaction
-   libpapilo_reductions_begin_transaction( reductions );
+   libpapilo_presolve_status_t status =
+       libpapilo_parallel_col_detection_execute( presolver, problem, update,
+                                                 num, reductions, timer,
+                                                 &cause );
 
-   // Lock both columns
-   libpapilo_reductions_lock_col_bounds( reductions, 0 );
-   libpapilo_reductions_lock_col_bounds( reductions, 1 );
+   REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
+   REQUIRE( libpapilo_reductions_get_size( reductions ) == 3 );
 
-   // Mark columns as parallel (col1=1 merged into col2=0)
-   libpapilo_reductions_mark_parallel_cols( reductions, 1, 0 );
+   libpapilo_reduction_info_t info0 =
+       libpapilo_reductions_get_info( reductions, 0 );
+   REQUIRE( info0.row == LIBPAPILO_COL_REDUCTION_LOCKED );
+   REQUIRE( info0.col == 1 );
+   REQUIRE( info0.newval == 0 );
 
-   // End transaction
-   libpapilo_reductions_end_transaction( reductions );
+   libpapilo_reduction_info_t info1 =
+       libpapilo_reductions_get_info( reductions, 1 );
+   REQUIRE( info1.row == LIBPAPILO_COL_REDUCTION_LOCKED );
+   REQUIRE( info1.col == 0 );
+   REQUIRE( info1.newval == 0 );
 
-   // Verify reduction was created
-   int size = libpapilo_reductions_get_size( reductions );
-   REQUIRE( size == 3 ); // 2 locks + 1 parallel
-
-   // Check the parallel reduction entry
-   libpapilo_reduction_info_t info =
+   libpapilo_reduction_info_t info2 =
        libpapilo_reductions_get_info( reductions, 2 );
+   REQUIRE( info2.row == LIBPAPILO_COL_REDUCTION_PARALLEL );
+   REQUIRE( info2.col == 1 );
+   REQUIRE( info2.newval == 0 );
 
-   // row should be ColReduction::PARALLEL = -12
-   REQUIRE( info.row == LIBPAPILO_COL_REDUCTION_PARALLEL );
-   // col should be col1 (the eliminated column)
-   REQUIRE( info.col == 1 );
-   // newval should be col2 (the merged column)
-   REQUIRE( info.newval == 0.0 );
-
+   // Cleanup
+   libpapilo_timer_free( timer );
    libpapilo_reductions_free( reductions );
+   libpapilo_parallel_col_detection_free( presolver );
+   libpapilo_problem_update_free( update );
+   libpapilo_message_free( message );
+   libpapilo_postsolve_storage_free( postsolve );
+   libpapilo_statistics_free( stats );
+   libpapilo_presolve_options_free( options );
+   libpapilo_num_free( num );
+   libpapilo_problem_free( problem );
 }
 
-TEST_CASE( "parallel_col_apply_reductions", "[libpapilo][parallel_col]" )
+// Corresponds to parallel_col_detection_2_continuous_columns in C++ test
+TEST_CASE( "parallel_col_detection_2_continuous_columns",
+           "[libpapilo][parallel_col]" )
 {
-   // Test applying parallel column reductions through ProblemUpdate
-   libpapilo_problem_t* problem = setupProblemWithParallelColumns(
-       false, false, 2.0, 10.0, 10.0, 0.0, 0.0, false );
+   double time = 0.0;
+   int cause = -1;
+
+   libpapilo_problem_t* problem =
+       setupProblemWithParallelColumns( false, false, 2.0, 10.0, 10.0, 0.0, 0.0,
+                                        false );
+   libpapilo_num_t* num = libpapilo_num_create();
+   libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
+   libpapilo_statistics_t* stats = libpapilo_statistics_create();
+   libpapilo_postsolve_storage_t* postsolve =
+       libpapilo_postsolve_storage_create( problem, num, options );
+   libpapilo_message_t* message = libpapilo_message_create();
+   libpapilo_problem_update_t* update = libpapilo_problem_update_create(
+       problem, postsolve, stats, options, num, message );
+
+   libpapilo_problem_update_check_changed_activities( update );
+
+   libpapilo_parallel_col_detection_t* presolver =
+       libpapilo_parallel_col_detection_create();
+   libpapilo_reductions_t* reductions = libpapilo_reductions_create();
+   libpapilo_timer_t* timer = libpapilo_timer_create( &time );
+
+   libpapilo_presolve_status_t status =
+       libpapilo_parallel_col_detection_execute( presolver, problem, update,
+                                                 num, reductions, timer,
+                                                 &cause );
+
+   REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_REDUCED );
+   REQUIRE( libpapilo_reductions_get_size( reductions ) == 3 );
+
+   libpapilo_reduction_info_t info0 =
+       libpapilo_reductions_get_info( reductions, 0 );
+   REQUIRE( info0.row == LIBPAPILO_COL_REDUCTION_LOCKED );
+   REQUIRE( info0.col == 1 );
+   REQUIRE( info0.newval == 0 );
+
+   libpapilo_reduction_info_t info1 =
+       libpapilo_reductions_get_info( reductions, 1 );
+   REQUIRE( info1.row == LIBPAPILO_COL_REDUCTION_LOCKED );
+   REQUIRE( info1.col == 0 );
+   REQUIRE( info1.newval == 0 );
+
+   libpapilo_reduction_info_t info2 =
+       libpapilo_reductions_get_info( reductions, 2 );
+   REQUIRE( info2.row == LIBPAPILO_COL_REDUCTION_PARALLEL );
+   REQUIRE( info2.col == 1 );
+   REQUIRE( info2.newval == 0 );
+
+   // Cleanup
+   libpapilo_timer_free( timer );
+   libpapilo_reductions_free( reductions );
+   libpapilo_parallel_col_detection_free( presolver );
+   libpapilo_problem_update_free( update );
+   libpapilo_message_free( message );
+   libpapilo_postsolve_storage_free( postsolve );
+   libpapilo_statistics_free( stats );
+   libpapilo_presolve_options_free( options );
+   libpapilo_num_free( num );
+   libpapilo_problem_free( problem );
+}
+
+// Corresponds to parallel_col_detection_obj_not_parallel in C++ test
+TEST_CASE( "parallel_col_detection_obj_not_parallel",
+           "[libpapilo][parallel_col]" )
+{
+   double time = 0.0;
+   int cause = -1;
+
+   // Create problem where columns are parallel in constraints but not in
+   // objective
+   libpapilo_problem_t* problem =
+       setupProblemWithParallelColumns( true, true, 1.0, 10.0, 10.0, 0.0, 0.0,
+                                        false );
+
+   // Modify objective to break parallelism: obj = [3, 2] instead of [1, 1]
+   size_t obj_size = 0;
+   double* obj_coeffs =
+       libpapilo_problem_get_objective_coefficients_mutable( problem,
+                                                             &obj_size );
+   obj_coeffs[0] = 3.0;
+   obj_coeffs[1] = 2.0;
 
    libpapilo_num_t* num = libpapilo_num_create();
    libpapilo_presolve_options_t* options = libpapilo_presolve_options_create();
@@ -135,64 +251,25 @@ TEST_CASE( "parallel_col_apply_reductions", "[libpapilo][parallel_col]" )
    libpapilo_problem_update_t* update = libpapilo_problem_update_create(
        problem, postsolve, stats, options, num, message );
 
-   // Setup problem state
-   libpapilo_problem_recompute_locks( problem );
-   libpapilo_problem_update_trivial_column_presolve( update );
-   libpapilo_problem_recompute_all_activities( problem );
+   libpapilo_problem_update_check_changed_activities( update );
 
-   // Create reductions
+   libpapilo_parallel_col_detection_t* presolver =
+       libpapilo_parallel_col_detection_create();
    libpapilo_reductions_t* reductions = libpapilo_reductions_create();
+   libpapilo_timer_t* timer = libpapilo_timer_create( &time );
 
-   // Begin transaction
-   libpapilo_reductions_begin_transaction( reductions );
+   libpapilo_presolve_status_t status =
+       libpapilo_parallel_col_detection_execute( presolver, problem, update,
+                                                 num, reductions, timer,
+                                                 &cause );
 
-   // Lock both columns
-   libpapilo_reductions_lock_col_bounds( reductions, 0 );
-   libpapilo_reductions_lock_col_bounds( reductions, 1 );
-
-   // Mark columns as parallel (col1=1 merged into col2=0)
-   libpapilo_reductions_mark_parallel_cols( reductions, 1, 0 );
-
-   // End transaction
-   libpapilo_reductions_end_transaction( reductions );
-
-   // Apply reductions
-   libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
-   libpapilo_presolve_add_default_presolvers( presolve );
-
-   int num_rounds = 0;
-   int num_changes = 0;
-   libpapilo_presolve_apply_reductions( presolve, 0, reductions, update,
-                                        &num_rounds, &num_changes );
-
-   REQUIRE( num_rounds == 1 );
-   REQUIRE( num_changes == 1 );
-
-   // Verify column 1 is now substituted/eliminated
-   REQUIRE( libpapilo_problem_is_col_substituted( problem, 1 ) == 1 );
-
-   // Check postsolve storage has the ParallelCol entry
-   size_t types_size = 0;
-   const libpapilo_postsolve_reduction_type_t* types =
-       libpapilo_postsolve_storage_get_types( postsolve, &types_size );
-   REQUIRE( types != NULL );
-   REQUIRE( types_size > 0 );
-
-   // Find the ParallelCol entry
-   bool found_parallel_col = false;
-   for( size_t i = 0; i < types_size; i++ )
-   {
-      if( types[i] == LIBPAPILO_POSTSOLVE_REDUCTION_PARALLEL_COL )
-      {
-         found_parallel_col = true;
-         break;
-      }
-   }
-   REQUIRE( found_parallel_col );
+   // No reductions because objective coefficients break parallelism
+   REQUIRE( status == LIBPAPILO_PRESOLVE_STATUS_UNCHANGED );
 
    // Cleanup
-   libpapilo_presolve_free( presolve );
+   libpapilo_timer_free( timer );
    libpapilo_reductions_free( reductions );
+   libpapilo_parallel_col_detection_free( presolver );
    libpapilo_problem_update_free( update );
    libpapilo_message_free( message );
    libpapilo_postsolve_storage_free( postsolve );

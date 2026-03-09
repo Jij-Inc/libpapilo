@@ -89,9 +89,10 @@ set(LIBPAPILO_TEST_NAMES
     "per-presolver-statistics-are-tracked-correctly"
     "per-presolver-statistics-match-overall-statistics"
 
-    # ParallelColTest.cpp
-    "mark_parallel_cols_creates_reduction"
-    "parallel_col_apply_reductions"
+    # ParallelColTest.cpp (corresponds to test/papilo/presolve/ParallelColDetectionTest.cpp)
+    "parallel_col_detection_2_integer_columns"
+    "parallel_col_detection_2_continuous_columns"
+    "parallel_col_detection_obj_not_parallel"
 )
 
 # Register test targets for each test file

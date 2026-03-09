@@ -38,6 +38,7 @@
 #include "papilo/misc/Num.hpp"
 #include "papilo/misc/Timer.hpp"
 #include "papilo/misc/Vec.hpp"
+#include "papilo/presolvers/ParallelColDetection.hpp"
 #include "papilo/presolvers/SimpleSubstitution.hpp"
 #include "papilo/presolvers/SingletonCols.hpp"
 #include <boost/archive/binary_iarchive.hpp>
@@ -152,6 +153,12 @@ struct libpapilo_simple_substitution_t
 {
    uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
    SimpleSubstitution<double> presolver;
+};
+
+struct libpapilo_parallel_col_detection_t
+{
+   uint64_t magic_number = LIBPAPILO_MAGIC_NUMBER;
+   ParallelColDetection<double> presolver;
 };
 
 struct libpapilo_num_t
@@ -293,6 +300,18 @@ check_simple_substitution_ptr(
                   "libpapilo_simple_substitution_t pointer is null" );
    custom_assert( presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
                   "Invalid libpapilo_simple_substitution_t pointer (magic "
+                  "number mismatch)" );
+}
+
+/** Check the pointer passed from user code is valid. */
+void
+check_parallel_col_detection_ptr(
+    const libpapilo_parallel_col_detection_t* presolver )
+{
+   custom_assert( presolver != nullptr,
+                  "libpapilo_parallel_col_detection_t pointer is null" );
+   custom_assert( presolver->magic_number == LIBPAPILO_MAGIC_NUMBER,
+                  "Invalid libpapilo_parallel_col_detection_t pointer (magic "
                   "number mismatch)" );
 }
 
@@ -2379,6 +2398,15 @@ extern "C"
                  "Failed to set postpone substitutions" );
    }
 
+   void
+   libpapilo_problem_update_check_changed_activities(
+       libpapilo_problem_update_t* update )
+   {
+      check_problem_update_ptr( update );
+      check_run( [&]() { update->update.checkChangedActivities(); },
+                 "Failed to check changed activities" );
+   }
+
    /* Individual Presolver API Implementation */
 
    libpapilo_singleton_cols_t*
@@ -2465,6 +2493,51 @@ extern "C"
              return convert_presolve_status( status );
           },
           "Failed to execute simple substitution presolver" );
+   }
+
+   /* ParallelColDetection Presolver API Implementation */
+
+   libpapilo_parallel_col_detection_t*
+   libpapilo_parallel_col_detection_create()
+   {
+      return check_run(
+          []() { return new libpapilo_parallel_col_detection_t(); },
+          "Failed to create parallel col detection presolver" );
+   }
+
+   void
+   libpapilo_parallel_col_detection_free(
+       libpapilo_parallel_col_detection_t* presolver )
+   {
+      check_parallel_col_detection_ptr( presolver );
+      delete presolver;
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_parallel_col_detection_execute(
+       libpapilo_parallel_col_detection_t* presolver,
+       const libpapilo_problem_t* problem,
+       const libpapilo_problem_update_t* update, const libpapilo_num_t* num,
+       libpapilo_reductions_t* reductions, const libpapilo_timer_t* timer,
+       int* cause )
+   {
+      check_parallel_col_detection_ptr( presolver );
+      check_problem_ptr( problem );
+      check_problem_update_ptr( update );
+      check_num_ptr( num );
+      check_reductions_ptr( reductions );
+      check_timer_ptr( timer );
+      custom_assert( cause != nullptr, "cause pointer is null" );
+
+      return check_run(
+          [&]()
+          {
+             PresolveStatus status = presolver->presolver.execute(
+                 problem->problem, update->update, num->num,
+                 reductions->reductions, timer->timer, *cause );
+             return convert_presolve_status( status );
+          },
+          "Failed to execute parallel col detection presolver" );
    }
 
    /* Solution Management API Implementation */
