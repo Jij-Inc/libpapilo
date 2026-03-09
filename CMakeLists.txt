@@ -688,7 +688,7 @@ endif()
 
 # RPM package settings
 set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
+set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/Jij-Inc/libpapilo")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "libpapilo provides PaPILO (Parallel Presolve for Integer and Linear Optimization) as a presolve-only shared library with a C API")
 

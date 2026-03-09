@@ -1,6 +1,6 @@
 # libpapilo: PaPILO as a Presolve-Only Shared Library with C API
 
-This is a fork of [scipopt/papilo](https://github.com/scipopt/papilo) that aims to provide PaPILO's presolving functionality as a shared library with a C API under LGPLv3.
+This is a fork of [scipopt/papilo](https://github.com/scipopt/papilo) that aims to provide PaPILO's presolving functionality as a shared library with a C API under the Apache 2.0 license.
 
 ## Goals of This Fork
 
