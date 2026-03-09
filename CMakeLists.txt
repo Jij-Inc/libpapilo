@@ -5,7 +5,7 @@ set(PAPILO_VERSION_MINOR 0)
 set(PAPILO_VERSION_PATCH 0)
 
 # Jij-specific patch version for libpapilo packaging
-set(LIBPAPILO_JIJ_PATCH_VERSION 12)
+set(LIBPAPILO_JIJ_PATCH_VERSION 1)
 set(PAPILO_API_VERSION 11)
 
 # Full version string including Jij patch version
@@ -688,7 +688,7 @@ endif()
 
 # RPM package settings
 set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-set(CPACK_RPM_PACKAGE_LICENSE "LGPL-3.0")
+set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0")
 set(CPACK_RPM_PACKAGE_URL "https://github.com/Jij-Inc/libpapilo")
 set(CPACK_RPM_PACKAGE_DESCRIPTION "libpapilo provides PaPILO (Parallel Presolve for Integer and Linear Optimization) as a presolve-only shared library with a C API")
 
