@@ -249,6 +249,21 @@ extern "C"
       LIBPAPILO_ROW_REDUCTION_PARALLEL_ROW = -16
    } libpapilo_row_reduction_t;
 
+   /**
+    * Result of parameter setting operations.
+    */
+   typedef enum
+   {
+      /** Parameter was successfully set */
+      LIBPAPILO_PARAM_OK = 0,
+      /** Parameter key was not found */
+      LIBPAPILO_PARAM_NOT_FOUND = 1,
+      /** Value type does not match parameter type */
+      LIBPAPILO_PARAM_WRONG_TYPE = 2,
+      /** Value is out of valid range or could not be parsed */
+      LIBPAPILO_PARAM_INVALID_VALUE = 3
+   } libpapilo_param_result_t;
+
    /** Reduction info structure */
    typedef struct
    {
@@ -595,9 +610,9 @@ extern "C"
     * @param presolve The presolve object
     * @param key The parameter key (e.g., "parallelcols.enabled")
     * @param value The boolean value to set
-    * @return 1 on success, 0 if parameter not found or type mismatch
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
     */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT libpapilo_param_result_t
    libpapilo_presolve_set_param_bool( libpapilo_presolve_t* presolve,
                                       const char* key, int value );
 
@@ -607,9 +622,9 @@ extern "C"
     * @param presolve The presolve object
     * @param key The parameter key
     * @param value The integer value to set
-    * @return 1 on success, 0 if parameter not found or type mismatch
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
     */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT libpapilo_param_result_t
    libpapilo_presolve_set_param_int( libpapilo_presolve_t* presolve,
                                      const char* key, int value );
 
@@ -619,9 +634,9 @@ extern "C"
     * @param presolve The presolve object
     * @param key The parameter key
     * @param value The double value to set
-    * @return 1 on success, 0 if parameter not found or type mismatch
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
     */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT libpapilo_param_result_t
    libpapilo_presolve_set_param_double( libpapilo_presolve_t* presolve,
                                         const char* key, double value );
 
@@ -634,9 +649,9 @@ extern "C"
     * @param presolve The presolve object
     * @param key The parameter key
     * @param value The string value to parse
-    * @return 1 on success, 0 if parameter not found or parse error
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
     */
-   LIBPAPILO_EXPORT int
+   LIBPAPILO_EXPORT libpapilo_param_result_t
    libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
                                    const char* key, const char* value );
 

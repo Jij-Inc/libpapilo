@@ -30,28 +30,28 @@ TEST_CASE( "set_param_bool disables presolver", "[parameter]" )
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Disable parallel column detection
-   int result =
+   libpapilo_param_result_t result =
        libpapilo_presolve_set_param_bool( presolve, "parallelcols.enabled", 0 );
-   REQUIRE( result == 1 );
+   REQUIRE( result == LIBPAPILO_PARAM_OK );
 
    // Disable parallel row detection
    result =
        libpapilo_presolve_set_param_bool( presolve, "parallelrows.enabled", 0 );
-   REQUIRE( result == 1 );
+   REQUIRE( result == LIBPAPILO_PARAM_OK );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "set_param_bool returns 0 for unknown key", "[parameter]" )
+TEST_CASE( "set_param_bool returns NOT_FOUND for unknown key", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
    libpapilo_presolve_add_default_presolvers( presolve );
 
-   int result =
+   libpapilo_param_result_t result =
        libpapilo_presolve_set_param_bool( presolve, "unknown.parameter", 1 );
-   REQUIRE( result == 0 );
+   REQUIRE( result == LIBPAPILO_PARAM_NOT_FOUND );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
@@ -64,9 +64,9 @@ TEST_CASE( "set_param_int sets integer parameter", "[parameter]" )
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Set message verbosity level
-   int result =
+   libpapilo_param_result_t result =
        libpapilo_presolve_set_param_int( presolve, "message.verbosity", 0 );
-   REQUIRE( result == 1 );
+   REQUIRE( result == LIBPAPILO_PARAM_OK );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
@@ -79,44 +79,46 @@ TEST_CASE( "parse_param parses string value", "[parameter]" )
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Parse "0" as false for boolean parameter
-   int result =
+   libpapilo_param_result_t result =
        libpapilo_presolve_parse_param( presolve, "parallelcols.enabled", "0" );
-   REQUIRE( result == 1 );
+   REQUIRE( result == LIBPAPILO_PARAM_OK );
 
    // Parse "1" as true
    result =
        libpapilo_presolve_parse_param( presolve, "parallelcols.enabled", "1" );
-   REQUIRE( result == 1 );
+   REQUIRE( result == LIBPAPILO_PARAM_OK );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "parse_param returns 0 for parse error", "[parameter]" )
+TEST_CASE( "parse_param returns NOT_FOUND for parse error", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
    libpapilo_presolve_add_default_presolvers( presolve );
 
-   // Invalid value for boolean parameter
-   int result = libpapilo_presolve_parse_param( presolve,
-                                                "parallelcols.enabled", "abc" );
-   REQUIRE( result == 0 );
+   // Invalid value for boolean parameter - boost::lexical_cast throws
+   // invalid_argument
+   libpapilo_param_result_t result = libpapilo_presolve_parse_param(
+       presolve, "parallelcols.enabled", "abc" );
+   REQUIRE( result == LIBPAPILO_PARAM_NOT_FOUND );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "set_param_bool fails before presolvers are added", "[parameter]" )
+TEST_CASE( "set_param_bool returns NOT_FOUND before presolvers are added",
+           "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
    // Note: NOT calling add_default_presolvers
 
    // This should fail because parallelcols presolver is not added yet
-   int result =
+   libpapilo_param_result_t result =
        libpapilo_presolve_set_param_bool( presolve, "parallelcols.enabled", 0 );
-   REQUIRE( result == 0 );
+   REQUIRE( result == LIBPAPILO_PARAM_NOT_FOUND );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
@@ -232,9 +234,9 @@ TEST_CASE( "disabling parallelcols prevents parallel column detection",
       disableAllPresolversExcept( presolve, "parallelcols.enabled" );
 
       // Explicitly enable parallel column detection
-      int result = libpapilo_presolve_set_param_bool(
+      libpapilo_param_result_t result = libpapilo_presolve_set_param_bool(
           presolve, "parallelcols.enabled", 1 );
-      REQUIRE( result == 1 );
+      REQUIRE( result == LIBPAPILO_PARAM_OK );
 
       libpapilo_postsolve_storage_t* postsolve = nullptr;
       libpapilo_statistics_t* statistics = nullptr;
@@ -269,9 +271,9 @@ TEST_CASE( "disabling parallelcols prevents parallel column detection",
 
       // Disable ALL presolvers including parallelcols
       disableAllPresolversExcept( presolve, "" ); // empty = disable all
-      int result = libpapilo_presolve_set_param_bool(
+      libpapilo_param_result_t result = libpapilo_presolve_set_param_bool(
           presolve, "parallelcols.enabled", 0 );
-      REQUIRE( result == 1 );
+      REQUIRE( result == LIBPAPILO_PARAM_OK );
 
       libpapilo_postsolve_storage_t* postsolve = nullptr;
       libpapilo_statistics_t* statistics = nullptr;

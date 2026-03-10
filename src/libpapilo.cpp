@@ -1320,7 +1320,7 @@ extern "C"
       presolve->presolve.getPresolveOptions() = options->options;
    }
 
-   int
+   libpapilo_param_result_t
    libpapilo_presolve_set_param_bool( libpapilo_presolve_t* presolve,
                                       const char* key, int value )
    {
@@ -1331,15 +1331,23 @@ extern "C"
       {
          ParameterSet paramSet = presolve->presolve.getParameters();
          paramSet.setParameter( key, static_cast<bool>( value ) );
-         return 1;
+         return LIBPAPILO_PARAM_OK;
       }
-      catch( const std::exception& )
+      catch( const std::invalid_argument& )
       {
-         return 0;
+         return LIBPAPILO_PARAM_NOT_FOUND;
+      }
+      catch( const std::domain_error& )
+      {
+         return LIBPAPILO_PARAM_WRONG_TYPE;
+      }
+      catch( const std::out_of_range& )
+      {
+         return LIBPAPILO_PARAM_INVALID_VALUE;
       }
    }
 
-   int
+   libpapilo_param_result_t
    libpapilo_presolve_set_param_int( libpapilo_presolve_t* presolve,
                                      const char* key, int value )
    {
@@ -1350,15 +1358,23 @@ extern "C"
       {
          ParameterSet paramSet = presolve->presolve.getParameters();
          paramSet.setParameter( key, value );
-         return 1;
+         return LIBPAPILO_PARAM_OK;
       }
-      catch( const std::exception& )
+      catch( const std::invalid_argument& )
       {
-         return 0;
+         return LIBPAPILO_PARAM_NOT_FOUND;
+      }
+      catch( const std::domain_error& )
+      {
+         return LIBPAPILO_PARAM_WRONG_TYPE;
+      }
+      catch( const std::out_of_range& )
+      {
+         return LIBPAPILO_PARAM_INVALID_VALUE;
       }
    }
 
-   int
+   libpapilo_param_result_t
    libpapilo_presolve_set_param_double( libpapilo_presolve_t* presolve,
                                         const char* key, double value )
    {
@@ -1369,15 +1385,23 @@ extern "C"
       {
          ParameterSet paramSet = presolve->presolve.getParameters();
          paramSet.setParameter( key, value );
-         return 1;
+         return LIBPAPILO_PARAM_OK;
       }
-      catch( const std::exception& )
+      catch( const std::invalid_argument& )
       {
-         return 0;
+         return LIBPAPILO_PARAM_NOT_FOUND;
+      }
+      catch( const std::domain_error& )
+      {
+         return LIBPAPILO_PARAM_WRONG_TYPE;
+      }
+      catch( const std::out_of_range& )
+      {
+         return LIBPAPILO_PARAM_INVALID_VALUE;
       }
    }
 
-   int
+   libpapilo_param_result_t
    libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
                                    const char* key, const char* value )
    {
@@ -1389,11 +1413,20 @@ extern "C"
       {
          ParameterSet paramSet = presolve->presolve.getParameters();
          paramSet.parseParameter( key, value );
-         return 1;
+         return LIBPAPILO_PARAM_OK;
       }
-      catch( const std::exception& )
+      catch( const std::invalid_argument& )
       {
-         return 0;
+         // Could be "parameter not found" or "could not parse"
+         return LIBPAPILO_PARAM_NOT_FOUND;
+      }
+      catch( const std::domain_error& )
+      {
+         return LIBPAPILO_PARAM_WRONG_TYPE;
+      }
+      catch( const std::out_of_range& )
+      {
+         return LIBPAPILO_PARAM_INVALID_VALUE;
       }
    }
 
