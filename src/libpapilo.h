@@ -249,6 +249,21 @@ extern "C"
       LIBPAPILO_ROW_REDUCTION_PARALLEL_ROW = -16
    } libpapilo_row_reduction_t;
 
+   /**
+    * Result of parameter setting operations.
+    */
+   typedef enum
+   {
+      /** Parameter was successfully set */
+      LIBPAPILO_PARAM_OK = 0,
+      /** Parameter key was not found */
+      LIBPAPILO_PARAM_NOT_FOUND = 1,
+      /** Value type does not match parameter type */
+      LIBPAPILO_PARAM_WRONG_TYPE = 2,
+      /** Value is out of valid range or could not be parsed */
+      LIBPAPILO_PARAM_INVALID_VALUE = 3
+   } libpapilo_param_result_t;
+
    /** Reduction info structure */
    typedef struct
    {
@@ -578,9 +593,89 @@ extern "C"
        libpapilo_presolve_t* presolve,
        const libpapilo_presolve_options_t* options );
 
+   /**
+    * Set a boolean parameter on the presolve object.
+    *
+    * This function allows configuring presolvers and presolve options using
+    * parameter keys. Common parameter keys include:
+    * - "parallelcols.enabled": Enable/disable parallel column detection
+    * - "parallelrows.enabled": Enable/disable parallel row detection
+    * - "probing.enabled": Enable/disable probing
+    * - "propagation.enabled": Enable/disable propagation
+    * - etc.
+    *
+    * Note: Presolvers must be added (via add_default_presolvers) before their
+    * parameters can be set.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key (e.g., "parallelcols.enabled")
+    * @param value The boolean value to set
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
+    */
+   LIBPAPILO_EXPORT libpapilo_param_result_t
+   libpapilo_presolve_set_param_bool( libpapilo_presolve_t* presolve,
+                                      const char* key, int value );
+
+   /**
+    * Set an integer parameter on the presolve object.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key
+    * @param value The integer value to set
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
+    */
+   LIBPAPILO_EXPORT libpapilo_param_result_t
+   libpapilo_presolve_set_param_int( libpapilo_presolve_t* presolve,
+                                     const char* key, int value );
+
+   /**
+    * Set a double parameter on the presolve object.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key
+    * @param value The double value to set
+    * @return LIBPAPILO_PARAM_OK on success, or an error code
+    */
+   LIBPAPILO_EXPORT libpapilo_param_result_t
+   libpapilo_presolve_set_param_double( libpapilo_presolve_t* presolve,
+                                        const char* key, double value );
+
+   /**
+    * Set a parameter by parsing a string value.
+    *
+    * This function parses the string value according to the parameter's type.
+    * For boolean parameters, the value must be "0" or "1". Other values will
+    * cause a parse error and return LIBPAPILO_PARAM_INVALID_VALUE.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key
+    * @param value The string value to parse
+    * @return LIBPAPILO_PARAM_OK on success, LIBPAPILO_PARAM_NOT_FOUND if
+    *         the key does not exist, or LIBPAPILO_PARAM_INVALID_VALUE if
+    *         the value could not be parsed
+    */
+   LIBPAPILO_EXPORT libpapilo_param_result_t
+   libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
+                                   const char* key, const char* value );
+
+   /**
+    * Apply presolve using the given presolve object with full output.
+    *
+    * This is the main presolve function. Create a presolve object, add
+    * presolvers, optionally configure parameters, then call this function.
+    *
+    * @param presolve The configured presolve object (must have presolvers
+    * added)
+    * @param problem The problem to presolve (will be modified in-place)
+    * @param postsolve_out Output: postsolve storage for solution recovery
+    * @param statistics_out Output: statistics about the presolve process
+    * @return Presolve status indicating the result
+    */
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
-   libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
-                                    libpapilo_problem_t* problem );
+   libpapilo_presolve_apply_full( libpapilo_presolve_t* presolve,
+                                  libpapilo_problem_t* problem,
+                                  libpapilo_postsolve_storage_t** postsolve_out,
+                                  libpapilo_statistics_t** statistics_out );
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_apply_reductions( libpapilo_presolve_t* presolve,
@@ -632,15 +727,6 @@ extern "C"
    LIBPAPILO_EXPORT unsigned int
    libpapilo_presolve_options_get_randomseed(
        const libpapilo_presolve_options_t* options );
-
-   /* Main presolve function */
-   LIBPAPILO_EXPORT libpapilo_presolve_status_t
-   libpapilo_presolve_apply( libpapilo_problem_t* problem,
-                             const libpapilo_presolve_options_t* options,
-                             const libpapilo_message_t* message,
-                             libpapilo_reductions_t** reductions,
-                             libpapilo_postsolve_storage_t** postsolve,
-                             libpapilo_statistics_t** statistics );
 
    /* Reductions access API */
    LIBPAPILO_EXPORT libpapilo_reductions_t*

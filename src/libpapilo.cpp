@@ -405,6 +405,45 @@ check_run( Func func, const char* message )
    std::terminate();
 }
 
+// Helper function to run parameter operations with proper exception handling
+template <typename Func>
+libpapilo_param_result_t
+run_param_op( Func func )
+{
+   try
+   {
+      func();
+      return LIBPAPILO_PARAM_OK;
+   }
+   catch( const std::invalid_argument& e )
+   {
+      // ParameterSet uses std::invalid_argument for both missing keys and
+      // parse errors. Distinguish based on exception message.
+      const std::string msg( e.what() );
+      if( msg.find( "could not parse" ) != std::string::npos )
+         return LIBPAPILO_PARAM_INVALID_VALUE;
+      return LIBPAPILO_PARAM_NOT_FOUND;
+   }
+   catch( const std::domain_error& )
+   {
+      return LIBPAPILO_PARAM_WRONG_TYPE;
+   }
+   catch( const std::out_of_range& )
+   {
+      return LIBPAPILO_PARAM_INVALID_VALUE;
+   }
+   catch( const std::exception& )
+   {
+      // Catch any other standard exceptions to prevent crossing C boundary
+      return LIBPAPILO_PARAM_INVALID_VALUE;
+   }
+   catch( ... )
+   {
+      // Catch-all for non-standard exceptions
+      return LIBPAPILO_PARAM_INVALID_VALUE;
+   }
+}
+
 // Helper function to convert PresolveStatus to libpapilo_presolve_status_t
 static libpapilo_presolve_status_t
 convert_presolve_status( PresolveStatus status )
@@ -1320,18 +1359,118 @@ extern "C"
       presolve->presolve.getPresolveOptions() = options->options;
    }
 
+   libpapilo_param_result_t
+   libpapilo_presolve_set_param_bool( libpapilo_presolve_t* presolve,
+                                      const char* key, int value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.setParameter( key, static_cast<bool>( value ) );
+          } );
+   }
+
+   libpapilo_param_result_t
+   libpapilo_presolve_set_param_int( libpapilo_presolve_t* presolve,
+                                     const char* key, int value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.setParameter( key, value );
+          } );
+   }
+
+   libpapilo_param_result_t
+   libpapilo_presolve_set_param_double( libpapilo_presolve_t* presolve,
+                                        const char* key, double value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.setParameter( key, value );
+          } );
+   }
+
+   libpapilo_param_result_t
+   libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
+                                   const char* key, const char* value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+      custom_assert( value != nullptr, "value pointer is null" );
+
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.parseParameter( key, value );
+          } );
+   }
+
    libpapilo_presolve_status_t
-   libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
-                                    libpapilo_problem_t* problem )
+   libpapilo_presolve_apply_full( libpapilo_presolve_t* presolve,
+                                  libpapilo_problem_t* problem,
+                                  libpapilo_postsolve_storage_t** postsolve_out,
+                                  libpapilo_statistics_t** statistics_out )
    {
       check_presolve_ptr( presolve );
       check_problem_ptr( problem );
+      custom_assert( postsolve_out != nullptr,
+                     "postsolve_out pointer is null" );
+      custom_assert( statistics_out != nullptr,
+                     "statistics_out pointer is null" );
 
       return check_run(
           [&]()
           {
+             // Execute presolve
              PresolveResult<double> result =
                  presolve->presolve.apply( problem->problem );
+
+             // Create output objects
+             auto* postsolve_storage = new libpapilo_postsolve_storage_t(
+                 std::move( result.postsolve ) );
+             auto* stats = new libpapilo_statistics_t();
+
+             // Copy overall statistics
+             stats->statistics = presolve->presolve.getStatistics();
+
+             // Copy per-presolver statistics
+             stats->presolver_stats.clear();
+             const auto& presolvers = presolve->presolve.getPresolvers();
+             const auto& presolverStats =
+                 presolve->presolve.getPresolverStats();
+
+             size_t numPresolvers =
+                 std::min( presolvers.size(), presolverStats.size() );
+             for( size_t i = 0; i < numPresolvers; ++i )
+             {
+                libpapilo_statistics_t::PresolverStat stat;
+                stat.name = presolvers[i]->getName();
+                stat.ncalls = presolvers[i]->getNCalls();
+                stat.nsuccessful = presolvers[i]->getNSuccess();
+                stat.ntransactions = presolverStats[i].first;
+                stat.napplied = presolverStats[i].second;
+                stat.exectime = presolvers[i]->getExecTime();
+                stats->presolver_stats.push_back( stat );
+             }
+
+             *postsolve_out = postsolve_storage;
+             *statistics_out = stats;
+
              return convert_presolve_status( result.status );
           },
           "Failed to apply presolve" );
@@ -1359,80 +1498,6 @@ extern "C"
              *num_changes = result.second;
           },
           "Failed to apply reductions" );
-   }
-
-   /* High-level presolve function for backward compatibility */
-   libpapilo_presolve_status_t
-   libpapilo_presolve_apply( libpapilo_problem_t* problem,
-                             const libpapilo_presolve_options_t* options,
-                             const libpapilo_message_t* message,
-                             libpapilo_reductions_t** reductions_out,
-                             libpapilo_postsolve_storage_t** postsolve_out,
-                             libpapilo_statistics_t** statistics_out )
-   {
-      check_problem_ptr( problem );
-      check_presolve_options_ptr( options );
-      check_message_ptr( message );
-      custom_assert( reductions_out != nullptr,
-                     "reductions_out pointer is null" );
-      custom_assert( postsolve_out != nullptr,
-                     "postsolve_out pointer is null" );
-      custom_assert( statistics_out != nullptr,
-                     "statistics_out pointer is null" );
-
-      return check_run(
-          [&]()
-          {
-             // Create presolve object
-             auto* presolve = libpapilo_presolve_create( message );
-             libpapilo_presolve_add_default_presolvers( presolve );
-             libpapilo_presolve_set_options( presolve, options );
-
-             // Execute presolve
-             PresolveResult<double> result =
-                 presolve->presolve.apply( problem->problem );
-
-             // Create output objects
-             auto* postsolve_storage = new libpapilo_postsolve_storage_t(
-                 std::move( result.postsolve ) );
-             auto* reductions = new libpapilo_reductions_t();
-             auto* stats = new libpapilo_statistics_t();
-
-             // Copy overall statistics
-             stats->statistics = presolve->presolve.getStatistics();
-
-             // Copy per-presolver statistics
-             stats->presolver_stats.clear();
-             const auto& presolvers = presolve->presolve.getPresolvers();
-             const auto& presolverStats =
-                 presolve->presolve.getPresolverStats();
-
-             size_t numPresolvers =
-                 std::min( presolvers.size(), presolverStats.size() );
-             for( size_t i = 0; i < numPresolvers; ++i )
-             {
-                libpapilo_statistics_t::PresolverStat stat;
-                stat.name = presolvers[i]->getName();
-                stat.ncalls = presolvers[i]->getNCalls();
-                stat.nsuccessful = presolvers[i]->getNSuccess();
-                stat.ntransactions = presolverStats[i].first;
-                stat.napplied = presolverStats[i].second;
-                stat.exectime = presolvers[i]->getExecTime();
-                stats->presolver_stats.push_back( stat );
-             }
-
-             // Set output parameters
-             *reductions_out = reductions;
-             *postsolve_out = postsolve_storage;
-             *statistics_out = stats;
-
-             // Clean up presolve object
-             libpapilo_presolve_free( presolve );
-
-             // Convert status
-             return convert_presolve_status( result.status );
-          },
-          "Failed to apply presolve" );
    }
 
    libpapilo_reductions_t*
