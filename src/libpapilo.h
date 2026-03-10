@@ -578,9 +578,91 @@ extern "C"
        libpapilo_presolve_t* presolve,
        const libpapilo_presolve_options_t* options );
 
+   /**
+    * Set a boolean parameter on the presolve object.
+    *
+    * This function allows configuring presolvers and presolve options using
+    * parameter keys. Common parameter keys include:
+    * - "parallelcols.enabled": Enable/disable parallel column detection
+    * - "parallelrows.enabled": Enable/disable parallel row detection
+    * - "probing.enabled": Enable/disable probing
+    * - "propagation.enabled": Enable/disable propagation
+    * - etc.
+    *
+    * Note: Presolvers must be added (via add_default_presolvers) before their
+    * parameters can be set.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key (e.g., "parallelcols.enabled")
+    * @param value The boolean value to set
+    * @return 1 on success, 0 if parameter not found or type mismatch
+    */
+   LIBPAPILO_EXPORT int
+   libpapilo_presolve_set_param_bool( libpapilo_presolve_t* presolve,
+                                      const char* key, int value );
+
+   /**
+    * Set an integer parameter on the presolve object.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key
+    * @param value The integer value to set
+    * @return 1 on success, 0 if parameter not found or type mismatch
+    */
+   LIBPAPILO_EXPORT int
+   libpapilo_presolve_set_param_int( libpapilo_presolve_t* presolve,
+                                     const char* key, int value );
+
+   /**
+    * Set a double parameter on the presolve object.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key
+    * @param value The double value to set
+    * @return 1 on success, 0 if parameter not found or type mismatch
+    */
+   LIBPAPILO_EXPORT int
+   libpapilo_presolve_set_param_double( libpapilo_presolve_t* presolve,
+                                        const char* key, double value );
+
+   /**
+    * Set a parameter by parsing a string value.
+    *
+    * This function parses the string value according to the parameter's type.
+    * For boolean parameters, "0" or "1" are expected.
+    *
+    * @param presolve The presolve object
+    * @param key The parameter key
+    * @param value The string value to parse
+    * @return 1 on success, 0 if parameter not found or parse error
+    */
+   LIBPAPILO_EXPORT int
+   libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
+                                   const char* key, const char* value );
+
    LIBPAPILO_EXPORT libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
                                     libpapilo_problem_t* problem );
+
+   /**
+    * Apply presolve using the given presolve object with full output.
+    *
+    * Unlike libpapilo_presolve_apply which creates its own presolve object,
+    * this function uses the provided presolve object, allowing you to configure
+    * parameters before running.
+    *
+    * @param presolve The configured presolve object (must have presolvers
+    * added)
+    * @param problem The problem to presolve (will be modified in-place)
+    * @param postsolve_out Output: postsolve storage for solution recovery
+    * @param statistics_out Output: statistics about the presolve process
+    * @return Presolve status indicating the result
+    */
+   LIBPAPILO_EXPORT libpapilo_presolve_status_t
+   libpapilo_presolve_apply_full( libpapilo_presolve_t* presolve,
+                                  libpapilo_problem_t* problem,
+                                  libpapilo_postsolve_storage_t** postsolve_out,
+                                  libpapilo_statistics_t** statistics_out );
 
    LIBPAPILO_EXPORT void
    libpapilo_presolve_apply_reductions( libpapilo_presolve_t* presolve,

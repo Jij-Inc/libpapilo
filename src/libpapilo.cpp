@@ -1320,6 +1320,83 @@ extern "C"
       presolve->presolve.getPresolveOptions() = options->options;
    }
 
+   int
+   libpapilo_presolve_set_param_bool( libpapilo_presolve_t* presolve,
+                                      const char* key, int value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+
+      try
+      {
+         ParameterSet paramSet = presolve->presolve.getParameters();
+         paramSet.setParameter( key, static_cast<bool>( value ) );
+         return 1;
+      }
+      catch( const std::exception& )
+      {
+         return 0;
+      }
+   }
+
+   int
+   libpapilo_presolve_set_param_int( libpapilo_presolve_t* presolve,
+                                     const char* key, int value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+
+      try
+      {
+         ParameterSet paramSet = presolve->presolve.getParameters();
+         paramSet.setParameter( key, value );
+         return 1;
+      }
+      catch( const std::exception& )
+      {
+         return 0;
+      }
+   }
+
+   int
+   libpapilo_presolve_set_param_double( libpapilo_presolve_t* presolve,
+                                        const char* key, double value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+
+      try
+      {
+         ParameterSet paramSet = presolve->presolve.getParameters();
+         paramSet.setParameter( key, value );
+         return 1;
+      }
+      catch( const std::exception& )
+      {
+         return 0;
+      }
+   }
+
+   int
+   libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
+                                   const char* key, const char* value )
+   {
+      check_presolve_ptr( presolve );
+      custom_assert( key != nullptr, "key pointer is null" );
+      custom_assert( value != nullptr, "value pointer is null" );
+
+      try
+      {
+         ParameterSet paramSet = presolve->presolve.getParameters();
+         paramSet.parseParameter( key, value );
+         return 1;
+      }
+      catch( const std::exception& )
+      {
+         return 0;
+      }
+   }
+
    libpapilo_presolve_status_t
    libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
                                     libpapilo_problem_t* problem )
@@ -1332,6 +1409,42 @@ extern "C"
           {
              PresolveResult<double> result =
                  presolve->presolve.apply( problem->problem );
+             return convert_presolve_status( result.status );
+          },
+          "Failed to apply presolve" );
+   }
+
+   libpapilo_presolve_status_t
+   libpapilo_presolve_apply_full( libpapilo_presolve_t* presolve,
+                                  libpapilo_problem_t* problem,
+                                  libpapilo_postsolve_storage_t** postsolve_out,
+                                  libpapilo_statistics_t** statistics_out )
+   {
+      check_presolve_ptr( presolve );
+      check_problem_ptr( problem );
+      custom_assert( postsolve_out != nullptr,
+                     "postsolve_out pointer is null" );
+      custom_assert( statistics_out != nullptr,
+                     "statistics_out pointer is null" );
+
+      return check_run(
+          [&]()
+          {
+             // Execute presolve
+             PresolveResult<double> result =
+                 presolve->presolve.apply( problem->problem );
+
+             // Create output objects
+             auto* postsolve_storage = new libpapilo_postsolve_storage_t(
+                 std::move( result.postsolve ) );
+             auto* stats = new libpapilo_statistics_t();
+
+             // Copy overall statistics
+             stats->statistics = presolve->presolve.getStatistics();
+
+             *postsolve_out = postsolve_storage;
+             *statistics_out = stats;
+
              return convert_presolve_status( result.status );
           },
           "Failed to apply presolve" );

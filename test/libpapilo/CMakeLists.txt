@@ -11,6 +11,7 @@ set(LIBPAPILO_TESTS
     GetterAPIsTest.cpp
     PresolverStatsTest.cpp
     ParallelColDetectionTest.cpp
+    ParameterTest.cpp
     # Add more test files as needed
 )
 
@@ -100,6 +101,15 @@ set(LIBPAPILO_TEST_NAMES
     "parallel_col_detection_int_merge_failed_hole"
     "parallel_col_detection_obj_not_parallel"
     "parallel_col_detection_multiple_parallel_columns"
+
+    # ParameterTest.cpp
+    "set_param_bool disables presolver"
+    "set_param_bool returns 0 for unknown key"
+    "set_param_int sets integer parameter"
+    "parse_param parses string value"
+    "parse_param returns 0 for parse error"
+    "set_param_bool fails before presolvers are added"
+    "disabling parallelcols prevents parallel column detection"
 )
 
 # Register test targets for each test file
