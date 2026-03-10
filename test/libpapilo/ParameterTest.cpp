@@ -79,8 +79,8 @@ TEST_CASE( "set-param-double-sets-double-parameter", "[parameter]" )
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Set numerics.feastol parameter
-   libpapilo_param_result_t result =
-       libpapilo_presolve_set_param_double( presolve, "numerics.feastol", 1e-6 );
+   libpapilo_param_result_t result = libpapilo_presolve_set_param_double(
+       presolve, "numerics.feastol", 1e-6 );
    REQUIRE( result == LIBPAPILO_PARAM_OK );
 
    // Unknown key should return NOT_FOUND
@@ -218,15 +218,15 @@ disableAllPresolversExcept( libpapilo_presolve_t* presolve,
 {
    // Disable all default presolvers (including cliquemerging)
    const char* presolvers[] = {
-       "cliquemerging.enabled",   "coefftightening.enabled",
-       "colsingleton.enabled",    "domcol.enabled",
-       "doubletoneq.enabled",     "dualfix.enabled",
-       "dualinfer.enabled",       "fixcontinuous.enabled",
-       "implint.enabled",         "parallelcols.enabled",
-       "parallelrows.enabled",    "probing.enabled",
-       "propagation.enabled",     "simpleprobing.enabled",
-       "simplifyineq.enabled",    "sparsify.enabled",
-       "stuffing.enabled",        "substitution.enabled" };
+       "cliquemerging.enabled", "coefftightening.enabled",
+       "colsingleton.enabled",  "domcol.enabled",
+       "doubletoneq.enabled",   "dualfix.enabled",
+       "dualinfer.enabled",     "fixcontinuous.enabled",
+       "implint.enabled",       "parallelcols.enabled",
+       "parallelrows.enabled",  "probing.enabled",
+       "propagation.enabled",   "simpleprobing.enabled",
+       "simplifyineq.enabled",  "sparsify.enabled",
+       "stuffing.enabled",      "substitution.enabled" };
 
    for( const char* p : presolvers )
    {
