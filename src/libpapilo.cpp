@@ -1406,23 +1406,6 @@ extern "C"
    }
 
    libpapilo_presolve_status_t
-   libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
-                                    libpapilo_problem_t* problem )
-   {
-      check_presolve_ptr( presolve );
-      check_problem_ptr( problem );
-
-      return check_run(
-          [&]()
-          {
-             PresolveResult<double> result =
-                 presolve->presolve.apply( problem->problem );
-             return convert_presolve_status( result.status );
-          },
-          "Failed to apply presolve" );
-   }
-
-   libpapilo_presolve_status_t
    libpapilo_presolve_apply_full( libpapilo_presolve_t* presolve,
                                   libpapilo_problem_t* problem,
                                   libpapilo_postsolve_storage_t** postsolve_out,
@@ -1500,80 +1483,6 @@ extern "C"
              *num_changes = result.second;
           },
           "Failed to apply reductions" );
-   }
-
-   /* High-level presolve function for backward compatibility */
-   libpapilo_presolve_status_t
-   libpapilo_presolve_apply( libpapilo_problem_t* problem,
-                             const libpapilo_presolve_options_t* options,
-                             const libpapilo_message_t* message,
-                             libpapilo_reductions_t** reductions_out,
-                             libpapilo_postsolve_storage_t** postsolve_out,
-                             libpapilo_statistics_t** statistics_out )
-   {
-      check_problem_ptr( problem );
-      check_presolve_options_ptr( options );
-      check_message_ptr( message );
-      custom_assert( reductions_out != nullptr,
-                     "reductions_out pointer is null" );
-      custom_assert( postsolve_out != nullptr,
-                     "postsolve_out pointer is null" );
-      custom_assert( statistics_out != nullptr,
-                     "statistics_out pointer is null" );
-
-      return check_run(
-          [&]()
-          {
-             // Create presolve object
-             auto* presolve = libpapilo_presolve_create( message );
-             libpapilo_presolve_add_default_presolvers( presolve );
-             libpapilo_presolve_set_options( presolve, options );
-
-             // Execute presolve
-             PresolveResult<double> result =
-                 presolve->presolve.apply( problem->problem );
-
-             // Create output objects
-             auto* postsolve_storage = new libpapilo_postsolve_storage_t(
-                 std::move( result.postsolve ) );
-             auto* reductions = new libpapilo_reductions_t();
-             auto* stats = new libpapilo_statistics_t();
-
-             // Copy overall statistics
-             stats->statistics = presolve->presolve.getStatistics();
-
-             // Copy per-presolver statistics
-             stats->presolver_stats.clear();
-             const auto& presolvers = presolve->presolve.getPresolvers();
-             const auto& presolverStats =
-                 presolve->presolve.getPresolverStats();
-
-             size_t numPresolvers =
-                 std::min( presolvers.size(), presolverStats.size() );
-             for( size_t i = 0; i < numPresolvers; ++i )
-             {
-                libpapilo_statistics_t::PresolverStat stat;
-                stat.name = presolvers[i]->getName();
-                stat.ncalls = presolvers[i]->getNCalls();
-                stat.nsuccessful = presolvers[i]->getNSuccess();
-                stat.ntransactions = presolverStats[i].first;
-                stat.napplied = presolverStats[i].second;
-                stat.exectime = presolvers[i]->getExecTime();
-                stats->presolver_stats.push_back( stat );
-             }
-
-             // Set output parameters
-             *reductions_out = reductions;
-             *postsolve_out = postsolve_storage;
-             *statistics_out = stats;
-
-             // Clean up presolve object
-             libpapilo_presolve_free( presolve );
-
-             // Convert status
-             return convert_presolve_status( result.status );
-          },
-          "Failed to apply presolve" );
    }
 
    libpapilo_reductions_t*

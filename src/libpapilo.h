@@ -656,16 +656,11 @@ extern "C"
    libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,
                                    const char* key, const char* value );
 
-   LIBPAPILO_EXPORT libpapilo_presolve_status_t
-   libpapilo_presolve_apply_simple( libpapilo_presolve_t* presolve,
-                                    libpapilo_problem_t* problem );
-
    /**
     * Apply presolve using the given presolve object with full output.
     *
-    * Unlike libpapilo_presolve_apply which creates its own presolve object,
-    * this function uses the provided presolve object, allowing you to configure
-    * parameters before running.
+    * This is the main presolve function. Create a presolve object, add
+    * presolvers, optionally configure parameters, then call this function.
     *
     * @param presolve The configured presolve object (must have presolvers
     * added)
@@ -730,15 +725,6 @@ extern "C"
    LIBPAPILO_EXPORT unsigned int
    libpapilo_presolve_options_get_randomseed(
        const libpapilo_presolve_options_t* options );
-
-   /* Main presolve function */
-   LIBPAPILO_EXPORT libpapilo_presolve_status_t
-   libpapilo_presolve_apply( libpapilo_problem_t* problem,
-                             const libpapilo_presolve_options_t* options,
-                             const libpapilo_message_t* message,
-                             libpapilo_reductions_t** reductions,
-                             libpapilo_postsolve_storage_t** postsolve,
-                             libpapilo_statistics_t** statistics );
 
    /* Reductions access API */
    LIBPAPILO_EXPORT libpapilo_reductions_t*

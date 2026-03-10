@@ -74,22 +74,22 @@ TEST_CASE( "per-presolver-statistics-are-tracked-correctly",
    auto* problem = create_test_problem();
    REQUIRE( problem != nullptr );
 
-   // Create and configure presolve options
-   auto* options = libpapilo_presolve_options_create();
-   REQUIRE( options != nullptr );
-
    // Create message handler
    auto* message = libpapilo_message_create();
    REQUIRE( message != nullptr );
    libpapilo_message_set_verbosity_level( message, 0 ); // quiet
 
+   // Create and configure presolve
+   auto* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
+   libpapilo_presolve_add_default_presolvers( presolve );
+
    // Run presolve
-   libpapilo_reductions_t* reductions = nullptr;
    libpapilo_postsolve_storage_t* postsolve = nullptr;
    libpapilo_statistics_t* statistics = nullptr;
 
-   auto status = libpapilo_presolve_apply(
-       problem, options, message, &reductions, &postsolve, &statistics );
+   auto status = libpapilo_presolve_apply_full( presolve, problem, &postsolve,
+                                                &statistics );
 
    // Check that presolve ran successfully
    REQUIRE( status != LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE );
@@ -171,9 +171,8 @@ TEST_CASE( "per-presolver-statistics-are-tracked-correctly",
 
    // Clean up
    libpapilo_problem_free( problem );
-   libpapilo_presolve_options_free( options );
+   libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
-   libpapilo_reductions_free( reductions );
    libpapilo_postsolve_storage_free( postsolve );
    libpapilo_statistics_free( statistics );
 }
@@ -185,22 +184,22 @@ TEST_CASE( "per-presolver-statistics-match-overall-statistics",
    auto* problem = create_test_problem();
    REQUIRE( problem != nullptr );
 
-   // Create and configure presolve options
-   auto* options = libpapilo_presolve_options_create();
-   REQUIRE( options != nullptr );
-
-   // Create message handler with higher verbosity to see what's happening
+   // Create message handler
    auto* message = libpapilo_message_create();
    REQUIRE( message != nullptr );
    libpapilo_message_set_verbosity_level( message, 0 ); // quiet for tests
 
+   // Create and configure presolve
+   auto* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
+   libpapilo_presolve_add_default_presolvers( presolve );
+
    // Run presolve
-   libpapilo_reductions_t* reductions = nullptr;
    libpapilo_postsolve_storage_t* postsolve = nullptr;
    libpapilo_statistics_t* statistics = nullptr;
 
-   auto status = libpapilo_presolve_apply(
-       problem, options, message, &reductions, &postsolve, &statistics );
+   auto status = libpapilo_presolve_apply_full( presolve, problem, &postsolve,
+                                                &statistics );
 
    // Check that presolve ran successfully
    REQUIRE( status != LIBPAPILO_PRESOLVE_STATUS_INFEASIBLE );
@@ -231,9 +230,8 @@ TEST_CASE( "per-presolver-statistics-match-overall-statistics",
 
    // Clean up
    libpapilo_problem_free( problem );
-   libpapilo_presolve_options_free( options );
+   libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
-   libpapilo_reductions_free( reductions );
    libpapilo_postsolve_storage_free( postsolve );
    libpapilo_statistics_free( statistics );
 }
