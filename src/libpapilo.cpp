@@ -405,6 +405,30 @@ check_run( Func func, const char* message )
    std::terminate();
 }
 
+// Helper function to run parameter operations with proper exception handling
+template <typename Func>
+libpapilo_param_result_t
+run_param_op( Func func )
+{
+   try
+   {
+      func();
+      return LIBPAPILO_PARAM_OK;
+   }
+   catch( const std::invalid_argument& )
+   {
+      return LIBPAPILO_PARAM_NOT_FOUND;
+   }
+   catch( const std::domain_error& )
+   {
+      return LIBPAPILO_PARAM_WRONG_TYPE;
+   }
+   catch( const std::out_of_range& )
+   {
+      return LIBPAPILO_PARAM_INVALID_VALUE;
+   }
+}
+
 // Helper function to convert PresolveStatus to libpapilo_presolve_status_t
 static libpapilo_presolve_status_t
 convert_presolve_status( PresolveStatus status )
@@ -1327,24 +1351,12 @@ extern "C"
       check_presolve_ptr( presolve );
       custom_assert( key != nullptr, "key pointer is null" );
 
-      try
-      {
-         ParameterSet paramSet = presolve->presolve.getParameters();
-         paramSet.setParameter( key, static_cast<bool>( value ) );
-         return LIBPAPILO_PARAM_OK;
-      }
-      catch( const std::invalid_argument& )
-      {
-         return LIBPAPILO_PARAM_NOT_FOUND;
-      }
-      catch( const std::domain_error& )
-      {
-         return LIBPAPILO_PARAM_WRONG_TYPE;
-      }
-      catch( const std::out_of_range& )
-      {
-         return LIBPAPILO_PARAM_INVALID_VALUE;
-      }
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.setParameter( key, static_cast<bool>( value ) );
+          } );
    }
 
    libpapilo_param_result_t
@@ -1354,24 +1366,12 @@ extern "C"
       check_presolve_ptr( presolve );
       custom_assert( key != nullptr, "key pointer is null" );
 
-      try
-      {
-         ParameterSet paramSet = presolve->presolve.getParameters();
-         paramSet.setParameter( key, value );
-         return LIBPAPILO_PARAM_OK;
-      }
-      catch( const std::invalid_argument& )
-      {
-         return LIBPAPILO_PARAM_NOT_FOUND;
-      }
-      catch( const std::domain_error& )
-      {
-         return LIBPAPILO_PARAM_WRONG_TYPE;
-      }
-      catch( const std::out_of_range& )
-      {
-         return LIBPAPILO_PARAM_INVALID_VALUE;
-      }
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.setParameter( key, value );
+          } );
    }
 
    libpapilo_param_result_t
@@ -1381,24 +1381,12 @@ extern "C"
       check_presolve_ptr( presolve );
       custom_assert( key != nullptr, "key pointer is null" );
 
-      try
-      {
-         ParameterSet paramSet = presolve->presolve.getParameters();
-         paramSet.setParameter( key, value );
-         return LIBPAPILO_PARAM_OK;
-      }
-      catch( const std::invalid_argument& )
-      {
-         return LIBPAPILO_PARAM_NOT_FOUND;
-      }
-      catch( const std::domain_error& )
-      {
-         return LIBPAPILO_PARAM_WRONG_TYPE;
-      }
-      catch( const std::out_of_range& )
-      {
-         return LIBPAPILO_PARAM_INVALID_VALUE;
-      }
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.setParameter( key, value );
+          } );
    }
 
    libpapilo_param_result_t
@@ -1409,25 +1397,12 @@ extern "C"
       custom_assert( key != nullptr, "key pointer is null" );
       custom_assert( value != nullptr, "value pointer is null" );
 
-      try
-      {
-         ParameterSet paramSet = presolve->presolve.getParameters();
-         paramSet.parseParameter( key, value );
-         return LIBPAPILO_PARAM_OK;
-      }
-      catch( const std::invalid_argument& )
-      {
-         // Could be "parameter not found" or "could not parse"
-         return LIBPAPILO_PARAM_NOT_FOUND;
-      }
-      catch( const std::domain_error& )
-      {
-         return LIBPAPILO_PARAM_WRONG_TYPE;
-      }
-      catch( const std::out_of_range& )
-      {
-         return LIBPAPILO_PARAM_INVALID_VALUE;
-      }
+      return run_param_op(
+          [&]()
+          {
+             ParameterSet paramSet = presolve->presolve.getParameters();
+             paramSet.parseParameter( key, value );
+          } );
    }
 
    libpapilo_presolve_status_t
