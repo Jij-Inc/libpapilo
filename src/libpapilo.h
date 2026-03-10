@@ -644,13 +644,15 @@ extern "C"
     * Set a parameter by parsing a string value.
     *
     * This function parses the string value according to the parameter's type.
-    * For boolean parameters, numeric strings are parsed (0 = false, non-zero =
-    * true). Non-numeric strings will cause a parse error.
+    * For boolean parameters, the value must be "0" or "1". Other values will
+    * cause a parse error and return LIBPAPILO_PARAM_INVALID_VALUE.
     *
     * @param presolve The presolve object
     * @param key The parameter key
     * @param value The string value to parse
-    * @return LIBPAPILO_PARAM_OK on success, or an error code
+    * @return LIBPAPILO_PARAM_OK on success, LIBPAPILO_PARAM_NOT_FOUND if
+    *         the key does not exist, or LIBPAPILO_PARAM_INVALID_VALUE if
+    *         the value could not be parsed
     */
    LIBPAPILO_EXPORT libpapilo_param_result_t
    libpapilo_presolve_parse_param( libpapilo_presolve_t* presolve,

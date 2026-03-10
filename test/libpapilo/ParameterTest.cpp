@@ -26,7 +26,9 @@
 TEST_CASE( "set-param-bool-disables-presolver", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Disable parallel column detection
@@ -46,7 +48,9 @@ TEST_CASE( "set-param-bool-disables-presolver", "[parameter]" )
 TEST_CASE( "set-param-bool-returns-not-found-for-unknown-key", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    libpapilo_presolve_add_default_presolvers( presolve );
 
    libpapilo_param_result_t result =
@@ -60,7 +64,9 @@ TEST_CASE( "set-param-bool-returns-not-found-for-unknown-key", "[parameter]" )
 TEST_CASE( "set-param-int-sets-integer-parameter", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Set message verbosity level
@@ -75,7 +81,9 @@ TEST_CASE( "set-param-int-sets-integer-parameter", "[parameter]" )
 TEST_CASE( "set-param-double-sets-double-parameter", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Set numerics.feastol parameter
@@ -95,7 +103,9 @@ TEST_CASE( "set-param-double-sets-double-parameter", "[parameter]" )
 TEST_CASE( "parse-param-parses-string-value", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    libpapilo_presolve_add_default_presolvers( presolve );
 
    // Parse "0" as false for boolean parameter
@@ -112,17 +122,18 @@ TEST_CASE( "parse-param-parses-string-value", "[parameter]" )
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "parse-param-returns-not-found-for-parse-error", "[parameter]" )
+TEST_CASE( "parse-param-returns-invalid-value-for-parse-error", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    libpapilo_presolve_add_default_presolvers( presolve );
 
-   // Invalid value for boolean parameter - boost::lexical_cast throws
-   // invalid_argument
+   // Invalid value for boolean parameter - returns INVALID_VALUE
    libpapilo_param_result_t result = libpapilo_presolve_parse_param(
        presolve, "parallelcols.enabled", "abc" );
-   REQUIRE( result == LIBPAPILO_PARAM_NOT_FOUND );
+   REQUIRE( result == LIBPAPILO_PARAM_INVALID_VALUE );
 
    libpapilo_presolve_free( presolve );
    libpapilo_message_free( message );
@@ -132,7 +143,9 @@ TEST_CASE( "set-param-bool-returns-not-found-before-presolvers-added",
            "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
+   REQUIRE( message != nullptr );
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
+   REQUIRE( presolve != nullptr );
    // Note: NOT calling add_default_presolvers
 
    // This should fail because parallelcols presolver is not added yet
@@ -150,6 +163,8 @@ static libpapilo_problem_t*
 createProblemWithParallelColumns()
 {
    libpapilo_problem_builder_t* builder = libpapilo_problem_builder_create();
+   if( builder == nullptr )
+      return nullptr;
 
    libpapilo_problem_builder_set_num_rows( builder, 2 );
    libpapilo_problem_builder_set_num_cols( builder, 2 );

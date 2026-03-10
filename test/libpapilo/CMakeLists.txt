@@ -108,7 +108,7 @@ set(LIBPAPILO_TEST_NAMES
     "set-param-int-sets-integer-parameter"
     "set-param-double-sets-double-parameter"
     "parse-param-parses-string-value"
-    "parse-param-returns-not-found-for-parse-error"
+    "parse-param-returns-invalid-value-for-parse-error"
     "set-param-bool-returns-not-found-before-presolvers-added"
     "disabling-parallelcols-prevents-parallel-column-detection"
 )

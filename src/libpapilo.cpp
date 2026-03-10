@@ -415,8 +415,13 @@ run_param_op( Func func )
       func();
       return LIBPAPILO_PARAM_OK;
    }
-   catch( const std::invalid_argument& )
+   catch( const std::invalid_argument& e )
    {
+      // ParameterSet uses std::invalid_argument for both missing keys and
+      // parse errors. Distinguish based on exception message.
+      const std::string msg( e.what() );
+      if( msg.find( "could not parse" ) != std::string::npos )
+         return LIBPAPILO_PARAM_INVALID_VALUE;
       return LIBPAPILO_PARAM_NOT_FOUND;
    }
    catch( const std::domain_error& )
@@ -425,6 +430,16 @@ run_param_op( Func func )
    }
    catch( const std::out_of_range& )
    {
+      return LIBPAPILO_PARAM_INVALID_VALUE;
+   }
+   catch( const std::exception& )
+   {
+      // Catch any other standard exceptions to prevent crossing C boundary
+      return LIBPAPILO_PARAM_INVALID_VALUE;
+   }
+   catch( ... )
+   {
+      // Catch-all for non-standard exceptions
       return LIBPAPILO_PARAM_INVALID_VALUE;
    }
 }
