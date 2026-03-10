@@ -644,7 +644,8 @@ extern "C"
     * Set a parameter by parsing a string value.
     *
     * This function parses the string value according to the parameter's type.
-    * For boolean parameters, "0" or "1" are expected.
+    * For boolean parameters, numeric strings are parsed (0 = false, non-zero =
+    * true). Non-numeric strings will cause a parse error.
     *
     * @param presolve The presolve object
     * @param key The parameter key

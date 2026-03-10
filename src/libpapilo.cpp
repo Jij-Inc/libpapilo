@@ -1475,6 +1475,26 @@ extern "C"
              // Copy overall statistics
              stats->statistics = presolve->presolve.getStatistics();
 
+             // Copy per-presolver statistics
+             stats->presolver_stats.clear();
+             const auto& presolvers = presolve->presolve.getPresolvers();
+             const auto& presolverStats =
+                 presolve->presolve.getPresolverStats();
+
+             size_t numPresolvers =
+                 std::min( presolvers.size(), presolverStats.size() );
+             for( size_t i = 0; i < numPresolvers; ++i )
+             {
+                libpapilo_statistics_t::PresolverStat stat;
+                stat.name = presolvers[i]->getName();
+                stat.ncalls = presolvers[i]->getNCalls();
+                stat.nsuccessful = presolvers[i]->getNSuccess();
+                stat.ntransactions = presolverStats[i].first;
+                stat.napplied = presolverStats[i].second;
+                stat.exectime = presolvers[i]->getExecTime();
+                stats->presolver_stats.push_back( stat );
+             }
+
              *postsolve_out = postsolve_storage;
              *statistics_out = stats;
 

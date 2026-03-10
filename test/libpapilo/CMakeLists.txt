@@ -106,6 +106,7 @@ set(LIBPAPILO_TEST_NAMES
     "set-param-bool-disables-presolver"
     "set-param-bool-returns-not-found-for-unknown-key"
     "set-param-int-sets-integer-parameter"
+    "set-param-double-sets-double-parameter"
     "parse-param-parses-string-value"
     "parse-param-returns-not-found-for-parse-error"
     "set-param-bool-returns-not-found-before-presolvers-added"
