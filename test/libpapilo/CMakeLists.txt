@@ -103,13 +103,13 @@ set(LIBPAPILO_TEST_NAMES
     "parallel_col_detection_multiple_parallel_columns"
 
     # ParameterTest.cpp
-    "set_param_bool disables presolver"
-    "set_param_bool returns NOT_FOUND for unknown key"
-    "set_param_int sets integer parameter"
-    "parse_param parses string value"
-    "parse_param returns NOT_FOUND for parse error"
-    "set_param_bool returns NOT_FOUND before presolvers are added"
-    "disabling parallelcols prevents parallel column detection"
+    "set-param-bool-disables-presolver"
+    "set-param-bool-returns-not-found-for-unknown-key"
+    "set-param-int-sets-integer-parameter"
+    "parse-param-parses-string-value"
+    "parse-param-returns-not-found-for-parse-error"
+    "set-param-bool-returns-not-found-before-presolvers-added"
+    "disabling-parallelcols-prevents-parallel-column-detection"
 )
 
 # Register test targets for each test file

@@ -23,7 +23,7 @@
 #include "papilo/external/catch/catch_amalgamated.hpp"
 #include <cstring>
 
-TEST_CASE( "set_param_bool disables presolver", "[parameter]" )
+TEST_CASE( "set-param-bool-disables-presolver", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
@@ -43,7 +43,7 @@ TEST_CASE( "set_param_bool disables presolver", "[parameter]" )
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "set_param_bool returns NOT_FOUND for unknown key", "[parameter]" )
+TEST_CASE( "set-param-bool-returns-not-found-for-unknown-key", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
@@ -57,7 +57,7 @@ TEST_CASE( "set_param_bool returns NOT_FOUND for unknown key", "[parameter]" )
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "set_param_int sets integer parameter", "[parameter]" )
+TEST_CASE( "set-param-int-sets-integer-parameter", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
@@ -72,7 +72,7 @@ TEST_CASE( "set_param_int sets integer parameter", "[parameter]" )
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "parse_param parses string value", "[parameter]" )
+TEST_CASE( "parse-param-parses-string-value", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
@@ -92,7 +92,7 @@ TEST_CASE( "parse_param parses string value", "[parameter]" )
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "parse_param returns NOT_FOUND for parse error", "[parameter]" )
+TEST_CASE( "parse-param-returns-not-found-for-parse-error", "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
    libpapilo_presolve_t* presolve = libpapilo_presolve_create( message );
@@ -108,7 +108,7 @@ TEST_CASE( "parse_param returns NOT_FOUND for parse error", "[parameter]" )
    libpapilo_message_free( message );
 }
 
-TEST_CASE( "set_param_bool returns NOT_FOUND before presolvers are added",
+TEST_CASE( "set-param-bool-returns-not-found-before-presolvers-added",
            "[parameter]" )
 {
    libpapilo_message_t* message = libpapilo_message_create();
@@ -217,7 +217,7 @@ disableAllPresolversExcept( libpapilo_presolve_t* presolve,
    }
 }
 
-TEST_CASE( "disabling parallelcols prevents parallel column detection",
+TEST_CASE( "disabling-parallelcols-prevents-parallel-column-detection",
            "[parameter][behavior]" )
 {
    // Test 1: With ONLY parallelcols enabled, parallel columns should be
